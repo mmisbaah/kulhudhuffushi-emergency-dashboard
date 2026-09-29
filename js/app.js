@@ -348,12 +348,7 @@
       var newX = dragStartPos.x + dx;
       var newY = dragStartPos.y + dy;
 
-      /* Allow movement across the entire map */
-      var vb = svg.viewBox.baseVal;
-      var margin = 20;
-      newX = Math.max(margin, Math.min(vb.width - margin, newX));
-      newY = Math.max(margin, Math.min(vb.height - margin, newY));
-
+      /* Allow movement across the entire map — no lower clamp */
       draggedCrashGroup.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
     };
 
