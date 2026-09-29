@@ -677,6 +677,35 @@ textarea.se-input{resize:vertical; line-height:1.5;}
   .cmp-table td{padding:6px 4px;}
 }
 
+/* ---------- Weather widget (header) ---------- */
+.weather{
+  margin-left:auto;
+  display:flex; align-items:center; gap:10px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:5px 12px;
+  font-size:12px;
+  color:var(--text);
+  white-space:nowrap;
+}
+.wx-icon{font-size:15px;}
+.wx-temp{font-weight:700; font-size:13px; font-variant-numeric:tabular-nums;}
+.wx-meta{color:var(--muted); font-variant-numeric:tabular-nums;}
+.wx-cond{color:var(--muted); font-size:11px;}
+.wx-fresh{
+  font-size:9px; color:var(--green);
+  text-transform:uppercase; letter-spacing:.06em;
+  display:inline-flex; align-items:center; gap:3px;
+}
+.wx-fresh.wx-cached{ color:var(--amber); }
+@media (max-width:820px){
+  .weather{ margin-left:0; margin-top:8px; flex-wrap:wrap; white-space:normal; }
+}
+@media print{
+  .weather{ display:none !important; }
+}
+
 /* ---------- Resource tracker (deployed vs available) ---------- */
 .rt-grid{
   display:grid;

@@ -41,6 +41,97 @@
 
     loadTheme();
 
+    /* ================= WEATHER (Open-Meteo, VRBK) ================= */
+    var weatherEl = document.getElementById('weatherWidget');
+    var WX_CACHE_KEY = 'ttx-wx-cache';
+
+    var WX_CODES = {
+      0: ['☀️', 'Clear'], 1: ['🌤', 'Mainly clear'], 2: ['⛅', 'Partly cloudy'], 3: ['☁️', 'Overcast'],
+      45: ['🌫', 'Fog'], 48: ['🌫', 'Rime fog'],
+      51: ['🌦', 'Light drizzle'], 53: ['🌦', 'Drizzle'], 55: ['🌧', 'Dense drizzle'],
+      56: ['🌧', 'Freezing drizzle'], 57: ['🌧', 'Freezing drizzle'],
+      61: ['🌧', 'Light rain'], 63: ['🌧', 'Rain'], 65: ['🌧', 'Heavy rain'],
+      66: ['🌧', 'Freezing rain'], 67: ['🌧', 'Freezing rain'],
+      71: ['🌨', 'Light snow'], 73: ['🌨', 'Snow'], 75: ['❄️', 'Heavy snow'], 77: ['❄️', 'Snow grains'],
+      80: ['🌦', 'Rain showers'], 81: ['🌧', 'Rain showers'], 82: ['⛈', 'Violent showers'],
+      85: ['🌨', 'Snow showers'], 86: ['🌨', 'Snow showers'],
+      95: ['⛈', 'Thunderstorm'], 96: ['⛈', 'Thunderstorm + hail'], 99: ['⛈', 'Severe t-storm']
+    };
+
+    var windDirLabel = function (deg) {
+      var dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      return dirs[Math.round(deg / 22.5) % 16];
+    };
+
+    var renderWeather = function (data) {
+      if (!weatherEl || !data || !data.current) return;
+      var c = data.current;
+      var code = WX_CODES[c.weather_code] || ['🌡', '—'];
+      var html = '<span class="wx-icon" title="' + code[1] + '">' + code[0] + '</span>';
+      html += '<span class="wx-temp">' + Math.round(c.temperature_2m) + '°C</span>';
+      html += '<span class="wx-meta">' + Math.round(c.wind_speed_10m) + ' kt ' + windDirLabel(c.wind_direction_10m) + '</span>';
+      html += '<span class="wx-meta">RH ' + Math.round(c.relative_humidity_2m) + '%</span>';
+      html += '<span class="wx-cond">' + code[1] + '</span>';
+      html += '<span class="wx-fresh" title="Data refreshed from Open-Meteo">● live</span>';
+      weatherEl.innerHTML = html;
+      weatherEl.setAttribute('aria-label',
+        'Weather at Kulhudhuffushi: ' + code[1] + ', ' + Math.round(c.temperature_2m) +
+        ' degrees, wind ' + Math.round(c.wind_speed_10m) + ' knots ' + windDirLabel(c.wind_direction_10m));
+    };
+
+    var loadWeather = function (force) {
+      if (!weatherEl) return;
+      /* Cache for 10 minutes so refreshes don't hammer the API */
+      try {
+        if (!force) {
+          var cached = JSON.parse(localStorage.getItem(WX_CACHE_KEY) || 'null');
+          if (cached && cached.t && (Date.now() - cached.t) < 10 * 60 * 1000) {
+            renderWeather(cached.data);
+            var f = weatherEl.querySelector('.wx-fresh');
+            if (f) { f.textContent = '● cached'; f.classList.add('wx-cached'); }
+            return;
+          }
+        }
+      } catch (e) {}
+
+      var url = 'https://api.open-meteo.com/v1/forecast?latitude=6.887&longitude=73.481' +
+        '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m' +
+        '&wind_speed_unit=kn&timezone=Indian/Maldives';
+
+      if (typeof fetch !== 'function') return;
+      fetch(url)
+        .then(function (r) { if (!r.ok) throw new Error('wx ' + r.status); return r.json(); })
+        .then(function (data) {
+          renderWeather(data);
+          try { localStorage.setItem(WX_CACHE_KEY, JSON.stringify({ t: Date.now(), data: data })); } catch (e) {}
+        })
+        .catch(function () {
+          /* Offline or blocked — fall back to any cached copy */
+          try {
+            var cached = JSON.parse(localStorage.getItem(WX_CACHE_KEY) || 'null');
+            if (cached && cached.data) {
+              renderWeather(cached.data);
+              var f = weatherEl.querySelector('.wx-fresh');
+              if (f) { f.textContent = '● offline'; f.classList.add('wx-cached'); }
+            } else {
+              weatherEl.innerHTML = '<span class="wx-cond">Weather unavailable</span>';
+            }
+          } catch (e) {
+            weatherEl.innerHTML = '<span class="wx-cond">Weather unavailable</span>';
+          }
+        });
+    };
+
+    loadWeather(false);
+    /* Refresh when the tab becomes visible again */
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) loadWeather(false);
+    });
+    if (weatherEl) {
+      weatherEl.addEventListener('click', function () { loadWeather(true); });
+      weatherEl.style.cursor = 'pointer';
+    }
+
     /* ================= KEYBOARD SHORTCUTS =================
        Ctrl/Alt + 1-7 : switch tabs
        Ctrl/Alt + T   : toggle theme

@@ -9,7 +9,7 @@
     /* Apply saved theme before first paint to avoid flash of dark theme */
     try { if (localStorage.getItem('ttx-theme') === 'light') document.documentElement.setAttribute('data-theme','light'); } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260929n">
+  <link rel="stylesheet" href="css/styles.css?v=20260929o">
 </head>
 <body>
 
@@ -44,6 +44,7 @@
     <select id="scenarioSelect" style="background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;">
       <option value="">— Select a scenario —</option>
     </select>
+    <div class="weather" id="weatherWidget" title="Current conditions at VRBK (Open-Meteo)" aria-live="polite"></div>
   </div>
 </header>
 
@@ -1029,8 +1030,8 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/data.js?v=20260929n"></script>
-<script src="js/app.js?v=20260929n"></script>
+<script src="js/data.js?v=20260929o"></script>
+<script src="js/app.js?v=20260929o"></script>
 
 </body>
 </html>
