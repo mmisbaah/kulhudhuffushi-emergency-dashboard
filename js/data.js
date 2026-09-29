@@ -85,6 +85,82 @@ var TTX_DATA = {
     { name: 'Dornier 228',   pax: 19, crew: '2 + 1', total: 22, fuel: '1,885 kg', wheels: 4, door: 'Left main door', baggage: 'Fwd + aft holds' }
   ],
 
+  /* Scenarios for the scenario selector */
+  scenarios: [
+    {
+      id: 'atr72-crash',
+      name: 'ATR 72 Crash on Runway',
+      aircraft: 'ATR 72-600',
+      soulsOnBoard: 74,
+      fuelLoad: '5,000 kg',
+      fireInvolved: true,
+      casualties: { red: 8, yellow: 22, green: 34, deceased: 10 },
+      resources: { arff: 2, ambulances: 6, fireTrucks: 2, buses: 2 },
+      injects: [
+        '09:00 — ATR 72 reports gear malfunction, requests priority landing',
+        '09:05 — Aircraft crashes short of Runway 09, breaks apart',
+        '09:06 — Fuel fire erupts near wreckage, spreading east',
+        '09:10 — Wind shifts 45 degrees, smoke drifts toward terminal',
+        '09:15 — Secondary explosion reported in rear fuselage',
+        '09:20 — Media helicopter spotted overflying the scene'
+      ]
+    },
+    {
+      id: 'terminal-fire',
+      name: 'Terminal Fire',
+      aircraft: null,
+      soulsOnBoard: 120,
+      fuelLoad: 'N/A',
+      fireInvolved: true,
+      casualties: { red: 4, yellow: 18, green: 60, deceased: 0 },
+      resources: { arff: 1, ambulances: 4, fireTrucks: 3, buses: 1 },
+      injects: [
+        '14:00 — Smoke reported in terminal kitchen',
+        '14:03 — Fire alarm activated, sprinkler system fails',
+        '14:05 — Fire spreads to ceiling void, heavy smoke in departures',
+        '14:10 — Two passengers trapped in upstairs lounge',
+        '14:15 — Power failure in terminal, emergency lighting only',
+        '14:20 — Media arrives outside perimeter'
+      ]
+    },
+    {
+      id: 'fuel-spill',
+      name: 'Fuel Spill on Apron',
+      aircraft: 'Dash 8 Q400',
+      soulsOnBoard: 0,
+      fuelLoad: '6,530 L',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 2, green: 5, deceased: 0 },
+      resources: { arff: 1, ambulances: 1, fireTrucks: 1, buses: 0 },
+      injects: [
+        '11:00 — Fuel bowser hose ruptures during refuelling',
+        '11:02 — Approximately 2,000 L of Jet A-1 spills across apron',
+        '11:05 — Fuel vapour drifts toward terminal intake vents',
+        '11:10 — Aircraft evacuation initiated as precaution',
+        '11:15 — Ignition source reported in nearby maintenance vehicle',
+        '11:20 — Wind increases, vapour cloud expands'
+      ]
+    },
+    {
+      id: 'do228-gear-up',
+      name: 'Dornier 228 Gear-Up Landing',
+      aircraft: 'Dornier 228',
+      soulsOnBoard: 22,
+      fuelLoad: '1,885 kg',
+      fireInvolved: false,
+      casualties: { red: 2, yellow: 6, green: 12, deceased: 2 },
+      resources: { arff: 1, ambulances: 3, fireTrucks: 1, buses: 1 },
+      injects: [
+        '16:00 — Dornier 228 reports gear indication problem',
+        '16:05 — Low pass confirms gear not extended',
+        '16:10 — Gear-up landing on Runway 09/27, aircraft skids to stop',
+        '16:12 — Fuel leak reported from wing area',
+        '16:15 — Runway blocked, airport closed to all traffic',
+        '16:20 — Recovery equipment requested from Malé'
+      ]
+    }
+  ],
+
   /* Aircraft detail cards */
   aircraftDetails: [
     {

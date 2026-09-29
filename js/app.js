@@ -281,6 +281,72 @@
       if (item) item.classList.toggle('hl', on);
     }
 
+    /* ================= SCENARIO SELECTOR ================= */
+    var scenarioSelect = document.getElementById('scenarioSelect');
+
+    if (scenarioSelect && TTX_DATA.scenarios) {
+      TTX_DATA.scenarios.forEach(function (sc) {
+        var opt = document.createElement('option');
+        opt.value = sc.id;
+        opt.textContent = sc.name;
+        scenarioSelect.appendChild(opt);
+      });
+
+      scenarioSelect.addEventListener('change', function () {
+        var scenario = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
+        updateScenarioPanel(scenario);
+      });
+    }
+
+    function updateScenarioPanel(scenario) {
+      var panel = document.getElementById('scenarioPanel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'scenarioPanel';
+        panel.style.cssText = 'background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px;margin-top:20px;';
+        var main = document.querySelector('main.wrap');
+        if (main) main.insertBefore(panel, main.firstChild);
+      }
+
+      if (!scenario) {
+        panel.innerHTML = '<p style="color:var(--muted);margin:0;">Select a scenario above to see casualty estimates, resource requirements, and exercise injects.</p>';
+        return;
+      }
+
+      var html = '<h3 style="margin:0 0 16px;font-size:16px;">' + scenario.name + '</h3>';
+
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px;">';
+      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:#fff;">' + scenario.soulsOnBoard + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">Souls on Board</span></div>';
+      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:#fff;">' + scenario.fuelLoad + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">Fuel Load</span></div>';
+      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:' + (scenario.fireInvolved ? '#ef4444' : '#22c55e') + ';">' + (scenario.fireInvolved ? 'Yes' : 'No') + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">Fire Involved</span></div>';
+      html += '</div>';
+
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Estimated Casualties</h4>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px;">';
+      html += '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#fca5a5;">' + scenario.casualties.red + '</span><span style="font-size:10px;color:#fca5a5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Red (Immediate)</span></div>';
+      html += '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#fcd34d;">' + scenario.casualties.yellow + '</span><span style="font-size:10px;color:#fcd34d;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Yellow (Delayed)</span></div>';
+      html += '<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#86efac;">' + scenario.casualties.green + '</span><span style="font-size:10px;color:#86efac;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Green (Minor)</span></div>';
+      html += '<div style="background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#94a3b8;">' + scenario.casualties.deceased + '</span><span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Deceased</span></div>';
+      html += '</div>';
+
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Resource Requirements</h4>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;">';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.arff + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">ARFF Vehicles</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.ambulances + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Ambulances</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.fireTrucks + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Fire Trucks</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.buses + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Buses</span></div>';
+      html += '</div>';
+
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Exercise Injects</h4>';
+      html += '<ul class="clean" style="margin:0;">';
+      scenario.injects.forEach(function (inject) {
+        html += '<li style="padding-left:20px;margin-bottom:8px;font-size:13px;color:#c4d3e8;position:relative;"><span style="position:absolute;left:4px;top:8px;width:6px;height:6px;border-radius:2px;background:var(--blue);transform:rotate(45deg);"></span>' + inject + '</li>';
+      });
+      html += '</ul>';
+
+      panel.innerHTML = html;
+    }
+
   } catch (err) {
     if (window.console) console.warn('Enhancement script skipped:', err);
   }
