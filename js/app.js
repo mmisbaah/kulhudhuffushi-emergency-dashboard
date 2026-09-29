@@ -72,6 +72,17 @@
       if (e.metaKey || e.ctrlKey && e.altKey) return;
       if (isTypingTarget(e.target)) return;
 
+      /* Timeline undo/redo: Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z */
+      if (e.ctrlKey && (e.key === 'z' || e.key === 'Z' || e.key === 'y' || e.key === 'Y')) {
+        var tl = document.getElementById('timelineSection');
+        if (tl && getComputedStyle(tl).display !== 'none') {
+          e.preventDefault();
+          if (e.key === 'y' || e.key === 'Y' || e.shiftKey) redoTimeline();
+          else undoTimeline();
+          return;
+        }
+      }
+
       var mod = e.ctrlKey || e.altKey;
       if (!mod || e.shiftKey) return;
 
@@ -817,13 +828,57 @@
       try { localStorage.setItem(TIMELINE_STORAGE_KEY, JSON.stringify(timelineEvents)); } catch (e) {}
     };
 
+    /* ---- Undo / redo (state snapshots before each mutation) ---- */
+    var undoStack = [];
+    var redoStack = [];
+    var UNDO_LIMIT = 50;
+
+    var snapshotTimeline = function () {
+      undoStack.push(JSON.stringify(timelineEvents));
+      if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+      redoStack = [];
+      updateUndoButtons();
+    };
+
+    var updateUndoButtons = function () {
+      var u = document.getElementById('timelineUndoBtn');
+      var r = document.getElementById('timelineRedoBtn');
+      if (u) u.disabled = undoStack.length === 0;
+      if (r) r.disabled = redoStack.length === 0;
+    };
+
+    var undoTimeline = function () {
+      if (!undoStack.length) return;
+      redoStack.push(JSON.stringify(timelineEvents));
+      timelineEvents = JSON.parse(undoStack.pop());
+      saveTimeline();
+      renderTimeline();
+      updateUndoButtons();
+    };
+
+    var redoTimeline = function () {
+      if (!redoStack.length) return;
+      undoStack.push(JSON.stringify(timelineEvents));
+      timelineEvents = JSON.parse(redoStack.pop());
+      saveTimeline();
+      renderTimeline();
+      updateUndoButtons();
+    };
+
+    window.undoTimeline = undoTimeline;
+    window.redoTimeline = redoTimeline;
+
     var clearTimeline = function () {
+      if (timelineEvents.length === 0) return;
+      snapshotTimeline();
       timelineEvents = [];
       try { localStorage.removeItem(TIMELINE_STORAGE_KEY); } catch (e) {}
       renderTimeline();
+      updateUndoButtons();
     };
 
     var addTimelineEvent = function (time, text, category) {
+      snapshotTimeline();
       timelineEvents.push({
         id: Date.now() + Math.random().toString(36).substr(2, 9),
         time: time,
@@ -833,12 +888,15 @@
       });
       saveTimeline();
       renderTimeline();
+      updateUndoButtons();
     };
 
     var deleteTimelineEvent = function (id) {
+      snapshotTimeline();
       timelineEvents = timelineEvents.filter(function (e) { return e.id !== id; });
       saveTimeline();
       renderTimeline();
+      updateUndoButtons();
     };
 
     var renderTimeline = function () {
@@ -888,6 +946,8 @@
     timelineHTML += '<div id="timelineContainer" style="max-height:400px;overflow-y:auto;"></div>';
 
     timelineHTML += '<div class="tl-actions" style="margin-top:12px;display:flex;gap:8px;">';
+    timelineHTML += '<button id="timelineUndoBtn" class="reset-btn" type="button" title="Undo last change (Ctrl+Z)" disabled>↶ Undo</button>';
+    timelineHTML += '<button id="timelineRedoBtn" class="reset-btn" type="button" title="Redo (Ctrl+Y)" disabled>↷ Redo</button>';
     timelineHTML += '<button id="timelineClearBtn" class="reset-btn" type="button">Clear All Events</button>';
     timelineHTML += '<button id="timelineExportBtn" class="reset-btn" type="button">Export for AAR</button>';
     timelineHTML += '</div>';
@@ -930,13 +990,19 @@
       });
     }
 
+    var timelineUndoBtn = document.getElementById('timelineUndoBtn');
+    var timelineRedoBtn = document.getElementById('timelineRedoBtn');
+    if (timelineUndoBtn) timelineUndoBtn.addEventListener('click', undoTimeline);
+    if (timelineRedoBtn) timelineRedoBtn.addEventListener('click', redoTimeline);
+    updateUndoButtons();
+
     if (timelineExportBtn) {
       timelineExportBtn.addEventListener('click', function () {
         if (timelineEvents.length === 0) { alert('No events to export.'); return; }
         var scenarioName = '';
         var scenarioSelect = document.getElementById('scenarioSelect');
         if (scenarioSelect && scenarioSelect.value) {
-          var sc = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
+          var sc = findScenario(scenarioSelect.value);
           if (sc) scenarioName = sc.name;
         }
         var report = 'KULHUDHUFFUSHI AIRPORT — EXERCISE TIMELINE\n';
