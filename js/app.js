@@ -1134,6 +1134,16 @@
       html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Resource Tracker <span style="font-weight:400;text-transform:none;letter-spacing:0;">— mark units as they arrive on scene</span></h4>';
       html += '<div id="resourceTracker" class="rt-grid" data-scenario="' + scenario.id + '"></div>';
 
+      /* ---- Casualty tracker: individual cards with triage + transport ---- */
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Casualty Tracker <span style="font-weight:400;text-transform:none;letter-spacing:0;">— per-patient triage &amp; transport status</span></h4>';
+      html += '<div class="ct-toolbar">';
+      html += '<button class="reset-btn" type="button" id="ctAdd" title="Add a casualty card">+ Add Casualty</button>';
+      html += '<button class="reset-btn" type="button" id="ctSeed" title="Create one card per estimated casualty in the scenario">Generate from Estimates</button>';
+      html += '<button class="reset-btn" type="button" id="ctClear" title="Remove all casualty cards">Clear</button>';
+      html += '<span class="ct-tally" id="ctTally"></span>';
+      html += '</div>';
+      html += '<div id="casualtyTracker" class="ct-grid" data-scenario="' + scenario.id + '"></div>';
+
       html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Exercise Injects</h4>';
       html += '<ul class="clean" style="margin:0;">';
       scenario.injects.forEach(function (inject) {
@@ -1143,6 +1153,168 @@
 
       panel.innerHTML = html;
       renderResourceTracker(scenario);
+      renderCasualtyTracker(scenario);
+    }
+
+    /* ---- Casualty tracker logic ---- */
+    var CT_KEY = 'ttx-casualties';
+    var CT_TRIAGE = ['Red (Immediate)', 'Yellow (Delayed)', 'Green (Minor)', 'Deceased'];
+    var CT_TRANSPORT = ['Awaiting transport', 'Loaded', 'En route', 'Arrived at hospital', 'Deceased'];
+
+    var loadCasualties = function (scenarioId) {
+      try {
+        var all = JSON.parse(localStorage.getItem(CT_KEY) || '{}');
+        var arr = all[scenarioId];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) { return []; }
+    };
+
+    var saveCasualties = function (scenarioId, arr) {
+      try {
+        var all = JSON.parse(localStorage.getItem(CT_KEY) || '{}');
+        all[scenarioId] = arr;
+        localStorage.setItem(CT_KEY, JSON.stringify(all));
+      } catch (e) {}
+    };
+
+    var newCasualty = function (seq, triage) {
+      return {
+        id: 'c' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+        ref: seq,
+        triage: triage || 'Red (Immediate)',
+        transport: 'Awaiting transport',
+        note: ''
+      };
+    };
+
+    function renderCasualtyTracker(scenario) {
+      var wrap = document.getElementById('casualtyTracker');
+      if (!wrap || !scenario) return;
+
+      var casualties = loadCasualties(scenario.id);
+
+      var addBtn = document.getElementById('ctAdd');
+      var seedBtn = document.getElementById('ctSeed');
+      var clearBtn = document.getElementById('ctClear');
+      var tally = document.getElementById('ctTally');
+
+      var rebindToolbar = function () {
+        if (addBtn) addBtn.onclick = function () {
+          var arr = loadCasualties(scenario.id);
+          arr.push(newCasualty(arr.length + 1, 'Red (Immediate)'));
+          saveCasualties(scenario.id, arr);
+          renderCasualtyTracker(scenario);
+        };
+        if (seedBtn) seedBtn.onclick = function () {
+          var arr = loadCasualties(scenario.id);
+          if (arr.length && !confirm('Add estimated casualties to the existing ' + arr.length + ' card(s)?')) return;
+          var c = scenario.casualties || {};
+          var plan = [
+            ['Red (Immediate)', c.red || 0],
+            ['Yellow (Delayed)', c.yellow || 0],
+            ['Green (Minor)', c.green || 0],
+            ['Deceased', c.deceased || 0]
+          ];
+          plan.forEach(function (p) {
+            for (var i = 0; i < p[1]; i++) arr.push(newCasualty(arr.length + 1, p[0]));
+          });
+          saveCasualties(scenario.id, arr);
+          renderCasualtyTracker(scenario);
+        };
+        if (clearBtn) clearBtn.onclick = function () {
+          if (!casualties.length) return;
+          if (!confirm('Remove all ' + casualties.length + ' casualty cards?')) return;
+          saveCasualties(scenario.id, []);
+          renderCasualtyTracker(scenario);
+        };
+      };
+      rebindToolbar();
+
+      /* Tally line */
+      if (tally) {
+        if (!casualties.length) {
+          tally.textContent = 'No casualty cards yet';
+        } else {
+          var counts = {};
+          casualties.forEach(function (c) { counts[c.triage] = (counts[c.triage] || 0) + 1; });
+          var transported = casualties.filter(function (c) { return c.transport !== 'Awaiting transport'; }).length;
+          tally.textContent = casualties.length + ' casualties · ' +
+            (counts['Red (Immediate)'] || 0) + ' red · ' +
+            (counts['Yellow (Delayed)'] || 0) + ' yellow · ' +
+            (counts['Green (Minor)'] || 0) + ' green · ' +
+            (counts['Deceased'] || 0) + ' deceased · ' +
+            transported + ' moved';
+        }
+      }
+
+      if (!casualties.length) {
+        wrap.innerHTML = '<div class="ct-empty">No casualty cards. Use <b>+ Add Casualty</b> or <b>Generate from Estimates</b> to start tracking patients.</div>';
+        return;
+      }
+
+      var h = '';
+      casualties.forEach(function (c, idx) {
+        var triageCls = 'ct-red';
+        if (c.triage === 'Yellow (Delayed)') triageCls = 'ct-yellow';
+        else if (c.triage === 'Green (Minor)') triageCls = 'ct-green';
+        else if (c.triage === 'Deceased') triageCls = 'ct-dead';
+
+        h += '<div class="ct-card ' + triageCls + '" data-ct="' + c.id + '">';
+        h += '<div class="ct-head"><span class="ct-ref">C-' + (idx + 1) + '</span>';
+        h += '<button class="ct-del" type="button" title="Remove this casualty" aria-label="Remove casualty C-' + (idx + 1) + '">×</button></div>';
+        h += '<label class="ct-lbl">Triage</label>';
+        h += '<select class="ct-sel ct-triage" aria-label="Triage status for C-' + (idx + 1) + '">';
+        CT_TRIAGE.forEach(function (t) {
+          h += '<option' + (t === c.triage ? ' selected' : '') + '>' + t + '</option>';
+        });
+        h += '</select>';
+        h += '<label class="ct-lbl">Transport</label>';
+        h += '<select class="ct-sel ct-transport" aria-label="Transport status for C-' + (idx + 1) + '">';
+        CT_TRANSPORT.forEach(function (t) {
+          h += '<option' + (t === c.transport ? ' selected' : '') + '>' + t + '</option>';
+        });
+        h += '</select>';
+        h += '<input class="ct-note" type="text" placeholder="Notes (injuries, destination…)" value="" aria-label="Notes for C-' + (idx + 1) + '">';
+        h += '</div>';
+      });
+      wrap.innerHTML = h;
+
+      /* Fix the note value attribute (needs escaped value) */
+      casualties.forEach(function (c, idx) {
+        var card = wrap.children[idx];
+        if (card) card.querySelector('.ct-note').value = c.note || '';
+      });
+
+      wrap.querySelectorAll('.ct-card').forEach(function (card) {
+        var cid = card.getAttribute('data-ct');
+        var update = function (patch) {
+          var arr = loadCasualties(scenario.id);
+          var target = arr.find(function (x) { return x.id === cid; });
+          if (!target) return;
+          Object.assign(target, patch);
+          saveCasualties(scenario.id, arr);
+        };
+
+        var triSel = card.querySelector('.ct-triage');
+        triSel.addEventListener('change', function () {
+          update({ triage: triSel.value });
+          renderCasualtyTracker(scenario);
+        });
+
+        card.querySelector('.ct-transport').addEventListener('change', function (e) {
+          update({ transport: e.target.value });
+        });
+
+        card.querySelector('.ct-note').addEventListener('input', function (e) {
+          update({ note: e.target.value });
+        });
+
+        card.querySelector('.ct-del').addEventListener('click', function () {
+          var arr = loadCasualties(scenario.id).filter(function (x) { return x.id !== cid; });
+          saveCasualties(scenario.id, arr);
+          renderCasualtyTracker(scenario);
+        });
+      });
     }
 
     /* ---- Resource tracker logic ---- */
