@@ -62,10 +62,11 @@
     };
 
     document.addEventListener('keydown', function (e) {
-      /* Esc closes the scenario editor / comparison (even while typing) */
+      /* Esc closes the scenario editor / comparison / ICS forms (even while typing) */
       if (e.key === 'Escape') {
         var ov = document.getElementById('scenarioEditorOverlay') ||
-                 document.getElementById('compareOverlay');
+                 document.getElementById('compareOverlay') ||
+                 document.getElementById('icsOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
@@ -744,11 +745,19 @@
       cmpBtn.title = 'Compare two scenarios side by side';
       cmpBtn.addEventListener('click', openCompare);
 
+      var icsBtn = document.createElement('button');
+      icsBtn.type = 'button';
+      icsBtn.className = 'reset-btn';
+      icsBtn.textContent = '📄 ICS Forms';
+      icsBtn.title = 'Generate ICS 201 / 202 / 203 forms from exercise data';
+      icsBtn.addEventListener('click', openIcsForms);
+
       var actions = document.createElement('span');
       actions.className = 'scenario-actions';
       actions.appendChild(newBtn);
       actions.appendChild(editBtn);
       actions.appendChild(cmpBtn);
+      actions.appendChild(icsBtn);
       scenarioSelect.insertAdjacentElement('afterend', actions);
     }
 
@@ -834,6 +843,236 @@
       }
 
       renderCompare();
+    }
+
+    /* ---------- ICS Form generator (201 / 202 / 203) ---------- */
+    var ICS_NAMES_KEY = 'ttx-ics-names';
+
+    var loadIcsNames = function () {
+      try {
+        var raw = localStorage.getItem(ICS_NAMES_KEY);
+        var obj = raw ? JSON.parse(raw) : {};
+        return (obj && typeof obj === 'object') ? obj : {};
+      } catch (e) { return {}; }
+    };
+    var saveIcsNames = function (obj) {
+      try { localStorage.setItem(ICS_NAMES_KEY, JSON.stringify(obj)); } catch (e) {}
+    };
+
+    var icsEscape = function (s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    };
+
+    function openIcsForms() {
+      var existing = document.getElementById('icsOverlay');
+      if (existing) { existing.remove(); return; }
+
+      var html = '<div class="scenario-editor ics-editor" role="dialog" aria-modal="true" aria-label="ICS form generator">';
+      html += '<div class="se-head"><h3>ICS Form Generator</h3>';
+      html += '<button class="reset-btn" type="button" id="icsClose" aria-label="Close">✕</button></div>';
+      html += '<div class="ics-tabs">';
+      html += '<button class="reset-btn ics-tab active" type="button" data-form="201">ICS 201 — Briefing</button>';
+      html += '<button class="reset-btn ics-tab" type="button" data-form="202">ICS 202 — Objectives</button>';
+      html += '<button class="reset-btn ics-tab" type="button" data-form="203">ICS 203 — Assignments</button>';
+      html += '</div>';
+      html += '<div id="icsBody"></div>';
+      html += '<div class="se-actions">';
+      html += '<button class="reset-btn" type="button" id="icsPrint">🖨 Print Form</button>';
+      html += '<span class="se-spacer"></span>';
+      html += '<button class="reset-btn" type="button" id="icsDone">Close</button>';
+      html += '</div></div>';
+
+      var ov = document.createElement('div');
+      ov.id = 'icsOverlay';
+      ov.className = 'scenario-editor-overlay';
+      ov.innerHTML = html;
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+      document.body.appendChild(ov);
+
+      var currentForm = '201';
+
+      var getScenario = function () {
+        var sel = document.getElementById('scenarioSelect');
+        return (sel && sel.value) ? findScenario(sel.value) : null;
+      };
+
+      var getChecklistState = function () {
+        var done = [];
+        try {
+          var raw = localStorage.getItem('ttx-checklist-state');
+          var state = raw ? JSON.parse(raw) : [];
+          if (Array.isArray(state)) {
+            (TTX_DATA.checklistItems || []).forEach(function (item, i) {
+              if (state[i]) done.push(item);
+            });
+          }
+        } catch (e) {}
+        return done;
+      };
+
+      var getChecklistPending = function () {
+        var pending = [];
+        try {
+          var raw = localStorage.getItem('ttx-checklist-state');
+          var state = raw ? JSON.parse(raw) : [];
+          if (Array.isArray(state)) {
+            (TTX_DATA.checklistItems || []).forEach(function (item, i) {
+              if (!state[i]) pending.push(item);
+            });
+          } else {
+            pending = (TTX_DATA.checklistItems || []).slice();
+          }
+        } catch (e) { pending = (TTX_DATA.checklistItems || []).slice(); }
+        return pending;
+      };
+
+      var getTimeline = function () {
+        try {
+          var raw = localStorage.getItem('ttx-timeline-events');
+          var arr = raw ? JSON.parse(raw) : [];
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) { return []; }
+      };
+
+      var names = loadIcsNames();
+
+      var renderForm = function () {
+        var body = document.getElementById('icsBody');
+        if (!body) return;
+        var sc = getScenario();
+        var done = getChecklistState();
+        var events = getTimeline();
+        var now = new Date();
+        var dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        var timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+        var h = '<div class="ics-form" id="icsFormContent">';
+
+        if (currentForm === '201') {
+          h += '<div class="ics-head"><b>ICS 201 — INCIDENT BRIEFING</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>1. Incident Name</label><div>' + icsEscape(sc ? sc.name : '______________________') + '</div></div>';
+          h += '<div class="ics-cell"><label>2. Date / Time Prepared</label><div>' + dateStr + ' · ' + timeStr + '</div></div>';
+          h += '<div class="ics-cell"><label>3. Location</label><div>Kulhudhuffushi Island (VRBK), Maldives</div></div>';
+          h += '<div class="ics-cell"><label>4. Incident Commander</label><div>' + icsEscape(names.ic || '______________________') + '</div></div>';
+          h += '</div>';
+          h += '<div class="ics-cell"><label>5. Situation Summary</label><div class="ics-lines">';
+          if (sc) {
+            h += '<p>' + icsEscape(sc.name) + ' — ' + (sc.aircraft ? icsEscape(sc.aircraft) + ', ' : '') +
+              (sc.soulsOnBoard || 0) + ' souls on board' + (sc.fireInvolved ? ', fire involved' : '') + '.</p>';
+            var c = sc.casualties || {};
+            h += '<p>Casualties: ' + (c.red || 0) + ' red · ' + (c.yellow || 0) + ' yellow · ' +
+              (c.green || 0) + ' green · ' + (c.deceased || 0) + ' deceased.</p>';
+            var r = sc.resources || {};
+            h += '<p>Resources requested: ' + (r.arff || 0) + ' ARFF · ' + (r.ambulances || 0) + ' ambulances · ' +
+              (r.fireTrucks || 0) + ' fire trucks · ' + (r.buses || 0) + ' buses.</p>';
+          } else {
+            h += '<p>No scenario selected — fill in manually.</p>';
+          }
+          h += '</div></div>';
+          h += '<div class="ics-cell"><label>6. Actions Taken / Current Actions</label><div class="ics-lines">';
+          if (done.length) {
+            done.forEach(function (d) { h += '<p>✓ ' + icsEscape(d) + '</p>'; });
+          } else {
+            h += '<p>_______________________________________________________</p><p>_______________________________________________________</p>';
+          }
+          h += '</div></div>';
+          h += '<div class="ics-cell"><label>7. Planned Actions / Next Steps</label><div class="ics-lines">';
+          var pending = getChecklistPending().slice(0, 5);
+          if (pending.length) pending.forEach(function (p) { h += '<p>○ ' + icsEscape(p) + '</p>'; });
+          else h += '<p>_______________________________________________________</p>';
+          h += '</div></div>';
+          h += '<div class="ics-cell"><label>8. Attachments / Remarks</label><div class="ics-lines"><p>_______________________________________________________</p><p>_______________________________________________________</p></div></div>';
+
+        } else if (currentForm === '202') {
+          h += '<div class="ics-head"><b>ICS 202 — INCIDENT OBJECTIVES</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>Incident Name</label><div>' + icsEscape(sc ? sc.name : '______________________') + '</div></div>';
+          h += '<div class="ics-cell"><label>Operational Period</label><div>' + dateStr + ' · ' + timeStr + ' onwards</div></div>';
+          h += '</div>';
+          h += '<div class="ics-cell"><label>Overall Incident Objectives</label><ol class="ics-ol">';
+          var objs = [
+            'Protect life safety of exercise participants, passengers and airport staff',
+            'Establish and maintain Incident Command with clear span of control',
+            'Control the hazard — contain fire / spill / security threat within zones',
+            'Triage, treat and transport all casualties per contingency plan',
+            'Protect airport property, critical infrastructure and the environment',
+            'Maintain communication with ATC, airlines, CAA and national emergency services',
+            'Manage family reunification and public information through approved channels',
+            'Document decisions and timings for the After-Action Report'
+          ];
+          if (sc && sc.fireInvolved) objs.splice(3, 0, 'Extinguish / isolate fuel fire and prevent spread to parked aircraft or terminal');
+          objs.forEach(function (o) { h += '<li>' + icsEscape(o) + '</li>'; });
+          h += '</ol></div>';
+          h += '<div class="ics-cell"><label>Site / Situation Objectives</label><div class="ics-lines">';
+          if (sc && sc.injects && sc.injects.length) {
+            sc.injects.forEach(function (inj) { h += '<p>• ' + icsEscape(inj) + '</p>'; });
+          } else {
+            h += '<p>_______________________________________________________</p><p>_______________________________________________________</p>';
+          }
+          h += '</div></div>';
+          h += '<div class="ics-cell"><label>Safety Message</label><div class="ics-lines"><p>All responders: observe hot / warm / cold zone boundaries, wear PPE as briefed, and report to the Safety Officer before entering the hot zone.</p></div></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>Prepared by (Planning)</label><div>' + icsEscape(names.planning || '______________________') + '</div></div>';
+          h += '<div class="ics-cell"><label>Approved by (IC)</label><div>' + icsEscape(names.ic || '______________________') + '</div></div>';
+          h += '</div>';
+
+        } else {
+          h += '<div class="ics-head"><b>ICS 203 — ORGANIZATION ASSIGNMENT LIST</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-cell"><label>Incident Name</label><div>' + icsEscape(sc ? sc.name : '______________________') + '</div></div>';
+          h += '<table class="ics-table"><thead><tr><th>Position</th><th>Name</th><th>Contact / Agency</th></tr></thead><tbody>';
+          var roles = [
+            ['ic', 'Incident Commander'],
+            ['safety', 'Safety Officer'],
+            ['pio', 'Public Information Officer'],
+            ['liaison', 'Liaison Officer'],
+            ['ops', 'Operations Section Chief'],
+            ['plan', 'Planning Section Chief'],
+            ['log', 'Logistics Section Chief'],
+            ['fin', 'Finance / Admin Section Chief'],
+            ['arff', 'ARFF / Fire & Rescue Lead'],
+            ['ems', 'EMS / Triage Lead'],
+            ['sec', 'Law Enforcement / Security Lead'],
+            ['airside', 'Airside / Operations Lead'],
+            ['fac', 'Family Assistance Center Lead']
+          ];
+          roles.forEach(function (r) {
+            h += '<tr><td>' + r[1] + '</td>';
+            h += '<td><input class="ics-input" data-ics="' + r[0] + '" value="' + icsEscape(names[r[0]] || '') + '" placeholder="________________"></td>';
+            h += '<td><input class="ics-input" data-ics="' + r[0] + '-org" value="' + icsEscape(names[r[0] + '-org'] || '') + '" placeholder="________________"></td></tr>';
+          });
+          h += '</tbody></table>';
+          h += '<p class="ics-note">Names entered here are saved in this browser and reused next time.</p>';
+        }
+
+        h += '</div>';
+        body.innerHTML = h;
+
+        /* Persist name edits (ICS 203 + commander fields) */
+        body.querySelectorAll('.ics-input').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            names[inp.getAttribute('data-ics')] = inp.value;
+            saveIcsNames(names);
+          });
+        });
+      };
+
+      document.getElementById('icsClose').addEventListener('click', function () { ov.remove(); });
+      document.getElementById('icsDone').addEventListener('click', function () { ov.remove(); });
+      ov.querySelectorAll('.ics-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          currentForm = tab.getAttribute('data-form');
+          ov.querySelectorAll('.ics-tab').forEach(function (t) { t.classList.toggle('active', t === tab); });
+          renderForm();
+        });
+      });
+      document.getElementById('icsPrint').addEventListener('click', function () {
+        document.body.classList.add('printing-ics');
+        window.print();
+        setTimeout(function () { document.body.classList.remove('printing-ics'); }, 500);
+      });
+
+      renderForm();
     }
 
     function updateScenarioPanel(scenario) {
