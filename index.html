@@ -328,18 +328,22 @@
           </g>
 
           <!-- crash site -->
-          <g transform="translate(507, 270)">
+          <g id="crashSite" transform="translate(507, 270)" style="cursor:grab;">
             <circle r="38" fill="rgba(239,68,68,.10)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5"/>
             <circle r="16" fill="#ef4444" stroke="#0a1220" stroke-width="2"/>
             <text y="5" font-size="15" fill="#fff" text-anchor="middle" font-weight="700">✕</text>
+            <title>Crash Site (drag to move)</title>
           </g>
-          <text x="507" y="222" font-size="10" fill="#f87171" text-anchor="middle" font-weight="700" letter-spacing="1.8">CRASH SITE</text>
+          <text id="crashSiteLabel" x="507" y="222" font-size="10" fill="#f87171" text-anchor="middle" font-weight="700" letter-spacing="1.8">CRASH SITE</text>
 
           <!-- zone rings -->
-          <circle cx="507" cy="270" r="110" fill="none" stroke="#f59e0b" stroke-width="1.3" stroke-dasharray="6 7" opacity=".55"/>
-          <circle cx="507" cy="270" r="185" fill="none" stroke="#22c55e" stroke-width="1.3" stroke-dasharray="6 7" opacity=".42"/>
-          <text x="507" y="152" font-size="9" fill="#fbbf24" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">WARM ZONE</text>
-          <text x="507" y="75" font-size="9" fill="#4ade80" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">COLD ZONE</text>
+          <g id="zoneRings" style="cursor:grab;">
+            <circle id="warmZone" cx="507" cy="270" r="110" fill="none" stroke="#f59e0b" stroke-width="1.3" stroke-dasharray="6 7" opacity=".55"/>
+            <circle id="coldZone" cx="507" cy="270" r="185" fill="none" stroke="#22c55e" stroke-width="1.3" stroke-dasharray="6 7" opacity=".42"/>
+            <text id="warmZoneLabel" x="507" y="152" font-size="9" fill="#fbbf24" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">WARM ZONE</text>
+            <text id="coldZoneLabel" x="507" y="75" font-size="9" fill="#4ade80" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">COLD ZONE</text>
+            <title>Zone Rings (drag to move)</title>
+          </g>
 
           <!-- wind -->
           <g transform="translate(660, 140)">
