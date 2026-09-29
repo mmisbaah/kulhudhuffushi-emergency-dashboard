@@ -189,9 +189,24 @@
               <stop offset="0%" stop-color="#08203a"/>
               <stop offset="100%" stop-color="#040d1a"/>
             </radialGradient>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2d4a" stroke-width="0.5" opacity="0.4"/>
+            </pattern>
+            <pattern id="gridLarge" width="200" height="200" patternUnits="userSpaceOnUse">
+              <path d="M 200 0 L 0 0 0 200" fill="none" stroke="#1a2d4a" stroke-width="0.8" opacity="0.6"/>
+            </pattern>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
 
           <rect width="1000" height="720" fill="url(#oceanGrad)"/>
+          <rect width="1000" height="720" fill="url(#grid)"/>
+          <rect width="1000" height="720" fill="url(#gridLarge)"/>
 
           <!-- lagoon ring -->
           <path d="M 60,80 C 200,-10 760,0 920,90 C 990,200 990,500 920,640 C 780,720 200,720 60,650 C -20,500 -20,220 60,80 Z"
