@@ -41,6 +41,42 @@
 
     loadTheme();
 
+    /* ================= SUB NAV (Aircraft tab) ================= */
+    var subNav = document.getElementById('aircraftSubNav');
+    if (subNav) {
+      var subNavLinks = subNav.querySelectorAll('.sub-nav-link');
+      var sections = ['ac-comparison','ac-details','ac-diagrams','ac-fuel','ac-flow','ac-implications'].map(function(id){ return document.getElementById(id); });
+
+      var setActiveLink = function(idx) {
+        subNavLinks.forEach(function(link, i) {
+          link.classList.toggle('active', i === idx);
+        });
+      };
+
+      subNavLinks.forEach(function(link, idx) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          var target = sections[idx];
+          if (target) {
+            var y = target.getBoundingClientRect().top + window.scrollY - 150;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+          setActiveLink(idx);
+        });
+      });
+
+      var onScroll = function() {
+        var scrollPos = window.scrollY + 200;
+        var activeIdx = 0;
+        sections.forEach(function(sec, idx) {
+          if (sec && sec.offsetTop <= scrollPos) activeIdx = idx;
+        });
+        setActiveLink(activeIdx);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+
     /* ================= BACK TO TOP ================= */
     var backToTop = document.getElementById('backToTop');
     if (backToTop) {

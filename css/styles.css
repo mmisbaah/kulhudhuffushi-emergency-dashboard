@@ -451,6 +451,43 @@ ul.clean li strong{color:#fff;font-weight:600;}
 .board-step b{display:block;font-size:13px;font-weight:600;margin-bottom:4px;}
 .board-step span{display:block;font-size:11.8px;color:var(--muted);line-height:1.45;}
 
+/* ---------- Sub navigation (Aircraft tab) ---------- */
+.sub-nav{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  padding:10px 14px;
+  margin:0 0 20px;
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-radius:var(--radius-sm);
+  position:sticky;
+  top:130px;
+  z-index:40;
+  backdrop-filter:blur(10px);
+}
+.sub-nav-link{
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:999px;
+  font-size:12.5px;
+  font-weight:500;
+  color:var(--muted);
+  text-decoration:none;
+  border:1px solid transparent;
+  transition:.16s ease;
+  white-space:nowrap;
+}
+.sub-nav-link:hover{
+  color:var(--text);
+  background:var(--panel2);
+}
+.sub-nav-link.active{
+  color:#fff;
+  background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
+  border-color:#2f5fc4;
+}
+
 /* ---------- Back to top ---------- */
 .back-to-top{
   position:fixed;
