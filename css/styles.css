@@ -17,6 +17,110 @@
   --red:#dc2626; --amber:#d97706; --green:#16a34a;
   --blue:#2563eb; --purple:#9333ea; --cyan:#0891b2;
 }
+
+/* Light theme specific fixes */
+[data-theme="light"] body{
+  background:
+    radial-gradient(1100px 600px at 12% -10%, #e0e8f0 0%, transparent 60%),
+    radial-gradient(900px 500px at 95% 0%, #e8e0f0 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+}
+[data-theme="light"] .app-header{
+  background:rgba(255,255,255,.85);
+}
+[data-theme="light"] .tabs{
+  background:rgba(255,255,255,.9);
+}
+[data-theme="light"] .card,
+[data-theme="light"] .ac-card,
+[data-theme="light"] .emg-card,
+[data-theme="light"] .team-card{
+  background:var(--panel);
+}
+[data-theme="light"] .phase-num{
+  opacity:1;
+}
+[data-theme="light"] .phase[data-c="1"] .phase-num{
+  background:rgba(37,99,235,.12); color:#2563eb;
+}
+[data-theme="light"] .phase[data-c="2"] .phase-num{
+  background:rgba(220,38,38,.12); color:#dc2626;
+}
+[data-theme="light"] .phase[data-c="3"] .phase-num{
+  background:rgba(22,163,74,.12); color:#16a34a;
+}
+[data-theme="light"] ul.clean li{
+  color:#334155;
+}
+[data-theme="light"] ul.clean li strong{
+  color:#1e293b;
+}
+[data-theme="light"] .section-sub{
+  color:#475569;
+}
+[data-theme="light"] .notice{
+  background:rgba(37,99,235,.05);
+  border-color:rgba(37,99,235,.2);
+  color:#334155;
+}
+[data-theme="light"] .notice.warn{
+  background:rgba(217,119,6,.05);
+  border-color:rgba(217,119,6,.2);
+}
+[data-theme="light"] .sub-nav{
+  background:var(--panel);
+  border-color:var(--line-soft);
+}
+[data-theme="light"] .sub-nav-link{
+  color:var(--muted);
+}
+[data-theme="light"] .sub-nav-link:hover{
+  color:var(--text);
+  background:var(--panel2);
+}
+[data-theme="light"] .sub-nav-link.active{
+  color:#fff;
+  background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
+}
+[data-theme="light"] .spec-table th{
+  background:var(--panel2);
+}
+[data-theme="light"] .spec-table td{
+  color:#334155;
+}
+[data-theme="light"] .spec-table tbody tr:nth-child(even) td{
+  background:rgba(241,245,249,.5);
+}
+[data-theme="light"] .stat{
+  background:var(--panel2);
+}
+[data-theme="light"] .board-step,
+[data-theme="light"] .flow-node,
+[data-theme="light"] .zone-card,
+[data-theme="light"] .step-chip,
+[data-theme="light"] .check-item,
+[data-theme="light"] .progress-shell,
+[data-theme="light"] .diagram-card,
+[data-theme="light"] .map-shell{
+  background:var(--panel);
+}
+[data-theme="light"] .map-shell{
+  background:linear-gradient(160deg,#f8fafc,#f1f5f9);
+}
+[data-theme="light"] .legend-item{
+  background:var(--panel2);
+}
+[data-theme="light"] .legend-item:hover{
+  background:var(--line-soft);
+}
+[data-theme="light"] .reset-btn{
+  background:var(--panel2);
+  color:var(--muted);
+}
+[data-theme="light"] .reset-btn:hover{
+  color:var(--text);
+  background:var(--line-soft);
+}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
