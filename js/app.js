@@ -62,9 +62,10 @@
     };
 
     document.addEventListener('keydown', function (e) {
-      /* Esc closes the scenario editor (even while typing inside it) */
+      /* Esc closes the scenario editor / comparison (even while typing) */
       if (e.key === 'Escape') {
-        var ov = document.getElementById('scenarioEditorOverlay');
+        var ov = document.getElementById('scenarioEditorOverlay') ||
+                 document.getElementById('compareOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
