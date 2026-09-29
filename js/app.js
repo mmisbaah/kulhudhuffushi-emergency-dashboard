@@ -485,6 +485,9 @@
       scenarioSelect.addEventListener('change', function () {
         var scenario = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
         updateScenarioPanel(scenario);
+        /* Exercise Timeline is only relevant once a scenario is chosen */
+        var ts = document.getElementById('timelineSection');
+        if (ts) ts.style.display = scenario ? '' : 'none';
       });
     }
 
@@ -636,6 +639,9 @@
 
     var mainWrap = document.querySelector('main.wrap');
     if (mainWrap) mainWrap.insertBefore(timelineSection, mainWrap.firstChild);
+
+    /* Hidden until a scenario is selected */
+    timelineSection.style.display = 'none';
 
     /* Wire up events */
     var timelineTime = document.getElementById('timelineTime');
