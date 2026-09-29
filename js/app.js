@@ -39,6 +39,17 @@
       });
     }
 
+    /* ================= EXPORT PDF =================
+       The print stylesheet already renders the full exercise package
+       (all sections, white paper). "Save as PDF" in the dialog does
+       the rest — no library needed. */
+    var exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+      exportPdfBtn.addEventListener('click', function () {
+        window.print();
+      });
+    }
+
     loadTheme();
 
     /* ================= WEATHER (Open-Meteo, VRBK) ================= */

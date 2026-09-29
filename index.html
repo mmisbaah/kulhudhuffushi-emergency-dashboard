@@ -9,7 +9,7 @@
     /* Apply saved theme before first paint to avoid flash of dark theme */
     try { if (localStorage.getItem('ttx-theme') === 'light') document.documentElement.setAttribute('data-theme','light'); } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260929o">
+  <link rel="stylesheet" href="css/styles.css?v=20260929p">
 </head>
 <body>
 
@@ -32,6 +32,7 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
+      <button id="exportPdfBtn" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Export the full exercise package as PDF (opens the print dialog — choose Save as PDF)">⬇ Export PDF</button>
       <button id="themeToggle" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Toggle light/dark mode — shortcut: Ctrl/Alt + T">☀️</button>
       <div class="status-chip">
         <span class="dot-live"></span>
@@ -1030,8 +1031,8 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/data.js?v=20260929o"></script>
-<script src="js/app.js?v=20260929o"></script>
+<script src="js/data.js?v=20260929p"></script>
+<script src="js/app.js?v=20260929p"></script>
 
 </body>
 </html>
