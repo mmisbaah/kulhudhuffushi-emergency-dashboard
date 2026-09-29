@@ -347,6 +347,165 @@
       panel.innerHTML = html;
     }
 
+    /* ================= TIMELINE / INJECT TRACKER ================= */
+    var TIMELINE_STORAGE_KEY = 'ttx-timeline-events';
+
+    var timelineEvents = [];
+
+    var loadTimeline = function () {
+      try {
+        var raw = localStorage.getItem(TIMELINE_STORAGE_KEY);
+        if (!raw) return;
+        var events = JSON.parse(raw);
+        if (Array.isArray(events)) {
+          timelineEvents = events;
+        }
+      } catch (e) {}
+    };
+
+    var saveTimeline = function () {
+      try { localStorage.setItem(TIMELINE_STORAGE_KEY, JSON.stringify(timelineEvents)); } catch (e) {}
+    };
+
+    var clearTimeline = function () {
+      timelineEvents = [];
+      try { localStorage.removeItem(TIMELINE_STORAGE_KEY); } catch (e) {}
+      renderTimeline();
+    };
+
+    var addTimelineEvent = function (time, text, category) {
+      timelineEvents.push({
+        id: Date.now() + Math.random().toString(36).substr(2, 9),
+        time: time,
+        text: text,
+        category: category || 'info',
+        timestamp: new Date().toISOString()
+      });
+      saveTimeline();
+      renderTimeline();
+    };
+
+    var deleteTimelineEvent = function (id) {
+      timelineEvents = timelineEvents.filter(function (e) { return e.id !== id; });
+      saveTimeline();
+      renderTimeline();
+    };
+
+    var renderTimeline = function () {
+      var container = document.getElementById('timelineContainer');
+      if (!container) return;
+
+      if (timelineEvents.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);margin:0;font-size:13px;">No events logged yet. Use the form above to add injects, decisions, or milestones.</p>';
+        return;
+      }
+
+      var html = '';
+      timelineEvents.forEach(function (evt) {
+        var catColor = '#3b82f6';
+        if (evt.category === 'inject') catColor = '#a855f7';
+        else if (evt.category === 'decision') catColor = '#22c55e';
+        else if (evt.category === 'milestone') catColor = '#f59e0b';
+        else if (evt.category === 'casualty') catColor = '#ef4444';
+
+        html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line-soft);">';
+        html += '<div style="flex:0 0 60px;font-size:12px;font-weight:700;color:' + catColor + ';font-variant-numeric:tabular-nums;">' + evt.time + '</div>';
+        html += '<div style="flex:1;font-size:13px;color:#c4d3e8;">' + evt.text + '</div>';
+        html += '<button class="reset-btn" style="flex:0 0 auto;padding:2px 8px;font-size:11px;" onclick="deleteTimelineEvent(\'' + evt.id + '\')">×</button>';
+        html += '</div>';
+      });
+
+      container.innerHTML = html;
+    };
+
+    /* Expose delete function globally for inline onclick */
+    window.deleteTimelineEvent = deleteTimelineEvent;
+
+    /* Build timeline UI */
+    var timelineSection = document.createElement('div');
+    timelineSection.id = 'timelineSection';
+    timelineSection.style.cssText = 'background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px;margin-top:20px;';
+
+    var timelineHTML = '<h3 style="margin:0 0 16px;font-size:16px;">Exercise Timeline</h3>';
+
+    timelineHTML += '<div style="display:grid;grid-template-columns:100px 1fr 120px auto;gap:8px;margin-bottom:16px;align-items:end;">';
+    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Time</label><input id="timelineTime" type="text" placeholder="09:30" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
+    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Event / Inject</label><input id="timelineText" type="text" placeholder="Describe the event..." style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
+    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Category</label><select id="timelineCategory" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"><option value="info">Info</option><option value="inject">Inject</option><option value="decision">Decision</option><option value="milestone">Milestone</option><option value="casualty">Casualty</option></select></div>';
+    timelineHTML += '<button id="timelineAddBtn" class="reset-btn" style="padding:6px 16px;">Add</button>';
+    timelineHTML += '</div>';
+
+    timelineHTML += '<div id="timelineContainer" style="max-height:400px;overflow-y:auto;"></div>';
+
+    timelineHTML += '<div style="margin-top:12px;display:flex;gap:8px;">';
+    timelineHTML += '<button id="timelineClearBtn" class="reset-btn" type="button">Clear All Events</button>';
+    timelineHTML += '<button id="timelineExportBtn" class="reset-btn" type="button">Export for AAR</button>';
+    timelineHTML += '</div>';
+
+    timelineSection.innerHTML = timelineHTML;
+
+    var mainWrap = document.querySelector('main.wrap');
+    if (mainWrap) mainWrap.insertBefore(timelineSection, mainWrap.firstChild);
+
+    /* Wire up events */
+    var timelineTime = document.getElementById('timelineTime');
+    var timelineText = document.getElementById('timelineText');
+    var timelineCategory = document.getElementById('timelineCategory');
+    var timelineAddBtn = document.getElementById('timelineAddBtn');
+    var timelineClearBtn = document.getElementById('timelineClearBtn');
+    var timelineExportBtn = document.getElementById('timelineExportBtn');
+
+    var handleAdd = function () {
+      var time = timelineTime.value.trim() || new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      var text = timelineText.value.trim();
+      if (!text) { timelineText.focus(); return; }
+      addTimelineEvent(time, text, timelineCategory.value);
+      timelineText.value = '';
+      timelineText.focus();
+    };
+
+    if (timelineAddBtn) {
+      timelineAddBtn.addEventListener('click', handleAdd);
+      timelineText.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); handleAdd(); }
+      });
+    }
+
+    if (timelineClearBtn) {
+      timelineClearBtn.addEventListener('click', function () {
+        if (confirm('Clear all timeline events?')) clearTimeline();
+      });
+    }
+
+    if (timelineExportBtn) {
+      timelineExportBtn.addEventListener('click', function () {
+        if (timelineEvents.length === 0) { alert('No events to export.'); return; }
+        var scenarioName = '';
+        var scenarioSelect = document.getElementById('scenarioSelect');
+        if (scenarioSelect && scenarioSelect.value) {
+          var sc = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
+          if (sc) scenarioName = sc.name;
+        }
+        var report = 'KULHUDHUFFUSHI AIRPORT — EXERCISE TIMELINE\n';
+        report += '==========================================\n';
+        if (scenarioName) report += 'Scenario: ' + scenarioName + '\n';
+        report += 'Generated: ' + new Date().toLocaleString() + '\n\n';
+        timelineEvents.forEach(function (evt) {
+          report += '[' + evt.time + '] [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
+        });
+        var blob = new Blob([report], { type: 'text/plain' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'exercise-timeline-' + new Date().toISOString().slice(0, 10) + '.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    loadTimeline();
+    renderTimeline();
+
   } catch (err) {
     if (window.console) console.warn('Enhancement script skipped:', err);
   }
