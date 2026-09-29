@@ -736,11 +736,103 @@
       editBtn.disabled = true;
       editBtn.addEventListener('click', function () { openScenarioEditor('edit'); });
 
+      var cmpBtn = document.createElement('button');
+      cmpBtn.type = 'button';
+      cmpBtn.className = 'reset-btn';
+      cmpBtn.textContent = '⇄ Compare';
+      cmpBtn.title = 'Compare two scenarios side by side';
+      cmpBtn.addEventListener('click', openCompare);
+
       var actions = document.createElement('span');
       actions.className = 'scenario-actions';
       actions.appendChild(newBtn);
       actions.appendChild(editBtn);
+      actions.appendChild(cmpBtn);
       scenarioSelect.insertAdjacentElement('afterend', actions);
+    }
+
+    /* ---------- Scenario comparison (side-by-side) ---------- */
+    function openCompare() {
+      var existing = document.getElementById('compareOverlay');
+      if (existing) { existing.remove(); return; }
+
+      var all = getAllScenarios();
+      if (all.length < 2) { alert('Need at least two scenarios to compare.'); return; }
+
+      var opts = function (sel) {
+        return all.map(function (s, i) {
+          return '<option value="' + s.id + '"' + (s.id === sel ? ' selected' : '') + '>' + s.name + '</option>';
+        }).join('');
+      };
+
+      var pre1 = scenarioSelect.value || all[0].id;
+      var pre2 = (all[1] && all[1].id !== pre1) ? all[1].id : (all.find(function (s) { return s.id !== pre1; }) || all[0]).id;
+
+      var html = '<div class="scenario-editor" role="dialog" aria-modal="true" aria-label="Scenario comparison">';
+      html += '<div class="se-head"><h3>Scenario Comparison</h3>';
+      html += '<button class="reset-btn" type="button" id="cmpClose" aria-label="Close">✕</button></div>';
+      html += '<div class="cmp-selectors">';
+      html += '<select class="se-input" id="cmpA">' + opts(pre1) + '</select>';
+      html += '<span class="cmp-vs">vs</span>';
+      html += '<select class="se-input" id="cmpB">' + opts(pre2) + '</select>';
+      html += '</div>';
+      html += '<div id="cmpBody"></div></div>';
+
+      var ov = document.createElement('div');
+      ov.id = 'compareOverlay';
+      ov.className = 'scenario-editor-overlay';
+      ov.innerHTML = html;
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+      document.body.appendChild(ov);
+
+      document.getElementById('cmpClose').addEventListener('click', function () { ov.remove(); });
+      document.getElementById('cmpA').addEventListener('change', renderCompare);
+      document.getElementById('cmpB').addEventListener('change', renderCompare);
+
+      function renderCompare() {
+        var a = findScenario(document.getElementById('cmpA').value);
+        var b = findScenario(document.getElementById('cmpB').value);
+        var body = document.getElementById('cmpBody');
+        if (!a || !b) { body.innerHTML = ''; return; }
+
+        var rows = [
+          ['Aircraft', function (s) { return s.aircraft || 'N/A'; }, null],
+          ['Souls on Board', function (s) { return s.soulsOnBoard || 0; }, 'num'],
+          ['Fuel Load', function (s) { return s.fuelLoad || 'N/A'; }, null],
+          ['Fire Involved', function (s) { return s.fireInvolved ? 'Yes' : 'No'; }, null],
+          ['Red (Immediate)', function (s) { return (s.casualties && s.casualties.red) || 0; }, 'num'],
+          ['Yellow (Delayed)', function (s) { return (s.casualties && s.casualties.yellow) || 0; }, 'num'],
+          ['Green (Minor)', function (s) { return (s.casualties && s.casualties.green) || 0; }, 'num'],
+          ['Deceased', function (s) { return (s.casualties && s.casualties.deceased) || 0; }, 'num'],
+          ['Total Casualties', function (s) {
+            var c = s.casualties || {};
+            return (c.red || 0) + (c.yellow || 0) + (c.green || 0) + (c.deceased || 0);
+          }, 'num'],
+          ['ARFF Vehicles', function (s) { return (s.resources && s.resources.arff) || 0; }, 'num'],
+          ['Ambulances', function (s) { return (s.resources && s.resources.ambulances) || 0; }, 'num'],
+          ['Fire Trucks', function (s) { return (s.resources && s.resources.fireTrucks) || 0; }, 'num'],
+          ['Buses', function (s) { return (s.resources && s.resources.buses) || 0; }, 'num'],
+          ['Exercise Injects', function (s) { return (s.injects || []).length; }, 'num']
+        ];
+
+        var h = '<table class="cmp-table"><thead><tr>';
+        h += '<th>' + a.name + '</th><th class="cmp-metric">Metric</th><th>' + b.name + '</th>';
+        h += '</tr></thead><tbody>';
+        rows.forEach(function (row) {
+          var va = row[1](a), vb = row[1](b);
+          var ca = '', cb = '';
+          if (row[2] === 'num' && typeof va === 'number' && va !== vb) {
+            if (va > vb) ca = ' cmp-win'; else cb = ' cmp-win';
+          }
+          h += '<tr><td class="cmp-val' + ca + '">' + va + '</td>';
+          h += '<td class="cmp-metric">' + row[0] + '</td>';
+          h += '<td class="cmp-val' + cb + '">' + vb + '</td></tr>';
+        });
+        h += '</tbody></table>';
+        body.innerHTML = h;
+      }
+
+      renderCompare();
     }
 
     function updateScenarioPanel(scenario) {
