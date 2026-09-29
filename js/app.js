@@ -286,18 +286,12 @@
     var DEFAULT_CRASH_POS = { x: 507, y: 270 };
 
     var saveCrashZonePositions = function () {
-      var crashSite = document.getElementById('crashSite');
-      var zoneRings = document.getElementById('zoneRings');
-      if (!crashSite || !zoneRings) return;
-      var crashTransform = crashSite.getAttribute('transform');
-      var zoneTransform = zoneRings.getAttribute('transform');
-      var crashMatch = crashTransform.match(/translate\(([^,]+),([^)]+)\)/);
-      var zoneMatch = zoneTransform.match(/translate\(([^,]+),([^)]+)\)/);
-      if (crashMatch && zoneMatch) {
-        var positions = {
-          crash: { x: parseFloat(crashMatch[1]), y: parseFloat(crashMatch[2]) },
-          zone: { x: parseFloat(zoneMatch[1]), y: parseFloat(zoneMatch[2]) }
-        };
+      var group = document.getElementById('crashZoneGroup');
+      if (!group) return;
+      var transform = group.getAttribute('transform');
+      var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+      if (match) {
+        var positions = { x: parseFloat(match[1]), y: parseFloat(match[2]) };
         try { localStorage.setItem(CRASH_ZONE_STORAGE_KEY, JSON.stringify(positions)); } catch (e) {}
       }
     };
@@ -314,19 +308,11 @@
 
     var resetCrashZonePositions = function () {
       try { localStorage.removeItem(CRASH_ZONE_STORAGE_KEY); } catch (e) {}
-      var crashSite = document.getElementById('crashSite');
-      var zoneRings = document.getElementById('zoneRings');
-      var crashSiteLabel = document.getElementById('crashSiteLabel');
-      var warmZoneLabel = document.getElementById('warmZoneLabel');
-      var coldZoneLabel = document.getElementById('coldZoneLabel');
-      if (crashSite) crashSite.setAttribute('transform', 'translate(' + DEFAULT_CRASH_POS.x + ',' + DEFAULT_CRASH_POS.y + ')');
-      if (zoneRings) zoneRings.setAttribute('transform', 'translate(0,0)');
-      if (crashSiteLabel) { crashSiteLabel.setAttribute('x', DEFAULT_CRASH_POS.x); crashSiteLabel.setAttribute('y', DEFAULT_CRASH_POS.y - 48); }
-      if (warmZoneLabel) { warmZoneLabel.setAttribute('x', DEFAULT_CRASH_POS.x); warmZoneLabel.setAttribute('y', DEFAULT_CRASH_POS.y - 118); }
-      if (coldZoneLabel) { coldZoneLabel.setAttribute('x', DEFAULT_CRASH_POS.x); coldZoneLabel.setAttribute('y', DEFAULT_CRASH_POS.y - 195); }
+      var group = document.getElementById('crashZoneGroup');
+      if (group) group.setAttribute('transform', 'translate(0,0)');
     };
 
-    var draggedElement = null;
+    var draggedCrashGroup = null;
     var dragStartMouse = { x: 0, y: 0 };
     var dragStartPos = { x: 0, y: 0 };
 
@@ -345,7 +331,7 @@
       var elY = parseFloat(match[2]);
       var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
 
-      draggedElement = el;
+      draggedCrashGroup = el;
       dragStartMouse.x = svgPt.x;
       dragStartMouse.y = svgPt.y;
       dragStartPos.x = elX;
@@ -355,8 +341,8 @@
     };
 
     var onCrashZoneMouseMove = function (e) {
-      if (!draggedElement) return;
-      var svg = draggedElement.closest('svg');
+      if (!draggedCrashGroup) return;
+      var svg = draggedCrashGroup.closest('svg');
       if (!svg) return;
 
       var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
@@ -370,66 +356,26 @@
       newX = Math.max(margin, Math.min(vb.width - margin, newX));
       newY = Math.max(margin, Math.min(vb.height - margin, newY));
 
-      draggedElement.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
-
-      /* Move labels with the elements */
-      if (draggedElement.id === 'crashSite') {
-        var crashSiteLabel = document.getElementById('crashSiteLabel');
-        if (crashSiteLabel) {
-          crashSiteLabel.setAttribute('x', newX);
-          crashSiteLabel.setAttribute('y', newY - 48);
-        }
-      } else if (draggedElement.id === 'zoneRings') {
-        var warmZoneLabel = document.getElementById('warmZoneLabel');
-        var coldZoneLabel = document.getElementById('coldZoneLabel');
-        if (warmZoneLabel) {
-          warmZoneLabel.setAttribute('x', newX);
-          warmZoneLabel.setAttribute('y', newY - 118);
-        }
-        if (coldZoneLabel) {
-          coldZoneLabel.setAttribute('x', newX);
-          coldZoneLabel.setAttribute('y', newY - 195);
-        }
-      }
+      draggedCrashGroup.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
     };
 
     var onCrashZoneMouseUp = function () {
-      if (!draggedElement) return;
-      draggedElement.style.cursor = 'grab';
-      draggedElement = null;
+      if (!draggedCrashGroup) return;
+      draggedCrashGroup.style.cursor = 'grab';
+      draggedCrashGroup = null;
       saveCrashZonePositions();
     };
 
-    var crashSite = document.getElementById('crashSite');
-    var zoneRings = document.getElementById('zoneRings');
+    var crashZoneGroup = document.getElementById('crashZoneGroup');
 
-    if (crashSite && zoneRings) {
+    if (crashZoneGroup) {
       /* Load saved positions */
       var savedCrashZone = loadCrashZonePositions();
-      if (savedCrashZone.crash) {
-        crashSite.setAttribute('transform', 'translate(' + savedCrashZone.crash.x + ',' + savedCrashZone.crash.y + ')');
-        var crashSiteLabel = document.getElementById('crashSiteLabel');
-        if (crashSiteLabel) {
-          crashSiteLabel.setAttribute('x', savedCrashZone.crash.x);
-          crashSiteLabel.setAttribute('y', savedCrashZone.crash.y - 48);
-        }
-      }
-      if (savedCrashZone.zone) {
-        zoneRings.setAttribute('transform', 'translate(' + savedCrashZone.zone.x + ',' + savedCrashZone.zone.y + ')');
-        var warmZoneLabel = document.getElementById('warmZoneLabel');
-        var coldZoneLabel = document.getElementById('coldZoneLabel');
-        if (warmZoneLabel) {
-          warmZoneLabel.setAttribute('x', DEFAULT_CRASH_POS.x + savedCrashZone.zone.x);
-          warmZoneLabel.setAttribute('y', DEFAULT_CRASH_POS.y + savedCrashZone.zone.y - 118);
-        }
-        if (coldZoneLabel) {
-          coldZoneLabel.setAttribute('x', DEFAULT_CRASH_POS.x + savedCrashZone.zone.x);
-          coldZoneLabel.setAttribute('y', DEFAULT_CRASH_POS.y + savedCrashZone.zone.y - 195);
-        }
+      if (savedCrashZone.x !== undefined) {
+        crashZoneGroup.setAttribute('transform', 'translate(' + savedCrashZone.x + ',' + savedCrashZone.y + ')');
       }
 
-      crashSite.addEventListener('mousedown', onCrashZoneMouseDown);
-      zoneRings.addEventListener('mousedown', onCrashZoneMouseDown);
+      crashZoneGroup.addEventListener('mousedown', onCrashZoneMouseDown);
       document.addEventListener('mousemove', onCrashZoneMouseMove);
       document.addEventListener('mouseup', onCrashZoneMouseUp);
 
