@@ -8,80 +8,17 @@
   --radius:14px; --radius-sm:10px;
 }
 
-/* Light theme overrides — !important to force over dark theme */
+/* Light theme color variables — cascade after :root so they win.
+   All component overrides live in ONE block at the END of this file. */
 [data-theme="light"]{
-  --bg-grad-1:#f8fafc !important; --bg-grad-2:#f1f5f9 !important;
-  --panel:#ffffff !important; --panel2:#f8fafc !important;
-  --line:#e2e8f0 !important; --line-soft:#f1f5f9 !important;
-  --text:#000000 !important; --muted:#1e293b !important; --muted2:#334155 !important;
-  --red:#dc2626 !important; --amber:#d97706 !important; --green:#16a34a !important;
-  --blue:#2563eb !important; --purple:#9333ea !important; --cyan:#0891b2 !important;
+  --bg-grad-1:#f5f7fa; --bg-grad-2:#eef2f7;
+  --panel:#ffffff; --panel2:#f8fafc;
+  --line:#e2e8f0; --line-soft:#eef2f7;
+  --text:#000000; --muted:#1e293b; --muted2:#334155;
+  --red:#dc2626; --amber:#d97706; --green:#16a34a;
+  --blue:#2563eb; --purple:#9333ea; --cyan:#0891b2;
 }
 
-/* Light theme — force ALL backgrounds and text */
-[data-theme="light"] *{
-  background:#ffffff !important;
-  color:#000000 !important;
-}
-
-/* Specific element overrides for light theme */
-[data-theme="light"] body{background:#f8fafc !important}
-[data-theme="light"] .app-header{background:#ffffff !important; border-bottom:#e2e8f0 solid 1px !important}
-[data-theme="light"] .tabs{background:#ffffff !important; border-bottom:#e2e8f0 solid 1px !important}
-[data-theme="light"] .card,
-[data-theme="light"] .ac-card,
-[data-theme="light"] .emg-card,
-[data-theme="light"] .team-card,
-[data-theme="light"] .phase,
-[data-theme="light"] .zone-card,
-[data-theme="light"] .flow-node,
-[data-theme="light"] .step-chip,
-[data-theme="light"] .check-item,
-[data-theme="light"] .progress-shell,
-[data-theme="light"] .diagram-card,
-[data-theme="light"] .map-shell,
-[data-theme="light"] .legend-item,
-[data-theme="light"] .board-step,
-[data-theme="light"] .stat,
-[data-theme="light"] .spec-table-wrap,
-[data-theme="light"] .sub-nav,
-[data-theme="light"] .notice{background:#ffffff !important; border-color:#e2e8f0 !important}
-
-/* Links and text in light mode */
-[data-theme="light"] a{color:#000000 !important}
-[data-theme="light"] .sub-nav-link{color:#1e293b !important}
-
-/* Phase numbers in light mode */
-[data-theme="light"] .phase-num{opacity:1 !important}
-
-/* Clean list items in light mode */
-[data-theme="light"] ul.clean li{color:#334155 !important}
-[data-theme="light"] ul.clean li strong{color:#1e293b !important}
-
-/* Section subtitle in light mode */
-[data-theme="light"] .section-sub{color:#475569 !important}
-
-/* Notice in light mode */
-[data-theme="light"] .notice{background:rgba(37,99,235,.05) !important; border-color:rgba(37,99,235,.2) !important; color:#334155 !important}
-[data-theme="light"] .notice.warn{background:rgba(217,119,6,.05) !important; border-color:rgba(217,119,6,.2) !important}
-
-/* Sub-nav in light mode */
-[data-theme="light"] .sub-nav-link{color:#1e293b !important}
-[data-theme="light"] .sub-nav-link:hover{color:#000000 !important; background:#f8fafc !important}
-[data-theme="light"] .sub-nav-link.active{color:#ffffff !important; background:linear-gradient(145deg,#1d4ed8,#1e3a8a) !important}
-
-/* Specification table in light mode */
-[data-theme="light"] .spec-table th{background:var(--panel2) !important}
-[data-theme="light"] .spec-table td{color:#334155 !important}
-[data-theme="light"] .spec-table tbody tr:nth-child(even) td{background:rgba(241,245,249,.5) !important}
-
-/* Map and diagram backgrounds in light mode */
-[data-theme="light"] .map-shell{background:linear-gradient(160deg,#f8fafc,#f1f5f9) !important}
-[data-theme="light"] .legend-item:hover{background:var(--line-soft) !important}
-
-/* Buttons in light mode */
-[data-theme="light"] .reset-btn{background:var(--panel2) !important; color:#000000 !important}
-[data-theme="light"] .reset-btn:hover{color:#000000 !important; background:var(--line-soft) !important}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
@@ -117,6 +54,7 @@ body{
   border-radius:12px;display:grid;place-items:center;font-size:22px;
   background:linear-gradient(145deg,#1e3a8a,#0e1c38);
   border:1px solid #2c4a7a;
+  color:#ffffff;
   box-shadow:0 0 0 1px rgba(59,130,246,.12), 0 8px 24px -12px rgba(59,130,246,.7);
 }
 .brand h1{font-size:17px;margin:0;letter-spacing:-.2px;white-space:nowrap;}
@@ -165,7 +103,7 @@ body{
 #ttx-tab-emergencies:checked ~ .tabs .tab[for="ttx-tab-emergencies"],
 #ttx-tab-aircraft:checked ~ .tabs .tab[for="ttx-tab-aircraft"],
 #ttx-tab-checklist:checked ~ .tabs .tab[for="ttx-tab-checklist"]{
-  color:var(--text);
+  color:#ffffff;
   background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
   border-color:#2f5fc4;
   box-shadow:0 6px 18px -8px rgba(59,130,246,.9);
@@ -360,7 +298,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
 .step-chip b{
   width:21px;height:21px;border-radius:50%;display:grid;place-items:center;
   background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
-  font-size:11px;color:var(--text);font-weight:700;
+  font-size:11px;color:#ffffff;font-weight:700;
 }
 .step-sep{color:var(--muted2);font-size:14px;}
 
@@ -454,6 +392,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
   display:grid;place-items:center;font-size:20px;
   background:linear-gradient(145deg,#1e3a8a,#0e1c38);
   border:1px solid #2c4a7a;
+  color:#ffffff;
 }
 .ac-head h4{margin:0;font-size:15px;font-weight:600;line-height:1.25;}
 .ac-head p{margin:2px 0 0;font-size:11.5px;color:var(--muted);letter-spacing:.02em;}
@@ -482,7 +421,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
 }
 .spec-row:last-child{border-bottom:none;padding-bottom:0;}
 .spec-row .k{color:var(--muted);flex:0 0 42%;}
-.spec-row .v{color:#e9effb;font-weight:600;text-align:right;}
+.spec-row .v{color:var(--text);font-weight:600;text-align:right;}
 
 /* Diagrams */
 .diagram-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
@@ -511,7 +450,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
   display:inline-grid;place-items:center;
   width:22px;height:22px;border-radius:50%;
   background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
-  font-size:11px;font-weight:700;color:var(--text);margin-bottom:8px;
+  font-size:11px;font-weight:700;color:#ffffff;margin-bottom:8px;
 }
 .board-step b{display:block;font-size:13px;font-weight:600;margin-bottom:4px;}
 .board-step span{display:block;font-size:11.8px;color:var(--muted);line-height:1.45;}
@@ -548,7 +487,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
   background:var(--panel2);
 }
 .sub-nav-link.active{
-  color:var(--text);
+  color:#ffffff;
   background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
   border-color:#2f5fc4;
 }
@@ -610,19 +549,51 @@ ul.clean li strong{color:var(--text);font-weight:600;}
 }
 
 /* =====================================================
-   LIGHT THEME â€” placed at end to override dark styles
+   LIGHT THEME — the ONE authoritative override block.
+   Placed at end so it wins over dark styles above.
    ===================================================== */
+
+/* Page chrome */
 [data-theme="light"] body{
-  background:#f8fafc;
+  background:#f5f7fa;
+  color:#000000;
 }
 [data-theme="light"] .app-header{
-  background:#ffffff;
+  background:rgba(255,255,255,.95);
   border-bottom-color:#e2e8f0;
 }
 [data-theme="light"] .tabs{
-  background:#ffffff;
+  background:rgba(255,255,255,.95);
   border-bottom-color:#e2e8f0;
 }
+
+/* Panels — kill dark gradients, force white surfaces */
+[data-theme="light"] .card,
+[data-theme="light"] .ac-card,
+[data-theme="light"] .emg-card,
+[data-theme="light"] .team-card,
+[data-theme="light"] .phase,
+[data-theme="light"] .zone-card,
+[data-theme="light"] .flow-node,
+[data-theme="light"] .step-chip,
+[data-theme="light"] .check-item,
+[data-theme="light"] .progress-shell,
+[data-theme="light"] .diagram-card,
+[data-theme="light"] .map-shell,
+[data-theme="light"] .legend-item,
+[data-theme="light"] .board-step,
+[data-theme="light"] .stat,
+[data-theme="light"] .spec-table-wrap,
+[data-theme="light"] .sub-nav{
+  background:#ffffff;
+  border-color:#e2e8f0;
+}
+[data-theme="light"] .map-shell{
+  background:linear-gradient(160deg,#ffffff,#f1f5f9);
+}
+
+/* Default text = black. Only elements listed below may differ. */
+[data-theme="light"] body,
 [data-theme="light"] .card,
 [data-theme="light"] .ac-card,
 [data-theme="light"] .emg-card,
@@ -640,92 +611,104 @@ ul.clean li strong{color:var(--text);font-weight:600;}
 [data-theme="light"] .stat,
 [data-theme="light"] .spec-table-wrap,
 [data-theme="light"] .sub-nav,
-[data-theme="light"] .notice{
-  background:#ffffff;
-  border-color:#e2e8f0;
-}
-[data-theme="light"] .card *,
-[data-theme="light"] .ac-card *,
-[data-theme="light"] .emg-card *,
-[data-theme="light"] .team-card *,
-[data-theme="light"] .phase *,
-[data-theme="light"] .zone-card *,
-[data-theme="light"] .flow-node *,
-[data-theme="light"] .step-chip *,
-[data-theme="light"] .check-item *,
-[data-theme="light"] .progress-shell *,
-[data-theme="light"] .diagram-card *,
-[data-theme="light"] .map-shell *,
-[data-theme="light"] .legend-item *,
-[data-theme="light"] .board-step *,
-[data-theme="light"] .stat *,
-[data-theme="light"] .spec-table-wrap *,
-[data-theme="light"] .sub-nav *,
-[data-theme="light"] .notice *{
+[data-theme="light"] .legend-txt b,
+[data-theme="light"] .zone-card h4,
+[data-theme="light"] .flow-node .fn-title,
+[data-theme="light"] .emg-head h4,
+[data-theme="light"] .ac-head h4,
+[data-theme="light"] .team-card h4,
+[data-theme="light"] .card-title,
+[data-theme="light"] .board-step b,
+[data-theme="light"] .section-head{
   color:#000000;
 }
-[data-theme="light"] .phase-num{
-  opacity:1;
+
+/* Hardcoded light-on-dark text colors from the dark theme */
+[data-theme="light"] ul.clean li,
+[data-theme="light"] .zone-card .who,
+[data-theme="light"] .zone-card p,
+[data-theme="light"] .step-chip,
+[data-theme="light"] .check-label,
+[data-theme="light"] .notice,
+[data-theme="light"] .spec-table td,
+[data-theme="light"] .section-sub,
+[data-theme="light"] .diagram-cap,
+[data-theme="light"] .legend-txt span,
+[data-theme="light"] .team-card p,
+[data-theme="light"] .ac-head p,
+[data-theme="light"] .board-step span,
+[data-theme="light"] .flow-node .fn-sub,
+[data-theme="light"] .spec-row .k{
+  color:#1f2937;
 }
-[data-theme="light"] .phase[data-c="1"] .phase-num{
-  background:rgba(37,99,235,.12); color:#2563eb;
+[data-theme="light"] ul.clean li strong,
+[data-theme="light"] .notice strong,
+[data-theme="light"] .spec-table td.ac-name{
+  color:#000000;
 }
-[data-theme="light"] .phase[data-c="2"] .phase-num{
-  background:rgba(220,38,38,.12); color:#dc2626;
-}
-[data-theme="light"] .phase[data-c="3"] .phase-num{
-  background:rgba(22,163,74,.12); color:#16a34a;
-}
-[data-theme="light"] ul.clean li{
-  color:#334155;
-}
-[data-theme="light"] ul.clean li strong{
-  color:#1e293b;
-}
-[data-theme="light"] .section-sub{
-  color:#475569;
-}
+
+/* Accent labels: pastels tuned for dark bg need darker variants on white */
+[data-theme="light"] .phase[data-c="1"] .phase-num{background:rgba(37,99,235,.12); color:#1d4ed8;}
+[data-theme="light"] .phase[data-c="2"] .phase-num{background:rgba(220,38,38,.12); color:#dc2626;}
+[data-theme="light"] .phase[data-c="3"] .phase-num{background:rgba(22,163,74,.12); color:#15803d;}
+[data-theme="light"] .flow-node[data-z="hot"] .fn-label{color:#dc2626;}
+[data-theme="light"] .flow-node[data-z="warm"] .fn-label{color:#b45309;}
+[data-theme="light"] .flow-node[data-z="cold"] .fn-label{color:#15803d;}
+[data-theme="light"] .progress-num{color:#374151;}
+[data-theme="light"] .progress-num.ready{color:#15803d;}
+[data-theme="light"] h3.sub{color:#374151;}
+[data-theme="light"] .tab{color:#374151;}
+[data-theme="light"] .tab:hover{color:#000000; background:#eef2f7;}
+[data-theme="light"] .status-chip{color:#374151;}
+[data-theme="light"] .sub-nav-link{color:#374151;}
+[data-theme="light"] .sub-nav-link:hover{color:#000000; background:#eef2f7;}
+[data-theme="light"] .reset-btn{color:#374151;}
+[data-theme="light"] .reset-btn:hover{color:#000000; background:#eef2f7;}
+
+/* Notices keep a tinted background but readable text */
 [data-theme="light"] .notice{
-  background:rgba(37,99,235,.05);
-  border-color:rgba(37,99,235,.2);
-  color:#334155;
+  background:rgba(37,99,235,.06);
+  border-color:rgba(37,99,235,.25);
+  color:#1f2937;
 }
 [data-theme="light"] .notice.warn{
-  background:rgba(217,119,6,.05);
-  border-color:rgba(217,119,6,.2);
+  background:rgba(217,119,6,.07);
+  border-color:rgba(217,119,6,.3);
 }
-[data-theme="light"] .sub-nav-link{
-  color:var(--muted);
-}
-[data-theme="light"] .sub-nav-link:hover{
-  color:var(--text);
-  background:var(--panel2);
-}
-[data-theme="light"] .sub-nav-link.active{
-  color:var(--text);
-  background:linear-gradient(145deg,#1d4ed8,#1e3a8a);
-}
+
+/* Tables */
 [data-theme="light"] .spec-table th{
-  background:var(--panel2);
+  background:#f1f5f9;
+  color:#000000;
+  border-bottom-color:#e2e8f0;
 }
 [data-theme="light"] .spec-table td{
-  color:#334155;
+  color:#1f2937;
+  border-bottom-color:#eef2f7;
 }
 [data-theme="light"] .spec-table tbody tr:nth-child(even) td{
-  background:rgba(241,245,249,.5);
+  background:#f8fafc;
 }
-[data-theme="light"] .map-shell{
-  background:linear-gradient(160deg,#f8fafc,#f1f5f9);
+
+/* Progress bar: light track, keep the colored fill visible */
+[data-theme="light"] .progress-bar{
+  background:#e5e9f0;
+  border-color:#e2e8f0;
 }
+[data-theme="light"] .check-item:hover,
 [data-theme="light"] .legend-item:hover{
-  background:var(--line-soft);
+  background:#f8fafc;
+  border-color:#93c5fd;
 }
-[data-theme="light"] .reset-btn{
-  background:var(--panel2);
-  color:var(--muted);
+[data-theme="light"] .back-to-top{
+  background:#ffffff;
+  color:#000000;
+  border-color:#e2e8f0;
+  box-shadow:0 8px 24px -10px rgba(0,0,0,.25);
 }
-[data-theme="light"] .reset-btn:hover{
-  color:var(--text);
-  background:var(--line-soft);
+[data-theme="light"] .back-to-top:hover{
+  background:#f1f5f9;
+  border-color:#94a3b8;
 }
+
 
