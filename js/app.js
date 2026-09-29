@@ -283,7 +283,7 @@
 
     /* ================= DRAG CRASH SITE & ZONE RINGS ================= */
     var CRASH_ZONE_STORAGE_KEY = 'ttx-crash-zone-positions';
-    var DEFAULT_CRASH_POS = { x: 507, y: 270 };
+    var DEFAULT_CRASH_POS = { x: 507, y: 350 };
 
     var saveCrashZonePositions = function () {
       var group = document.getElementById('crashZoneGroup');
