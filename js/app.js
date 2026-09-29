@@ -471,24 +471,209 @@
       legend.appendChild(resetCrashZoneBtn);
     }
 
-    /* ================= SCENARIO SELECTOR ================= */
+    /* ================= SCENARIO SELECTOR + EDITOR ================= */
     var scenarioSelect = document.getElementById('scenarioSelect');
+    var CUSTOM_SCEN_KEY = 'ttx-custom-scenarios';
+    var BUILTIN_IDS = (TTX_DATA.scenarios || []).map(function (s) { return s.id; });
 
-    if (scenarioSelect && TTX_DATA.scenarios) {
-      TTX_DATA.scenarios.forEach(function (sc) {
+    var loadCustomScenarios = function () {
+      try {
+        var raw = localStorage.getItem(CUSTOM_SCEN_KEY);
+        var arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) { return []; }
+    };
+    var saveCustomScenarios = function (arr) {
+      try { localStorage.setItem(CUSTOM_SCEN_KEY, JSON.stringify(arr)); } catch (e) {}
+    };
+
+    /* Built-in scenarios + custom ones (custom with same id overrides built-in) */
+    var getAllScenarios = function () {
+      var base = (TTX_DATA.scenarios || []).slice();
+      loadCustomScenarios().forEach(function (c) {
+        var idx = -1;
+        base.forEach(function (s, i) { if (s.id === c.id) idx = i; });
+        if (idx >= 0) base[idx] = c; else base.push(c);
+      });
+      return base;
+    };
+    var findScenario = function (id) {
+      if (!id) return null;
+      var found = null;
+      getAllScenarios().forEach(function (s) { if (s.id === id) found = s; });
+      return found;
+    };
+    var isCustomScenario = function (id) {
+      return loadCustomScenarios().some(function (c) { return c.id === id; });
+    };
+
+    var populateScenarioSelect = function (selectedId) {
+      if (!scenarioSelect) return;
+      scenarioSelect.innerHTML = '<option value="">— Select a scenario —</option>';
+      getAllScenarios().forEach(function (sc) {
         var opt = document.createElement('option');
         opt.value = sc.id;
-        opt.textContent = sc.name;
+        opt.textContent = sc.name + (BUILTIN_IDS.indexOf(sc.id) < 0 ? ' (custom)' : '');
         scenarioSelect.appendChild(opt);
       });
+      scenarioSelect.value = selectedId || '';
+    };
+
+    /* ---------- Editor modal ---------- */
+    var closeScenarioEditor = function () {
+      var ov = document.getElementById('scenarioEditorOverlay');
+      if (ov) ov.remove();
+    };
+
+    var openScenarioEditor = function (mode) {
+      closeScenarioEditor();
+      var editing = mode === 'edit' ? findScenario(scenarioSelect.value) : null;
+      if (mode === 'edit' && !editing) return;
+
+      var sc = editing || {
+        name: '', aircraft: '', soulsOnBoard: '', fuelLoad: '', fireInvolved: false,
+        casualties: { red: 0, yellow: 0, green: 0, deceased: 0 },
+        resources: { arff: 0, ambulances: 0, fireTrucks: 0, buses: 0 },
+        injects: []
+      };
+      var isCustom = editing ? isCustomScenario(editing.id) : false;
+      var isBuiltin = editing ? BUILTIN_IDS.indexOf(editing.id) >= 0 : false;
+
+      var numField = function (id, label, val) {
+        return '<div class="se-field"><label for="' + id + '">' + label + '</label>' +
+          '<input class="se-input" id="' + id + '" type="number" min="0" value="' + (val || 0) + '"></div>';
+      };
+
+      var html = '<div class="scenario-editor" role="dialog" aria-modal="true" aria-label="Scenario editor">';
+      html += '<div class="se-head"><h3>' + (mode === 'edit' ? 'Edit Scenario' : 'New Scenario') + '</h3>';
+      html += '<button class="reset-btn" type="button" id="seClose" aria-label="Close">✕</button></div>';
+
+      html += '<div class="se-field"><label for="se-name">Scenario name *</label>' +
+        '<input class="se-input" id="se-name" type="text" placeholder="e.g. ACR 72 Crash on Runway" value="' + (sc.name || '').replace(/"/g, '&quot;') + '"></div>';
+
+      html += '<div class="se-grid">';
+      html += '<div class="se-field"><label for="se-aircraft">Aircraft</label>' +
+        '<input class="se-input" id="se-aircraft" type="text" placeholder="e.g. ATR 72-600 (optional)" value="' + (sc.aircraft || '').replace(/"/g, '&quot;') + '"></div>';
+      html += '<div class="se-field"><label for="se-souls">Souls on board</label>' +
+        '<input class="se-input" id="se-souls" type="number" min="0" value="' + (sc.soulsOnBoard || 0) + '"></div>';
+      html += '<div class="se-field"><label for="se-fuel">Fuel load</label>' +
+        '<input class="se-input" id="se-fuel" type="text" placeholder="e.g. 5,000 kg" value="' + (sc.fuelLoad || '').replace(/"/g, '&quot;') + '"></div>';
+      html += '<div class="se-field se-check"><label><input id="se-fire" type="checkbox" ' + (sc.fireInvolved ? 'checked' : '') + '> Fire involved</label></div>';
+      html += '</div>';
+
+      html += '<h4 class="se-sub">Estimated casualties</h4><div class="se-grid">';
+      html += numField('se-red', 'Red (Immediate)', sc.casualties.red);
+      html += numField('se-yellow', 'Yellow (Delayed)', sc.casualties.yellow);
+      html += numField('se-green', 'Green (Minor)', sc.casualties.green);
+      html += numField('se-deceased', 'Deceased', sc.casualties.deceased);
+      html += '</div>';
+
+      html += '<h4 class="se-sub">Resource requirements</h4><div class="se-grid">';
+      html += numField('se-arff', 'ARFF vehicles', sc.resources.arff);
+      html += numField('se-amb', 'Ambulances', sc.resources.ambulances);
+      html += numField('se-firetrucks', 'Fire trucks', sc.resources.fireTrucks);
+      html += numField('se-buses', 'Buses', sc.resources.buses);
+      html += '</div>';
+
+      html += '<div class="se-field"><label for="se-injects">Exercise injects <span class="se-hint">(one per line, start with time e.g. 09:00 —)</span></label>' +
+        '<textarea class="se-input" id="se-injects" rows="6">' + (sc.injects || []).join('\n').replace(/</g, '&lt;') + '</textarea></div>';
+
+      html += '<div class="se-actions">';
+      if (editing) html += '<button class="reset-btn se-danger" type="button" id="seDelete">' + (isCustom && !isBuiltin ? 'Delete' : (isCustom ? 'Discard override' : '')) + '</button>';
+      html += '<span class="se-spacer"></span>';
+      html += '<button class="reset-btn" type="button" id="seCancel">Cancel</button>';
+      html += '<button class="reset-btn se-save" type="button" id="seSave">Save</button>';
+      html += '</div></div>';
+
+      var overlay = document.createElement('div');
+      overlay.id = 'scenarioEditorOverlay';
+      overlay.className = 'scenario-editor-overlay';
+      overlay.innerHTML = html;
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closeScenarioEditor(); });
+      document.body.appendChild(overlay);
+
+      document.getElementById('seClose').addEventListener('click', closeScenarioEditor);
+      document.getElementById('seCancel').addEventListener('click', closeScenarioEditor);
+      document.getElementById('seSave').addEventListener('click', function () {
+        var name = document.getElementById('se-name').value.trim();
+        if (!name) { alert('Scenario name is required.'); document.getElementById('se-name').focus(); return; }
+        var v = function (id) { return parseInt(document.getElementById(id).value, 10) || 0; };
+        var result = {
+          id: editing ? editing.id : 'custom-' + Date.now().toString(36),
+          name: name,
+          aircraft: document.getElementById('se-aircraft').value.trim() || null,
+          soulsOnBoard: v('se-souls'),
+          fuelLoad: document.getElementById('se-fuel').value.trim() || 'N/A',
+          fireInvolved: document.getElementById('se-fire').checked,
+          casualties: { red: v('se-red'), yellow: v('se-yellow'), green: v('se-green'), deceased: v('se-deceased') },
+          resources: { arff: v('se-arff'), ambulances: v('se-amb'), fireTrucks: v('se-firetrucks'), buses: v('se-buses') },
+          injects: document.getElementById('se-injects').value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean)
+        };
+        var customs = loadCustomScenarios();
+        var idx = -1;
+        customs.forEach(function (c, i) { if (c.id === result.id) idx = i; });
+        if (idx >= 0) customs[idx] = result; else customs.push(result);
+        saveCustomScenarios(customs);
+        populateScenarioSelect(result.id);
+        if (scenarioSelect) scenarioSelect.dispatchEvent(new Event('change'));
+        closeScenarioEditor();
+      });
+
+      var delBtn = document.getElementById('seDelete');
+      if (delBtn && editing) {
+        if (!delBtn.textContent) { delBtn.remove(); }
+        else {
+          delBtn.addEventListener('click', function () {
+            var msg = isBuiltin
+              ? 'Discard your changes and restore the original built-in scenario?'
+              : 'Delete scenario "' + editing.name + '"? This cannot be undone.';
+            if (!confirm(msg)) return;
+            saveCustomScenarios(loadCustomScenarios().filter(function (c) { return c.id !== editing.id; }));
+            populateScenarioSelect('');
+            if (scenarioSelect) scenarioSelect.dispatchEvent(new Event('change'));
+            closeScenarioEditor();
+          });
+        }
+      }
+
+      var nameInput = document.getElementById('se-name');
+      if (nameInput) nameInput.focus();
+    };
+
+    if (scenarioSelect) {
+      populateScenarioSelect('');
 
       scenarioSelect.addEventListener('change', function () {
-        var scenario = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
+        var scenario = findScenario(scenarioSelect.value);
         updateScenarioPanel(scenario);
         /* Exercise Timeline is only relevant once a scenario is chosen */
         var ts = document.getElementById('timelineSection');
         if (ts) ts.style.display = scenario ? '' : 'none';
+        /* Editor buttons state */
+        if (editBtn) editBtn.disabled = !scenario;
       });
+
+      /* Action buttons next to the select */
+      var newBtn = document.createElement('button');
+      newBtn.type = 'button';
+      newBtn.className = 'reset-btn';
+      newBtn.textContent = '+ New';
+      newBtn.title = 'Create a new scenario';
+      newBtn.addEventListener('click', function () { openScenarioEditor('new'); });
+
+      var editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'reset-btn';
+      editBtn.textContent = '✎ Edit';
+      editBtn.title = 'Edit the selected scenario';
+      editBtn.disabled = true;
+      editBtn.addEventListener('click', function () { openScenarioEditor('edit'); });
+
+      var actions = document.createElement('span');
+      actions.className = 'scenario-actions';
+      actions.appendChild(newBtn);
+      actions.appendChild(editBtn);
+      scenarioSelect.insertAdjacentElement('afterend', actions);
     }
 
     function updateScenarioPanel(scenario) {
@@ -505,6 +690,22 @@
         panel.innerHTML = '<p style="color:var(--muted);margin:0;">Select a scenario above to see casualty estimates, resource requirements, and exercise injects.</p>';
         return;
       }
+
+      /* Normalize custom/edited scenarios so missing fields never break the panel */
+      scenario.casualties = scenario.casualties || {};
+      scenario.resources = scenario.resources || {};
+      scenario.injects = Array.isArray(scenario.injects) ? scenario.injects : [];
+      var n = function (v) { return (v === null || v === undefined || isNaN(v)) ? 0 : v; };
+      scenario.casualties.red = n(scenario.casualties.red);
+      scenario.casualties.yellow = n(scenario.casualties.yellow);
+      scenario.casualties.green = n(scenario.casualties.green);
+      scenario.casualties.deceased = n(scenario.casualties.deceased);
+      scenario.resources.arff = n(scenario.resources.arff);
+      scenario.resources.ambulances = n(scenario.resources.ambulances);
+      scenario.resources.fireTrucks = n(scenario.resources.fireTrucks);
+      scenario.resources.buses = n(scenario.resources.buses);
+      if (scenario.soulsOnBoard === null || scenario.soulsOnBoard === undefined) scenario.soulsOnBoard = 0;
+      if (!scenario.fuelLoad) scenario.fuelLoad = 'N/A';
 
       var html = '<h3 style="margin:0 0 16px;font-size:16px;">' + scenario.name + '</h3>';
 
