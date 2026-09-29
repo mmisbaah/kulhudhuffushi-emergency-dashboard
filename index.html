@@ -189,24 +189,9 @@
               <stop offset="0%" stop-color="#08203a"/>
               <stop offset="100%" stop-color="#040d1a"/>
             </radialGradient>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2d4a" stroke-width="0.5" opacity="0.4"/>
-            </pattern>
-            <pattern id="gridLarge" width="200" height="200" patternUnits="userSpaceOnUse">
-              <path d="M 200 0 L 0 0 0 200" fill="none" stroke="#1a2d4a" stroke-width="0.8" opacity="0.6"/>
-            </pattern>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
           </defs>
 
           <rect width="1000" height="720" fill="url(#oceanGrad)"/>
-          <rect width="1000" height="720" fill="url(#grid)"/>
-          <rect width="1000" height="720" fill="url(#gridLarge)"/>
 
           <!-- lagoon ring -->
           <path d="M 60,80 C 200,-10 760,0 920,90 C 990,200 990,500 920,640 C 780,720 200,720 60,650 C -20,500 -20,220 60,80 Z"
@@ -227,20 +212,20 @@
 
           <!-- runway 09/27 N-S -->
           <g>
-            <rect x="490" y="180" width="34" height="360" rx="2" fill="#2a3d58" stroke="#3a5070" stroke-width="1.2"/>
-            <line x1="507" y1="200" x2="507" y2="520" stroke="#5b7ea8" stroke-width="1.4" stroke-dasharray="14 10"/>
-            <line x1="495" y1="190" x2="519" y2="190" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="196" x2="519" y2="196" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="202" x2="519" y2="202" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="208" x2="519" y2="208" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="512" x2="519" y2="512" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="518" x2="519" y2="518" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="524" x2="519" y2="524" stroke="#7ba3d1" stroke-width="1.5"/>
-            <line x1="495" y1="530" x2="519" y2="530" stroke="#7ba3d1" stroke-width="1.5"/>
-            <text x="507" y="225" font-size="13" fill="#a8c4e0" text-anchor="middle" font-weight="700" letter-spacing="2">09</text>
-            <text x="507" y="500" font-size="13" fill="#a8c4e0" text-anchor="middle" font-weight="700" letter-spacing="2" transform="rotate(180,507,495)">27</text>
+            <rect x="490" y="100" width="34" height="360" rx="2" fill="#2a3d58" stroke="#3a5070" stroke-width="1.2"/>
+            <line x1="507" y1="120" x2="507" y2="440" stroke="#5b7ea8" stroke-width="1.4" stroke-dasharray="14 10"/>
+            <line x1="495" y1="110" x2="519" y2="110" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="116" x2="519" y2="116" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="122" x2="519" y2="122" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="128" x2="519" y2="128" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="432" x2="519" y2="432" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="438" x2="519" y2="438" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="444" x2="519" y2="444" stroke="#7ba3d1" stroke-width="1.5"/>
+            <line x1="495" y1="450" x2="519" y2="450" stroke="#7ba3d1" stroke-width="1.5"/>
+            <text x="507" y="145" font-size="13" fill="#a8c4e0" text-anchor="middle" font-weight="700" letter-spacing="2">09</text>
+            <text x="507" y="420" font-size="13" fill="#a8c4e0" text-anchor="middle" font-weight="700" letter-spacing="2" transform="rotate(180,507,415)">27</text>
           </g>
-          <text x="507" y="565" font-size="9.5" fill="#5d7a9e" text-anchor="middle" letter-spacing="2" font-weight="600">RWY 09/27 · 1,220 m × 30 m</text>
+          <text x="507" y="485" font-size="9.5" fill="#5d7a9e" text-anchor="middle" letter-spacing="2" font-weight="600">RWY 09/27 · 1,220 m × 30 m</text>
 
           <!-- taxiway west of runway -->
           <g>
@@ -342,20 +327,19 @@
             <text x="40" y="-7" font-size="8" fill="#5d7a9e" text-anchor="middle">500 ft / ~150 m</text>
           </g>
 
-          <!-- crash site + zone rings (grouped for unified drag) -->
-          <g id="crashZoneGroup" transform="translate(0,0)" style="cursor:grab;">
-            <!-- zone rings -->
-            <circle id="warmZone" cx="507" cy="350" r="110" fill="none" stroke="#f59e0b" stroke-width="1.3" stroke-dasharray="6 7" opacity=".55"/>
-            <circle id="coldZone" cx="507" cy="350" r="185" fill="none" stroke="#22c55e" stroke-width="1.3" stroke-dasharray="6 7" opacity=".42"/>
-            <text id="warmZoneLabel" x="507" y="232" font-size="9" fill="#fbbf24" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">WARM ZONE</text>
-            <text id="coldZoneLabel" x="507" y="155" font-size="9" fill="#4ade80" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">COLD ZONE</text>
-            <!-- crash site -->
-            <circle cx="507" cy="350" r="38" fill="rgba(239,68,68,.10)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5"/>
-            <circle cx="507" cy="350" r="16" fill="#ef4444" stroke="#0a1220" stroke-width="2"/>
-            <text x="507" y="355" font-size="15" fill="#fff" text-anchor="middle" font-weight="700">✕</text>
-            <text id="crashSiteLabel" x="507" y="302" font-size="10" fill="#f87171" text-anchor="middle" font-weight="700" letter-spacing="1.8">CRASH SITE</text>
-            <title>Crash Site &amp; Zones (drag to move)</title>
+          <!-- crash site -->
+          <g transform="translate(507, 270)">
+            <circle r="38" fill="rgba(239,68,68,.10)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5"/>
+            <circle r="16" fill="#ef4444" stroke="#0a1220" stroke-width="2"/>
+            <text y="5" font-size="15" fill="#fff" text-anchor="middle" font-weight="700">✕</text>
           </g>
+          <text x="507" y="222" font-size="10" fill="#f87171" text-anchor="middle" font-weight="700" letter-spacing="1.8">CRASH SITE</text>
+
+          <!-- zone rings -->
+          <circle cx="507" cy="270" r="110" fill="none" stroke="#f59e0b" stroke-width="1.3" stroke-dasharray="6 7" opacity=".55"/>
+          <circle cx="507" cy="270" r="185" fill="none" stroke="#22c55e" stroke-width="1.3" stroke-dasharray="6 7" opacity=".42"/>
+          <text x="507" y="152" font-size="9" fill="#fbbf24" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">WARM ZONE</text>
+          <text x="507" y="75" font-size="9" fill="#4ade80" text-anchor="middle" opacity=".85" letter-spacing="1.6" font-weight="600">COLD ZONE</text>
 
           <!-- wind -->
           <g transform="translate(660, 140)">
