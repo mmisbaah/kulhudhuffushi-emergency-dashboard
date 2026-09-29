@@ -42,7 +42,7 @@ body{
   border-bottom:1px solid var(--line-soft);
   background:rgba(8,14,28,.72);
   backdrop-filter:blur(14px);
-  position:sticky; top:0; z-index:50;
+  position:relative; z-index:50;
 }
 .app-header .wrap{
   display:flex; align-items:center; justify-content:space-between;
@@ -74,7 +74,7 @@ body{
 
 /* ---------- Tabs ---------- */
 .tabs{
-  position:sticky; top:73px; z-index:49;
+  position:sticky; top:0; z-index:49;
   background:rgba(8,14,28,.82);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line-soft);
@@ -466,7 +466,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
   border:1px solid var(--line-soft);
   border-radius:var(--radius-sm);
   position:sticky;
-  top:130px;
+  top:56px;
   z-index:40;
   backdrop-filter:blur(10px);
 }
@@ -538,7 +538,7 @@ ul.clean li strong{color:var(--text);font-weight:600;}
   .flow-arrow{transform:rotate(90deg);justify-self:center;}
   .brand h1{font-size:15px;white-space:normal;}
   .status-chip{display:none;}
-  .tabs{top:70px;}
+  .tabs{top:0;}
 }
 @media (max-width:520px){
   .wrap{padding:0 14px;}

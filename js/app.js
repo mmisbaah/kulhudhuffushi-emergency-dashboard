@@ -58,7 +58,7 @@
           e.preventDefault();
           var target = sections[idx];
           if (target) {
-            var y = target.getBoundingClientRect().top + window.scrollY - 150;
+            var y = target.getBoundingClientRect().top + window.scrollY - 120;
             window.scrollTo({ top: y, behavior: 'smooth' });
           }
           setActiveLink(idx);
@@ -66,7 +66,7 @@
       });
 
       var onScroll = function() {
-        var scrollPos = window.scrollY + 200;
+        var scrollPos = window.scrollY + 160;
         var activeIdx = 0;
         sections.forEach(function(sec, idx) {
           if (sec && sec.offsetTop <= scrollPos) activeIdx = idx;
