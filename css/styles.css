@@ -10,32 +10,86 @@
 
 /* Light theme overrides */
 [data-theme="light"]{
-  --bg-grad-1:#f0f4fa; --bg-grad-2:#e2e8f0;
-  --panel:#ffffff; --panel2:#f1f5f9;
-  --line:#cbd5e1; --line-soft:#e2e8f0;
-  --text:#1e293b; --muted:#475569; --muted2:#64748b;
+  --bg-grad-1:#f8fafc; --bg-grad-2:#f1f5f9;
+  --panel:#ffffff; --panel2:#f8fafc;
+  --line:#e2e8f0; --line-soft:#f1f5f9;
+  --text:#000000; --muted:#1e293b; --muted2:#334155;
   --red:#dc2626; --amber:#d97706; --green:#16a34a;
   --blue:#2563eb; --purple:#9333ea; --cyan:#0891b2;
 }
 
 /* Light theme specific fixes */
 [data-theme="light"] body{
-  background:
-    radial-gradient(1100px 600px at 12% -10%, #e0e8f0 0%, transparent 60%),
-    radial-gradient(900px 500px at 95% 0%, #e8e0f0 0%, transparent 55%),
-    linear-gradient(180deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+  background:#f8fafc;
 }
 [data-theme="light"] .app-header{
-  background:rgba(255,255,255,.85);
+  background:#ffffff;
+  border-bottom-color:#e2e8f0;
 }
 [data-theme="light"] .tabs{
-  background:rgba(255,255,255,.9);
+  background:#ffffff;
+  border-bottom-color:#e2e8f0;
 }
 [data-theme="light"] .card,
 [data-theme="light"] .ac-card,
 [data-theme="light"] .emg-card,
-[data-theme="light"] .team-card{
-  background:var(--panel);
+[data-theme="light"] .team-card,
+[data-theme="light"] .phase,
+[data-theme="light"] .zone-card,
+[data-theme="light"] .flow-node,
+[data-theme="light"] .step-chip,
+[data-theme="light"] .check-item,
+[data-theme="light"] .progress-shell,
+[data-theme="light"] .diagram-card,
+[data-theme="light"] .map-shell,
+[data-theme="light"] .legend-item,
+[data-theme="light"] .board-step,
+[data-theme="light"] .stat,
+[data-theme="light"] .spec-table-wrap,
+[data-theme="light"] .sub-nav,
+[data-theme="light"] .notice{
+  background:#ffffff;
+  border-color:#e2e8f0;
+}
+[data-theme="light"] .card *,
+[data-theme="light"] .ac-card *,
+[data-theme="light"] .emg-card *,
+[data-theme="light"] .team-card *,
+[data-theme="light"] .phase *,
+[data-theme="light"] .zone-card *,
+[data-theme="light"] .flow-node *,
+[data-theme="light"] .step-chip *,
+[data-theme="light"] .check-item *,
+[data-theme="light"] .progress-shell *,
+[data-theme="light"] .diagram-card *,
+[data-theme="light"] .map-shell *,
+[data-theme="light"] .legend-item *,
+[data-theme="light"] .board-step *,
+[data-theme="light"] .stat *,
+[data-theme="light"] .spec-table-wrap *,
+[data-theme="light"] .sub-nav *,
+[data-theme="light"] .notice *{
+  color:#000000;
+}
+[data-theme="light"] .card strong,
+[data-theme="light"] .ac-card strong,
+[data-theme="light"] .emg-card strong,
+[data-theme="light"] .team-card strong,
+[data-theme="light"] .phase strong,
+[data-theme="light"] .zone-card strong,
+[data-theme="light"] .flow-node strong,
+[data-theme="light"] .step-chip strong,
+[data-theme="light"] .check-item strong,
+[data-theme="light"] .progress-shell strong,
+[data-theme="light"] .diagram-card strong,
+[data-theme="light"] .map-shell strong,
+[data-theme="light"] .legend-item strong,
+[data-theme="light"] .board-step strong,
+[data-theme="light"] .stat strong,
+[data-theme="light"] .spec-table-wrap strong,
+[data-theme="light"] .sub-nav strong,
+[data-theme="light"] .notice strong{
+  color:#000000;
 }
 [data-theme="light"] .phase-num{
   opacity:1;
