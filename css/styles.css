@@ -801,4 +801,86 @@ textarea.se-input{resize:vertical; line-height:1.5;}
   border-color:#94a3b8;
 }
 
+/* =====================================================
+   PRINT — field-friendly paper layout.
+   Print media only: never affects screen themes.
+   ===================================================== */
+@media print{
+  @page{ margin:14mm; }
+
+  /* White paper, black ink — also beats inline dark styles */
+  html, body{ background:#fff !important; }
+  *{
+    color:#000 !important;
+    background:transparent !important;
+    border-color:#b0b0b0 !important;
+    box-shadow:none !important;
+    text-shadow:none !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  /* Meaningful fills that must survive on paper */
+  .progress-fill{
+    background:#000 !important;
+    border:none !important;
+  }
+  input[type="checkbox"]{
+    background:#fff !important;
+    border:1px solid #000 !important;
+    accent-color:#000 !important;
+  }
+  input[type="checkbox"]:checked{ background:#000 !important; }
+
+  /* Chrome that makes no sense on paper */
+  .tabs,
+  .sub-nav,
+  #backToTop,
+  .back-to-top,
+  button,
+  .scenario-actions,
+  .scenario-editor-overlay,
+  #scenarioSelect,
+  label[for="scenarioSelect"],
+  .tl-form,
+  .tl-actions,
+  .status-chip,
+  #themeToggle{
+    display:none !important;
+  }
+
+  /* Print every section, one per page */
+  .view{ animation:none !important; }
+  section.view{ display:block !important; }
+  section.view + section.view{ break-before:page; }
+
+  /* Don't split units of content across pages */
+  .card, .ac-card, .team-card, .emg-card, .zone-card, .phase, .flow-node,
+  .board-step, .check-item, .legend-item, .spec-table tr, .map-shell,
+  .diagram-card, .notice, .progress-shell, .steps{
+    break-inside:avoid;
+  }
+  h1, h2, h3, h4{ break-after:avoid; }
+
+  /* Screen scroll areas must not clip on paper */
+  #timelineContainer,
+  .spec-table-wrap,
+  .check-grid{
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  /* Layout: use the full page */
+  .wrap{ max-width:none !important; padding-left:0 !important; padding-right:0 !important; }
+  .map-layout{ display:block !important; }
+
+  /* Maps and diagrams are content — keep their colours */
+  svg,
+  .map-shell,
+  .diagram-card{
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+}
+
 

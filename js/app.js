@@ -822,7 +822,7 @@
 
     var timelineHTML = '<h3 style="margin:0 0 16px;font-size:16px;">Exercise Timeline</h3>';
 
-    timelineHTML += '<div style="display:grid;grid-template-columns:100px 1fr 120px auto;gap:8px;margin-bottom:16px;align-items:end;">';
+    timelineHTML += '<div class="tl-form" style="display:grid;grid-template-columns:100px 1fr 120px auto;gap:8px;margin-bottom:16px;align-items:end;">';
     timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Time</label><input id="timelineTime" type="text" placeholder="09:30" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
     timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Event / Inject</label><input id="timelineText" type="text" placeholder="Describe the event..." style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
     timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Category</label><select id="timelineCategory" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"><option value="info">Info</option><option value="inject">Inject</option><option value="decision">Decision</option><option value="milestone">Milestone</option><option value="casualty">Casualty</option></select></div>';
@@ -831,7 +831,7 @@
 
     timelineHTML += '<div id="timelineContainer" style="max-height:400px;overflow-y:auto;"></div>';
 
-    timelineHTML += '<div style="margin-top:12px;display:flex;gap:8px;">';
+    timelineHTML += '<div class="tl-actions" style="margin-top:12px;display:flex;gap:8px;">';
     timelineHTML += '<button id="timelineClearBtn" class="reset-btn" type="button">Clear All Events</button>';
     timelineHTML += '<button id="timelineExportBtn" class="reset-btn" type="button">Export for AAR</button>';
     timelineHTML += '</div>';
