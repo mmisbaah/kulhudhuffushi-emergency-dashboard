@@ -506,6 +506,72 @@
     loadTimeline();
     renderTimeline();
 
+    /* ================= AAR EXPORT ================= */
+    var aarBtn = document.createElement('button');
+    aarBtn.className = 'reset-btn';
+    aarBtn.type = 'button';
+    aarBtn.textContent = 'Export AAR Summary';
+    aarBtn.style.marginTop = '12px';
+    aarBtn.addEventListener('click', function () {
+      var scenarioName = '';
+      var scenarioSelect = document.getElementById('scenarioSelect');
+      if (scenarioSelect && scenarioSelect.value) {
+        var sc = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
+        if (sc) scenarioName = sc.name;
+      }
+
+      var checklistState = [];
+      try {
+        var raw = localStorage.getItem('ttx-checklist-state');
+        if (raw) checklistState = JSON.parse(raw);
+      } catch (e) {}
+
+      var report = '';
+      report += '============================================================\n';
+      report += '  KULHUDHUFFUSHI AIRPORT — AFTER ACTION REPORT SUMMARY\n';
+      report += '============================================================\n\n';
+      report += 'Generated: ' + new Date().toLocaleString() + '\n';
+      if (scenarioName) report += 'Scenario: ' + scenarioName + '\n';
+      report += '\n';
+
+      report += '------------------------------------------------------------\n';
+      report += 'CHECKLIST STATUS\n';
+      report += '------------------------------------------------------------\n';
+      var checkedCount = 0;
+      TTX_DATA.checklistItems.forEach(function (item, idx) {
+        var checked = checklistState[idx] === true;
+        if (checked) checkedCount++;
+        report += (checked ? '[✓]' : '[ ]') + ' ' + item + '\n';
+      });
+      report += '\nProgress: ' + checkedCount + ' / ' + TTX_DATA.checklistItems.length + ' completed\n\n';
+
+      report += '------------------------------------------------------------\n';
+      report += 'EXERCISE TIMELINE\n';
+      report += '------------------------------------------------------------\n';
+      if (timelineEvents.length === 0) {
+        report += 'No events recorded.\n';
+      } else {
+        timelineEvents.forEach(function (evt) {
+          report += '[' + evt.time + '] [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
+        });
+      }
+      report += '\n';
+
+      report += '------------------------------------------------------------\n';
+      report += 'NOTES\n';
+      report += '------------------------------------------------------------\n';
+      report += '\n\n\n\n';
+
+      var blob = new Blob([report], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'AAR-Summary-' + new Date().toISOString().slice(0, 10) + '.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    timelineSection.appendChild(aarBtn);
+
   } catch (err) {
     if (window.console) console.warn('Enhancement script skipped:', err);
   }
