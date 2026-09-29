@@ -41,6 +41,24 @@
 
     loadTheme();
 
+    /* ================= BACK TO TOP ================= */
+    var backToTop = document.getElementById('backToTop');
+    if (backToTop) {
+      var onScroll = function () {
+        if (window.scrollY > 300) {
+          backToTop.classList.add('visible');
+        } else {
+          backToTop.classList.remove('visible');
+        }
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      backToTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
     /* ================= CHECKLIST ================= */
     var STORAGE_KEY = 'ttx-checklist-state';
 
