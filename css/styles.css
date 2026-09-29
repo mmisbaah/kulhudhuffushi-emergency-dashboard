@@ -7,6 +7,16 @@
   --blue:#3b82f6; --purple:#a855f7; --cyan:#06b6d4;
   --radius:14px; --radius-sm:10px;
 }
+
+/* Light theme overrides */
+[data-theme="light"]{
+  --bg-grad-1:#f0f4fa; --bg-grad-2:#e2e8f0;
+  --panel:#ffffff; --panel2:#f1f5f9;
+  --line:#cbd5e1; --line-soft:#e2e8f0;
+  --text:#1e293b; --muted:#475569; --muted2:#64748b;
+  --red:#dc2626; --amber:#d97706; --green:#16a34a;
+  --blue:#2563eb; --purple:#9333ea; --cyan:#0891b2;
+}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{

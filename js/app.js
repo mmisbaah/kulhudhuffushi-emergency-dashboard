@@ -8,6 +8,39 @@
 
   try {
 
+    /* ================= THEME TOGGLE ================= */
+    var THEME_KEY = 'ttx-theme';
+    var themeToggle = document.getElementById('themeToggle');
+
+    var setTheme = function (theme) {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        if (themeToggle) themeToggle.textContent = '☀️';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        if (themeToggle) themeToggle.textContent = '🌙';
+      }
+      try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+    };
+
+    var loadTheme = function () {
+      try {
+        var saved = localStorage.getItem(THEME_KEY);
+        if (saved === 'light') setTheme('light');
+        else setTheme('dark');
+      } catch (e) { setTheme('dark'); }
+    };
+
+    if (themeToggle) {
+      themeToggle.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        if (current === 'light') setTheme('dark');
+        else setTheme('light');
+      });
+    }
+
+    loadTheme();
+
     /* ================= CHECKLIST ================= */
     var STORAGE_KEY = 'ttx-checklist-state';
 
