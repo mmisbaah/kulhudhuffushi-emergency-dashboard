@@ -70,22 +70,131 @@
     /* ================= MAP PINS & LEGEND ================= */
     var CATS = TTX_DATA.pinCategories;
     var LOCATIONS = TTX_DATA.locations;
+    var PIN_STORAGE_KEY = 'ttx-pin-positions';
 
     var pinLayer = document.getElementById('pinLayer');
     var legend   = document.getElementById('legend');
     var NS = 'http://www.w3.org/2000/svg';
 
+    /* ---------- Pin position persistence ---------- */
+    var savePinPositions = function () {
+      var positions = {};
+      LOCATIONS.forEach(function (loc) {
+        var pin = pinLayer.querySelector('.pin[data-id="' + loc.id + '"]');
+        if (pin) {
+          var transform = pin.getAttribute('transform');
+          var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          if (match) {
+            positions[loc.id] = { x: parseFloat(match[1]), y: parseFloat(match[2]) };
+          }
+        }
+      });
+      try { localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(positions)); } catch (e) {}
+    };
+
+    var loadPinPositions = function () {
+      try {
+        var raw = localStorage.getItem(PIN_STORAGE_KEY);
+        if (!raw) return {};
+        var positions = JSON.parse(raw);
+        if (typeof positions !== 'object' || positions === null) return {};
+        return positions;
+      } catch (e) { return {}; }
+    };
+
+    var resetPinPositions = function () {
+      try { localStorage.removeItem(PIN_STORAGE_KEY); } catch (e) {}
+      LOCATIONS.forEach(function (loc) {
+        var pin = pinLayer.querySelector('.pin[data-id="' + loc.id + '"]');
+        if (pin) {
+          pin.setAttribute('transform', 'translate(' + loc.x + ',' + loc.y + ')');
+        }
+      });
+    };
+
+    /* ---------- Drag logic ---------- */
+    var draggedPin = null;
+    var dragOffset = { x: 0, y: 0 };
+
+    var getSVGPoint = function (svg, clientX, clientY) {
+      var pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      var ctm = svg.getScreenCTM();
+      if (!ctm) return { x: 0, y: 0 };
+      var svgPt = pt.matrixTransform(ctm.inverse());
+      return { x: svgPt.x, y: svgPt.y };
+    };
+
+    var onPinMouseDown = function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      var pin = e.currentTarget;
+      var svg = pin.closest('svg');
+      if (!svg) return;
+
+      var transform = pin.getAttribute('transform');
+      var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+      if (!match) return;
+
+      var pinX = parseFloat(match[1]);
+      var pinY = parseFloat(match[2]);
+      var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
+
+      draggedPin = pin;
+      dragOffset.x = svgPt.x - pinX;
+      dragOffset.y = svgPt.y - pinY;
+
+      pin.classList.add('dragging');
+      pin.style.cursor = 'grabbing';
+    };
+
+    var onMouseMove = function (e) {
+      if (!draggedPin) return;
+      var svg = draggedPin.closest('svg');
+      if (!svg) return;
+
+      var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
+      var newX = svgPt.x - dragOffset.x;
+      var newY = svgPt.y - dragOffset.y;
+
+      /* Clamp to SVG bounds */
+      var vb = svg.viewBox.baseVal;
+      var margin = 20;
+      newX = Math.max(margin, Math.min(vb.width - margin, newX));
+      newY = Math.max(margin, Math.min(vb.height - margin, newY));
+
+      draggedPin.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
+    };
+
+    var onMouseUp = function () {
+      if (!draggedPin) return;
+      draggedPin.classList.remove('dragging');
+      draggedPin.style.cursor = '';
+      draggedPin = null;
+      savePinPositions();
+    };
+
+    /* ---------- Pin creation ---------- */
     var makePin = function (loc) {
       var g = document.createElementNS(NS, 'g');
       g.setAttribute('class', 'pin');
       g.setAttribute('data-cat', loc.cat);
       g.setAttribute('data-id', loc.id);
-      g.setAttribute('transform', 'translate(' + loc.x + ',' + loc.y + ')');
+
+      /* Use saved position if available */
+      var savedPositions = loadPinPositions();
+      var x = loc.x, y = loc.y;
+      if (savedPositions[loc.id]) {
+        x = savedPositions[loc.id].x;
+        y = savedPositions[loc.id].y;
+      }
+      g.setAttribute('transform', 'translate(' + x + ',' + y + ')');
 
       var catColor = CATS[loc.cat].color;
 
       var title = document.createElementNS(NS, 'title');
-      title.textContent = loc.id + '. ' + loc.name;
+      title.textContent = loc.id + '. ' + loc.name + ' (drag to move)';
       g.appendChild(title);
 
       var halo = document.createElementNS(NS, 'circle');
@@ -124,7 +233,11 @@
         pinLayer.appendChild(pin);
         pin.addEventListener('mouseenter', function () { highlight(loc.id, true); });
         pin.addEventListener('mouseleave', function () { highlight(loc.id, false); });
+        pin.addEventListener('mousedown', onPinMouseDown);
       });
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
 
       Object.keys(CATS).forEach(function (catKey) {
         var cat = CATS[catKey];
@@ -148,6 +261,17 @@
             itemEls[loc.id] = item;
           });
       });
+
+      /* Add reset button for pin positions */
+      var resetPinsBtn = document.createElement('button');
+      resetPinsBtn.className = 'reset-btn';
+      resetPinsBtn.type = 'button';
+      resetPinsBtn.textContent = 'Reset Pin Positions';
+      resetPinsBtn.style.marginTop = '12px';
+      resetPinsBtn.addEventListener('click', function () {
+        resetPinPositions();
+      });
+      legend.appendChild(resetPinsBtn);
     }
 
     function highlight(id, on) {
