@@ -70,22 +70,129 @@
     /* ================= MAP PINS & LEGEND ================= */
     var CATS = TTX_DATA.pinCategories;
     var LOCATIONS = TTX_DATA.locations;
+    var PIN_STORAGE_KEY = 'ttx-pin-positions';
 
     var pinLayer = document.getElementById('pinLayer');
     var legend   = document.getElementById('legend');
     var NS = 'http://www.w3.org/2000/svg';
 
+    /* ---------- Pin position persistence ---------- */
+    var savePinPositions = function () {
+      var positions = {};
+      LOCATIONS.forEach(function (loc) {
+        var pin = pinLayer.querySelector('.pin[data-id="' + loc.id + '"]');
+        if (pin) {
+          var transform = pin.getAttribute('transform');
+          var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          if (match) {
+            positions[loc.id] = { x: parseFloat(match[1]), y: parseFloat(match[2]) };
+          }
+        }
+      });
+      try { localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(positions)); } catch (e) {}
+    };
+
+    var loadPinPositions = function () {
+      try {
+        var raw = localStorage.getItem(PIN_STORAGE_KEY);
+        if (!raw) return {};
+        var positions = JSON.parse(raw);
+        if (typeof positions !== 'object' || positions === null) return {};
+        return positions;
+      } catch (e) { return {}; }
+    };
+
+    var resetPinPositions = function () {
+      try { localStorage.removeItem(PIN_STORAGE_KEY); } catch (e) {}
+      LOCATIONS.forEach(function (loc) {
+        var pin = pinLayer.querySelector('.pin[data-id="' + loc.id + '"]');
+        if (pin) {
+          pin.setAttribute('transform', 'translate(' + loc.x + ',' + loc.y + ')');
+        }
+      });
+    };
+
+    /* ---------- Drag logic ---------- */
+    var draggedPin = null;
+    var dragOffset = { x: 0, y: 0 };
+
+    var getSVGPoint = function (svg, clientX, clientY) {
+      var pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      var ctm = svg.getScreenCTM();
+      if (!ctm) return { x: 0, y: 0 };
+      var svgPt = pt.matrixTransform(ctm.inverse());
+      return { x: svgPt.x, y: svgPt.y };
+    };
+
+    var onPinMouseDown = function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      var pin = e.currentTarget;
+      var svg = pin.closest('svg');
+      if (!svg) return;
+
+      var transform = pin.getAttribute('transform');
+      var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+      if (!match) return;
+
+      var pinX = parseFloat(match[1]);
+      var pinY = parseFloat(match[2]);
+      var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
+
+      draggedPin = pin;
+      dragOffset.x = svgPt.x - pinX;
+      dragOffset.y = svgPt.y - pinY;
+
+      pin.classList.add('dragging');
+    };
+
+    var onMouseMove = function (e) {
+      if (!draggedPin) return;
+      var svg = draggedPin.closest('svg');
+      if (!svg) return;
+
+      var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
+      var newX = svgPt.x - dragOffset.x;
+      var newY = svgPt.y - dragOffset.y;
+
+      /* Clamp to SVG bounds */
+      var vb = svg.viewBox.baseVal;
+      var margin = 20;
+      newX = Math.max(margin, Math.min(vb.width - margin, newX));
+      newY = Math.max(margin, Math.min(vb.height - margin, newY));
+
+      draggedPin.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
+    };
+
+    var onMouseUp = function () {
+      if (!draggedPin) return;
+      draggedPin.classList.remove('dragging');
+      draggedPin = null;
+      savePinPositions();
+    };
+
+    /* ---------- Pin creation ---------- */
     var makePin = function (loc) {
       var g = document.createElementNS(NS, 'g');
       g.setAttribute('class', 'pin');
       g.setAttribute('data-cat', loc.cat);
       g.setAttribute('data-id', loc.id);
-      g.setAttribute('transform', 'translate(' + loc.x + ',' + loc.y + ')');
+
+      /* Use saved position if available */
+      var savedPositions = loadPinPositions();
+      var x = loc.x, y = loc.y;
+      if (savedPositions[loc.id]) {
+        x = savedPositions[loc.id].x;
+        y = savedPositions[loc.id].y;
+      }
+      g.setAttribute('transform', 'translate(' + x + ',' + y + ')');
 
       var catColor = CATS[loc.cat].color;
 
       var title = document.createElementNS(NS, 'title');
-      title.textContent = loc.id + '. ' + loc.name;
+      title.textContent = loc.id + '. ' + loc.name + ' (drag to move)';
       g.appendChild(title);
 
       var halo = document.createElementNS(NS, 'circle');
@@ -100,7 +207,6 @@
       dot.setAttribute('fill', catColor);
       dot.setAttribute('stroke', '#0a1220');
       dot.setAttribute('stroke-width', '2');
-      dot.style.transformOrigin = 'center';
       g.appendChild(dot);
 
       var num = document.createElementNS(NS, 'text');
@@ -124,7 +230,11 @@
         pinLayer.appendChild(pin);
         pin.addEventListener('mouseenter', function () { highlight(loc.id, true); });
         pin.addEventListener('mouseleave', function () { highlight(loc.id, false); });
+        pin.addEventListener('mousedown', onPinMouseDown);
       });
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
 
       Object.keys(CATS).forEach(function (catKey) {
         var cat = CATS[catKey];
@@ -148,6 +258,17 @@
             itemEls[loc.id] = item;
           });
       });
+
+      /* Add reset button for pin positions */
+      var resetPinsBtn = document.createElement('button');
+      resetPinsBtn.className = 'reset-btn';
+      resetPinsBtn.type = 'button';
+      resetPinsBtn.textContent = 'Reset Pin Positions';
+      resetPinsBtn.style.marginTop = '12px';
+      resetPinsBtn.addEventListener('click', function () {
+        resetPinPositions();
+      });
+      legend.appendChild(resetPinsBtn);
     }
 
     function highlight(id, on) {
@@ -155,6 +276,117 @@
       var item = itemEls[id];
       if (pin)  pin.classList.toggle('hl', on);
       if (item) item.classList.toggle('hl', on);
+    }
+
+    /* ================= DRAG CRASH SITE & ZONE RINGS ================= */
+    var CRASH_ZONE_STORAGE_KEY = 'ttx-crash-zone-positions';
+    var DEFAULT_CRASH_POS = { x: 507, y: 270 };
+
+    var saveCrashZonePositions = function () {
+      var group = document.getElementById('crashZoneGroup');
+      if (!group) return;
+      var transform = group.getAttribute('transform');
+      var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+      if (match) {
+        var positions = { x: parseFloat(match[1]), y: parseFloat(match[2]) };
+        try { localStorage.setItem(CRASH_ZONE_STORAGE_KEY, JSON.stringify(positions)); } catch (e) {}
+      }
+    };
+
+    var loadCrashZonePositions = function () {
+      try {
+        var raw = localStorage.getItem(CRASH_ZONE_STORAGE_KEY);
+        if (!raw) return {};
+        var positions = JSON.parse(raw);
+        if (typeof positions !== 'object' || positions === null) return {};
+        return positions;
+      } catch (e) { return {}; }
+    };
+
+    var resetCrashZonePositions = function () {
+      try { localStorage.removeItem(CRASH_ZONE_STORAGE_KEY); } catch (e) {}
+      var group = document.getElementById('crashZoneGroup');
+      if (group) group.setAttribute('transform', 'translate(0,0)');
+    };
+
+    var draggedCrashGroup = null;
+    var dragStartMouse = { x: 0, y: 0 };
+    var dragStartPos = { x: 0, y: 0 };
+
+    var onCrashZoneMouseDown = function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      var el = e.currentTarget;
+      var svg = el.closest('svg');
+      if (!svg) return;
+
+      var transform = el.getAttribute('transform');
+      var match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+      if (!match) return;
+
+      var elX = parseFloat(match[1]);
+      var elY = parseFloat(match[2]);
+      var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
+
+      draggedCrashGroup = el;
+      dragStartMouse.x = svgPt.x;
+      dragStartMouse.y = svgPt.y;
+      dragStartPos.x = elX;
+      dragStartPos.y = elY;
+
+      el.style.cursor = 'grabbing';
+    };
+
+    var onCrashZoneMouseMove = function (e) {
+      if (!draggedCrashGroup) return;
+      var svg = draggedCrashGroup.closest('svg');
+      if (!svg) return;
+
+      var svgPt = getSVGPoint(svg, e.clientX, e.clientY);
+      var dx = svgPt.x - dragStartMouse.x;
+      var dy = svgPt.y - dragStartMouse.y;
+      var newX = dragStartPos.x + dx;
+      var newY = dragStartPos.y + dy;
+
+      /* Allow movement across the entire map */
+      var vb = svg.viewBox.baseVal;
+      var margin = 20;
+      newX = Math.max(margin, Math.min(vb.width - margin, newX));
+      newY = Math.max(margin, Math.min(vb.height - margin, newY));
+
+      draggedCrashGroup.setAttribute('transform', 'translate(' + newX + ',' + newY + ')');
+    };
+
+    var onCrashZoneMouseUp = function () {
+      if (!draggedCrashGroup) return;
+      draggedCrashGroup.style.cursor = 'grab';
+      draggedCrashGroup = null;
+      saveCrashZonePositions();
+    };
+
+    var crashZoneGroup = document.getElementById('crashZoneGroup');
+
+    if (crashZoneGroup) {
+      /* Load saved positions */
+      var savedCrashZone = loadCrashZonePositions();
+      if (savedCrashZone.x !== undefined) {
+        crashZoneGroup.setAttribute('transform', 'translate(' + savedCrashZone.x + ',' + savedCrashZone.y + ')');
+      }
+
+      crashZoneGroup.addEventListener('mousedown', onCrashZoneMouseDown);
+      document.addEventListener('mousemove', onCrashZoneMouseMove);
+      document.addEventListener('mouseup', onCrashZoneMouseUp);
+
+      /* Add reset button for crash site and zone positions */
+      var resetCrashZoneBtn = document.createElement('button');
+      resetCrashZoneBtn.className = 'reset-btn';
+      resetCrashZoneBtn.type = 'button';
+      resetCrashZoneBtn.textContent = 'Reset Crash Site & Zones';
+      resetCrashZoneBtn.style.marginTop = '8px';
+      resetCrashZoneBtn.addEventListener('click', function () {
+        resetCrashZonePositions();
+      });
+      legend.appendChild(resetCrashZoneBtn);
     }
 
     /* ================= SCENARIO SELECTOR ================= */
