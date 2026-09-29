@@ -41,6 +41,62 @@
 
     loadTheme();
 
+    /* ================= KEYBOARD SHORTCUTS =================
+       Ctrl/Alt + 1-7 : switch tabs
+       Ctrl/Alt + T   : toggle theme
+       Esc            : close scenario editor
+       (Browsers reserve Ctrl+1-7 and Ctrl+T for themselves, so the
+       Alt variants are provided as the always-working fallback.) */
+    var SHORTCUT_TAB_IDS = [
+      'ttx-tab-phases', 'ttx-tab-teams', 'ttx-tab-locations',
+      'ttx-tab-zones', 'ttx-tab-emergencies', 'ttx-tab-aircraft',
+      'ttx-tab-checklist'
+    ];
+
+    var isTypingTarget = function (el) {
+      if (!el) return false;
+      var tag = el.tagName;
+      return tag === 'TEXTAREA' || tag === 'SELECT' ||
+        (tag === 'INPUT' && el.type !== 'radio' && el.type !== 'checkbox') ||
+        el.isContentEditable;
+    };
+
+    document.addEventListener('keydown', function (e) {
+      /* Esc closes the scenario editor (even while typing inside it) */
+      if (e.key === 'Escape') {
+        var ov = document.getElementById('scenarioEditorOverlay');
+        if (ov) { ov.remove(); e.preventDefault(); }
+        return;
+      }
+
+      if (e.metaKey || e.ctrlKey && e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+
+      var mod = e.ctrlKey || e.altKey;
+      if (!mod || e.shiftKey) return;
+
+      /* Theme toggle: Ctrl+T or Alt+T */
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        if (themeToggle) themeToggle.click();
+        return;
+      }
+
+      /* Tab switch: Ctrl+1-7 or Alt+1-7 (use e.code so Alt on macOS
+         keyboards, which changes e.key, still works) */
+      if (e.code && e.code.indexOf('Digit') === 0) {
+        var digit = parseInt(e.code.charAt(5), 10);
+        if (digit >= 1 && digit <= 7) {
+          var radio = document.getElementById(SHORTCUT_TAB_IDS[digit - 1]);
+          if (radio && !radio.checked) {
+            e.preventDefault();
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      }
+    });
+
     /* ================= SUB NAV (Aircraft tab) ================= */
     var subNav = document.getElementById('aircraftSubNav');
     if (subNav) {

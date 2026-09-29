@@ -9,7 +9,7 @@
     /* Apply saved theme before first paint to avoid flash of dark theme */
     try { if (localStorage.getItem('ttx-theme') === 'light') document.documentElement.setAttribute('data-theme','light'); } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260929g">
+  <link rel="stylesheet" href="css/styles.css?v=20260929h">
 </head>
 <body>
 
@@ -32,7 +32,7 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
-      <button id="themeToggle" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Toggle light/dark mode">☀️</button>
+      <button id="themeToggle" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Toggle light/dark mode — shortcut: Ctrl/Alt + T">☀️</button>
       <div class="status-chip">
         <span class="dot-live"></span>
         Exercise Planning Mode
@@ -49,13 +49,13 @@
 
 <nav class="tabs">
   <div class="wrap">
-    <label class="tab" for="ttx-tab-phases">IC Role</label>
-    <label class="tab" for="ttx-tab-teams">Team Labels</label>
-    <label class="tab" for="ttx-tab-locations">Key Locations</label>
-    <label class="tab" for="ttx-tab-zones">Incident Zones</label>
-    <label class="tab" for="ttx-tab-emergencies">Emergency Types</label>
-    <label class="tab" for="ttx-tab-aircraft">Aircraft Specs</label>
-    <label class="tab" for="ttx-tab-checklist">TTX Flow &amp; Checklist</label>
+    <label class="tab" for="ttx-tab-phases" title="Shortcut: Ctrl/Alt + 1">IC Role</label>
+    <label class="tab" for="ttx-tab-teams" title="Shortcut: Ctrl/Alt + 2">Team Labels</label>
+    <label class="tab" for="ttx-tab-locations" title="Shortcut: Ctrl/Alt + 3">Key Locations</label>
+    <label class="tab" for="ttx-tab-zones" title="Shortcut: Ctrl/Alt + 4">Incident Zones</label>
+    <label class="tab" for="ttx-tab-emergencies" title="Shortcut: Ctrl/Alt + 5">Emergency Types</label>
+    <label class="tab" for="ttx-tab-aircraft" title="Shortcut: Ctrl/Alt + 6">Aircraft Specs</label>
+    <label class="tab" for="ttx-tab-checklist" title="Shortcut: Ctrl/Alt + 7">TTX Flow &amp; Checklist</label>
   </div>
 </nav>
 
@@ -1029,8 +1029,8 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/data.js?v=20260929g"></script>
-<script src="js/app.js?v=20260929g"></script>
+<script src="js/data.js?v=20260929h"></script>
+<script src="js/app.js?v=20260929h"></script>
 
 </body>
 </html>
