@@ -1130,6 +1130,10 @@
       html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.buses + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">Buses</span></div>';
       html += '</div>';
 
+      /* ---- Resource tracker: deployed vs available (persisted per scenario) ---- */
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Resource Tracker <span style="font-weight:400;text-transform:none;letter-spacing:0;">— mark units as they arrive on scene</span></h4>';
+      html += '<div id="resourceTracker" class="rt-grid" data-scenario="' + scenario.id + '"></div>';
+
       html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Exercise Injects</h4>';
       html += '<ul class="clean" style="margin:0;">';
       scenario.injects.forEach(function (inject) {
@@ -1138,6 +1142,85 @@
       html += '</ul>';
 
       panel.innerHTML = html;
+      renderResourceTracker(scenario);
+    }
+
+    /* ---- Resource tracker logic ---- */
+    var RT_KEY = 'ttx-resource-deployed';
+
+    var loadDeployed = function (scenarioId) {
+      try {
+        var all = JSON.parse(localStorage.getItem(RT_KEY) || '{}');
+        var d = all[scenarioId];
+        return (d && typeof d === 'object') ? d : {};
+      } catch (e) { return {}; }
+    };
+
+    var saveDeployed = function (scenarioId, obj) {
+      try {
+        var all = JSON.parse(localStorage.getItem(RT_KEY) || '{}');
+        all[scenarioId] = obj;
+        localStorage.setItem(RT_KEY, JSON.stringify(all));
+      } catch (e) {}
+    };
+
+    var RT_TYPES = [
+      { key: 'arff',        label: 'ARFF Vehicles' },
+      { key: 'ambulances',  label: 'Ambulances' },
+      { key: 'fireTrucks',  label: 'Fire Trucks' },
+      { key: 'buses',       label: 'Buses' }
+    ];
+
+    function renderResourceTracker(scenario) {
+      var wrap = document.getElementById('resourceTracker');
+      if (!wrap || !scenario) return;
+
+      var required = scenario.resources || {};
+      var deployed = loadDeployed(scenario.id);
+
+      var h = '';
+      RT_TYPES.forEach(function (t) {
+        var need = Number(required[t.key]) || 0;
+        var have = Math.min(Number(deployed[t.key]) || 0, need);
+        var pct = need === 0 ? 100 : Math.round((have / need) * 100);
+        var statusCls = need === 0 ? 'rt-ok' : (have >= need ? 'rt-ok' : (have > 0 ? 'rt-part' : 'rt-none'));
+
+        h += '<div class="rt-item">';
+        h += '<div class="rt-label">' + t.label + '</div>';
+        h += '<div class="rt-controls">';
+        h += '<button class="rt-btn" type="button" data-rt="' + t.key + '" data-dir="-1" aria-label="One fewer ' + t.label + '"' + (have <= 0 ? ' disabled' : '') + '>−</button>';
+        h += '<span class="rt-count ' + statusCls + '">' + have + ' / ' + need + '</span>';
+        h += '<button class="rt-btn" type="button" data-rt="' + t.key + '" data-dir="1" aria-label="One more ' + t.label + '"' + (have >= need ? ' disabled' : '') + '>+</button>';
+        h += '</div>';
+        h += '<div class="rt-bar"><div class="rt-fill ' + statusCls + '" style="width:' + pct + '%"></div></div>';
+        h += '<div class="rt-status">' + (need === 0 ? 'Not required' : (have >= need ? '✓ All deployed' : (need - have) + ' still available')) + '</div>';
+        h += '</div>';
+      });
+
+      /* Overall summary line */
+      var totalNeed = 0, totalHave = 0;
+      RT_TYPES.forEach(function (t) {
+        totalNeed += Number(required[t.key]) || 0;
+        totalHave += Math.min(Number(deployed[t.key]) || 0, Number(required[t.key]) || 0);
+      });
+      h += '<div class="rt-summary' + (totalNeed > 0 && totalHave >= totalNeed ? ' rt-ok' : '') + '">' +
+        totalHave + ' of ' + totalNeed + ' units deployed' +
+        (totalNeed > 0 && totalHave >= totalNeed ? ' — resources complete ✓' : '') + '</div>';
+
+      wrap.innerHTML = h;
+
+      wrap.querySelectorAll('.rt-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var key = btn.getAttribute('data-rt');
+          var dir = Number(btn.getAttribute('data-dir'));
+          var cur = loadDeployed(scenario.id);
+          var need = Number(scenario.resources[key]) || 0;
+          var next = Math.max(0, Math.min(need, (Number(cur[key]) || 0) + dir));
+          cur[key] = next;
+          saveDeployed(scenario.id, cur);
+          renderResourceTracker(scenario);
+        });
+      });
     }
 
     /* ================= TIMELINE / INJECT TRACKER ================= */

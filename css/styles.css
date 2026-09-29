@@ -677,6 +677,87 @@ textarea.se-input{resize:vertical; line-height:1.5;}
   .cmp-table td{padding:6px 4px;}
 }
 
+/* ---------- Resource tracker (deployed vs available) ---------- */
+.rt-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:10px;
+  margin-bottom:18px;
+}
+.rt-item{
+  background:var(--panel2);
+  border:1px solid var(--line-soft);
+  border-radius:8px;
+  padding:10px 12px;
+}
+.rt-label{
+  font-size:11px; font-weight:600; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.07em;
+  margin-bottom:6px;
+}
+.rt-controls{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-bottom:8px;
+}
+.rt-btn{
+  width:26px; height:26px;
+  border-radius:6px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--text);
+  font-size:15px; line-height:1;
+  cursor:pointer;
+  display:grid; place-items:center;
+  padding:0;
+}
+.rt-btn:hover:not(:disabled){ background:#1d4ed8; color:#fff; border-color:#2f5fc4; }
+.rt-btn:disabled{ opacity:.35; cursor:not-allowed; }
+.rt-count{
+  font-size:14px; font-weight:700;
+  font-variant-numeric:tabular-nums;
+  min-width:56px; text-align:center;
+}
+.rt-count.rt-ok{ color:var(--green); }
+.rt-count.rt-part{ color:var(--amber); }
+.rt-count.rt-none{ color:var(--muted); }
+.rt-bar{
+  height:6px; border-radius:3px;
+  background:var(--line-soft);
+  overflow:hidden;
+  margin-bottom:6px;
+}
+.rt-fill{
+  height:100%; border-radius:3px;
+  background:var(--amber);
+  transition:width .25s ease;
+}
+.rt-fill.rt-ok{ background:var(--green); }
+.rt-fill.rt-none{ background:var(--line); }
+.rt-status{
+  font-size:11px; color:var(--muted2);
+  text-align:center;
+}
+.rt-summary{
+  grid-column:1 / -1;
+  text-align:center;
+  font-size:12.5px;
+  color:var(--muted);
+  padding:8px;
+  border:1px dashed var(--line);
+  border-radius:8px;
+}
+.rt-summary.rt-ok{
+  color:var(--green);
+  border-color:var(--green);
+  font-weight:600;
+}
+@media print{
+  .rt-btn{ display:none !important; }
+  .rt-item{ break-inside:avoid; }
+  .rt-fill.rt-ok{ background:#000 !important; }
+  .rt-fill{ background:#666 !important; }
+}
+
 /* ---------- ICS form generator ---------- */
 .ics-tabs{
   display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;
