@@ -16,9 +16,33 @@
       if (theme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
         if (themeToggle) themeToggle.textContent = '☀️';
+        /* Force light theme via inline styles */
+        document.body.style.background = '#f8fafc';
+        document.body.style.color = '#000000';
+        var allElements = document.querySelectorAll('*');
+        for (var i = 0; i < allElements.length; i++) {
+          var el = allElements[i];
+          if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+            el.style.backgroundColor = '#ffffff';
+            el.style.color = '#000000';
+            el.style.borderColor = '#e2e8f0';
+          }
+        }
       } else {
         document.documentElement.removeAttribute('data-theme');
         if (themeToggle) themeToggle.textContent = '🌙';
+        /* Remove inline styles for dark theme */
+        document.body.style.background = '';
+        document.body.style.color = '';
+        var allElements = document.querySelectorAll('*');
+        for (var i = 0; i < allElements.length; i++) {
+          var el = allElements[i];
+          if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+            el.style.backgroundColor = '';
+            el.style.color = '';
+            el.style.borderColor = '';
+          }
+        }
       }
       try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
     };
