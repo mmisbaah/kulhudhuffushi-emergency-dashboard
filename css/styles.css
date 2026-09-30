@@ -19,6 +19,17 @@
   --blue:#2563eb; --purple:#9333ea; --cyan:#0891b2;
 }
 
+/* High-contrast theme: pure black surfaces, pure white text,
+   saturated accents — max separation for low-vision users. */
+[data-theme="hc"]{
+  --bg-grad-1:#000000; --bg-grad-2:#000000;
+  --panel:#000000; --panel2:#000000;
+  --line:#ffffff; --line-soft:#ffffff;
+  --text:#ffffff; --muted:#ffffff; --muted2:#ffff00;
+  --red:#ff6b6b; --amber:#ffc107; --green:#4ade80;
+  --blue:#7ab8ff; --purple:#e879f9; --cyan:#22d3ee;
+}
+
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
@@ -1243,6 +1254,113 @@ body.lang-dv{
 [data-theme="light"] .back-to-top:hover{
   background:#f1f5f9;
   border-color:#94a3b8;
+}
+
+/* =====================================================
+   HIGH-CONTRAST THEME — solid black/white, thick borders.
+   Placed after the light block so both orders work.
+   ===================================================== */
+
+/* Kill every gradient/translucent surface: solid black only */
+[data-theme="hc"] body{
+  background:#000000;
+  color:#ffffff;
+}
+[data-theme="hc"] .app-header,
+[data-theme="hc"] .tabs,
+[data-theme="hc"] .sub-nav,
+[data-theme="hc"] .card,
+[data-theme="hc"] .ac-card,
+[data-theme="hc"] .emg-card,
+[data-theme="hc"] .team-card,
+[data-theme="hc"] .zone-card,
+[data-theme="hc"] .flow-node,
+[data-theme="hc"] .check-item,
+[data-theme="hc"] .diagram-card,
+[data-theme="hc"] .map-shell,
+[data-theme="hc"] .legend-item,
+[data-theme="hc"] .board-step,
+[data-theme="hc"] .stat,
+[data-theme="hc"] .spec-table-wrap,
+[data-theme="hc"] .back-to-top,
+[data-theme="hc"] .weather,
+[data-theme="hc"] .progress-shell,
+[data-theme="hc"] .progress-bar{
+  background:#000000;
+  border-color:#ffffff;
+}
+[data-theme="hc"] .app-header,
+[data-theme="hc"] .tabs,
+[data-theme="hc"] .sub-nav{
+  border-bottom:2px solid #ffffff;
+}
+[data-theme="hc"] .card,
+[data-theme="hc"] .ac-card,
+[data-theme="hc"] .emg-card,
+[data-theme="hc"] .team-card,
+[data-theme="hc"] .check-item,
+[data-theme="hc"] .zone-card{
+  border:2px solid #ffffff;
+}
+/* Inline-dark JS elements (stat cards, timeline rows, ICS cells) */
+[data-theme="hc"] [style*="#0a1220"],
+[data-theme="hc"] [style*="#0c1526"],
+[data-theme="hc"] [style*="#0d1729"]{
+  background:#000000 !important;
+}
+/* All text white except deliberate accents (yellow secondary) */
+[data-theme="hc"] body,
+[data-theme="hc"] .card,
+[data-theme="hc"] ul.clean li,
+[data-theme="hc"] .section-sub,
+[data-theme="hc"] .team-card p,
+[data-theme="hc"] .ac-head p,
+[data-theme="hc"] .spec-table td,
+[data-theme="hc"] .zone-card p,
+[data-theme="hc"] .zone-card .who,
+[data-theme="hc"] .check-label,
+[data-theme="hc"] .notice,
+[data-theme="hc"] .tab,
+[data-theme="hc"] .reset-btn,
+[data-theme="hc"] .sub-nav-link,
+[data-theme="hc"] .status-chip,
+[data-theme="hc"] h3.sub,
+[data-theme="hc"] .progress-num{
+  color:#ffffff;
+}
+[data-theme="hc"] .tab:hover,
+[data-theme="hc"] .reset-btn:hover,
+[data-theme="hc"] .sub-nav-link:hover,
+[data-theme="hc"] .check-item:hover,
+[data-theme="hc"] .legend-item:hover{
+  background:#ffffff;
+  color:#000000;
+}
+[data-theme="hc"] .spec-table th{
+  background:#ffffff;
+  color:#000000;
+  border-color:#000000;
+}
+[data-theme="hc"] .spec-table td{ border-bottom-color:#ffffff; }
+[data-theme="hc"] .spec-table tbody tr:nth-child(even) td{ background:#000000; }
+[data-theme="hc"] .notice{ background:#000000; border:2px solid #ffc107; color:#ffffff; }
+/* Focus ring: pure yellow — visible on black and white surfaces */
+[data-theme="hc"] a:focus-visible,
+[data-theme="hc"] button:focus-visible,
+[data-theme="hc"] select:focus-visible,
+[data-theme="hc"] input:focus-visible,
+[data-theme="hc"] textarea:focus-visible,
+[data-theme="hc"] [tabindex]:focus-visible,
+[data-theme="hc"] label.tab.kb-focus,
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-phases"],
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-teams"],
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-locations"],
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-zones"],
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-emergencies"],
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-aircraft"],
+[data-theme="hc"] .tab-radio:focus-visible ~ .tabs label.tab[for="ttx-tab-checklist"]{
+  outline:3px solid #ffff00 !important;
+  outline-offset:2px;
 }
 
 /* =====================================================

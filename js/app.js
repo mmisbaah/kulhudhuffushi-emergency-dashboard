@@ -16,6 +16,9 @@
       if (theme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
         if (themeToggle) themeToggle.textContent = '☀️';
+      } else if (theme === 'hc') {
+        document.documentElement.setAttribute('data-theme', 'hc');
+        if (themeToggle) themeToggle.textContent = '◑';
       } else {
         document.documentElement.removeAttribute('data-theme');
         if (themeToggle) themeToggle.textContent = '🌙';
@@ -26,7 +29,7 @@
     var loadTheme = function () {
       try {
         var saved = localStorage.getItem(THEME_KEY);
-        if (saved === 'light') setTheme('light');
+        if (saved === 'light' || saved === 'hc') setTheme(saved);
         else setTheme('dark');
       } catch (e) { setTheme('dark'); }
     };
@@ -34,7 +37,8 @@
     if (themeToggle) {
       themeToggle.addEventListener('click', function () {
         var current = document.documentElement.getAttribute('data-theme');
-        if (current === 'light') setTheme('dark');
+        if (current === 'light') setTheme('hc');
+        else if (current === 'hc') setTheme('dark');
         else setTheme('light');
       });
     }
