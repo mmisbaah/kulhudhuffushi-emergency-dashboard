@@ -779,6 +779,15 @@ label.tab.kb-focus{
 }
 [data-theme="light"] label.tab.kb-focus{ outline-color:#1d4ed8 !important; }
 
+/* ---------- Font size controls (WCAG 1.4.4 text resize) ---------- */
+.font-controls{ display:flex; align-items:center; gap:4px; }
+.font-btn{ padding:6px 9px !important; font-size:12px !important; line-height:1; }
+.font-scale{ min-width:52px; cursor:pointer; font-variant-numeric:tabular-nums; }
+@media print{
+  /* Print at 100% regardless of on-screen zoom (html{zoom} is inherited) */
+  html{ zoom:1 !important; }
+}
+
 /* ---------- Language: Dhivehi (ދިވެހި) ---------- */
 body.lang-dv{
   font-family:'Noto Sans Thaana','MV Faruma','Faruma','Dhivehi Write','Segoe UI',sans-serif;

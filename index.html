@@ -6,13 +6,15 @@
   <meta name="description" content="Kulhudhuffushi Airport Emergency Exercise Dashboard — Incident Commander planning tool for VRBK / HDK">
   <title>Kulhudhuffushi Airport — Emergency Exercise Dashboard</title>
   <script>
-    /* Apply saved theme/language before first paint to avoid a flash */
+    /* Apply saved theme/language/text-size before first paint to avoid a flash */
     try {
       if (localStorage.getItem('ttx-theme') === 'light') document.documentElement.setAttribute('data-theme','light');
       if (localStorage.getItem('ttx-lang') === 'dv') { document.documentElement.setAttribute('lang','dv'); document.documentElement.setAttribute('dir','rtl'); }
+      var fs = parseFloat(localStorage.getItem('ttx-font-scale'));
+      if (fs >= 0.8 && fs <= 1.6) document.documentElement.style.zoom = fs;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930c">
+  <link rel="stylesheet" href="css/styles.css?v=20260930d">
 </head>
 <body>
 
@@ -37,6 +39,11 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
+      <div class="font-controls" role="group" aria-label="Text size">
+        <button id="fontDec" class="reset-btn font-btn" type="button" title="Decrease text size" aria-label="Decrease text size">A−</button>
+        <button id="fontReset" class="reset-btn font-btn font-scale" type="button" title="Reset text size to 100%">100%</button>
+        <button id="fontInc" class="reset-btn font-btn" type="button" title="Increase text size" aria-label="Increase text size">A+</button>
+      </div>
       <button id="exportPdfBtn" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Export the full exercise package as PDF (opens the print dialog — choose Save as PDF)"><span data-i18n="btn.exportPdf">⬇ Export PDF</span></button>
       <button id="langToggle" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Switch language / ބަސަކު ބަދަލުކުރަން">EN</button>
       <button id="themeToggle" class="reset-btn" type="button" style="padding:6px 12px;font-size:12px;" title="Toggle light/dark mode — shortcut: Ctrl/Alt + T">☀️</button>
@@ -1037,9 +1044,9 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/i18n.js?v=20260930c"></script>
-<script src="js/data.js?v=20260930c"></script>
-<script src="js/app.js?v=20260930c"></script>
+<script src="js/i18n.js?v=20260930d"></script>
+<script src="js/data.js?v=20260930d"></script>
+<script src="js/app.js?v=20260930d"></script>
 
 </body>
 </html>

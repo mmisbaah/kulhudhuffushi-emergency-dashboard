@@ -53,6 +53,30 @@
     if (typeof applyLang === 'function') applyLang();
     syncLangToggle();
 
+    /* ================= FONT SIZE CONTROLS ================= */
+    var FONT_KEY = 'ttx-font-scale';
+    var fontScale = 1;
+    try {
+      var savedScale = parseFloat(localStorage.getItem(FONT_KEY));
+      if (savedScale >= 0.8 && savedScale <= 1.6) fontScale = savedScale;
+    } catch (e) {}
+    var fontResetBtn = document.getElementById('fontReset');
+    var applyFontScale = function () {
+      document.documentElement.style.zoom = fontScale === 1 ? '' : fontScale;
+      if (fontResetBtn) fontResetBtn.textContent = Math.round(fontScale * 100) + '%';
+      try { localStorage.setItem(FONT_KEY, String(fontScale)); } catch (e) {}
+    };
+    var stepFont = function (dir) {
+      fontScale = Math.min(1.6, Math.max(0.8, Math.round((fontScale + dir * 0.1) * 10) / 10));
+      applyFontScale();
+    };
+    var fontDec = document.getElementById('fontDec');
+    var fontInc = document.getElementById('fontInc');
+    if (fontDec) fontDec.addEventListener('click', function () { stepFont(-1); });
+    if (fontInc) fontInc.addEventListener('click', function () { stepFont(1); });
+    if (fontResetBtn) fontResetBtn.addEventListener('click', function () { fontScale = 1; applyFontScale(); });
+    applyFontScale();
+
     /* ================= EXPORT PDF =================
        The print stylesheet already renders the full exercise package
        (all sections, white paper). "Save as PDF" in the dialog does
@@ -208,6 +232,16 @@
       if (e.key === 't' || e.key === 'T') {
         e.preventDefault();
         if (themeToggle) themeToggle.click();
+        return;
+      }
+
+      /* Text size: Ctrl+/-/0 (zoom buttons) */
+      if (e.key === '=' || e.key === '+' || e.key === '-' || e.key === '0') {
+        if (e.altKey) return; /* let Alt+- etc. pass through to the browser */
+        e.preventDefault();
+        if (e.key === '0') { if (fontResetBtn) fontResetBtn.click(); }
+        else if (e.key === '-' || e.key === '_') stepFont(-1);
+        else stepFont(1);
         return;
       }
 
