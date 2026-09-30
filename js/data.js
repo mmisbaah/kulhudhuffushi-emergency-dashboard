@@ -241,7 +241,7 @@ var TTX_DATA = {
       resources: { arff: 2, ambulances: 6, fireTrucks: 2, buses: 2 },
       injects: [
         '09:00 — ATR 72 reports gear malfunction, requests priority landing',
-        '09:05 — Aircraft crashes short of Runway 09, breaks apart',
+        '09:05 — Aircraft crashes short of Runway 12, breaks apart',
         '09:06 — Fuel fire erupts near wreckage, spreading east',
         '09:10 — Wind shifts 45 degrees, smoke drifts toward terminal',
         '09:15 — Secondary explosion reported in rear fuselage',
@@ -296,7 +296,7 @@ var TTX_DATA = {
       injects: [
         '16:00 — Dornier 228 reports gear indication problem',
         '16:05 — Low pass confirms gear not extended',
-        '16:10 — Gear-up landing on Runway 09/27, aircraft skids to stop',
+        '16:10 — Gear-up landing on Runway 12/30, aircraft skids to stop',
         '16:12 — Fuel leak reported from wing area',
         '16:15 — Runway blocked, airport closed to all traffic',
         '16:20 — Recovery equipment requested from Malé'
@@ -312,7 +312,7 @@ var TTX_DATA = {
       casualties: { red: 5, yellow: 15, green: 40, deceased: 6 },
       resources: { arff: 1, ambulances: 5, fireTrucks: 1, buses: 2 },
       injects: [
-        '10:00 — ATR 72 declares emergency, ditches in the lagoon short of Runway 09',
+        '10:00 — ATR 72 declares emergency, ditches in the lagoon short of Runway 12',
         '10:04 — Life rafts deployed, passengers in water awaiting recovery',
         '10:08 — Strong current drifts survivors toward the reef channel',
         '10:12 — Coast Guard and dive team requested from Kulhudhuffushi harbour',
