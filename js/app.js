@@ -94,6 +94,58 @@
 
     loadTheme();
 
+    /* ================= AIRCRAFT TABLE + CARDS (data-driven) ================= */
+    var escapeHtml = function (s) {
+      return String(s === null || s === undefined ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+    var renderAircraft = function () {
+      try {
+        var tbody = document.getElementById('acTableBody');
+        if (tbody && TTX_DATA.aircraftComparison) {
+          var rows = '';
+          TTX_DATA.aircraftComparison.forEach(function (a) {
+            rows += '<tr>' +
+              '<td class="ac-name">' + escapeHtml(a.name) + '</td>' +
+              '<td class="num">' + escapeHtml(a.pax) + '</td>' +
+              '<td class="num">' + escapeHtml(a.crew) + '</td>' +
+              '<td class="num">' + escapeHtml(a.total) + '</td>' +
+              '<td>' + escapeHtml(a.fuel) + '</td>' +
+              '<td class="num">' + escapeHtml(a.wheels) + '</td>' +
+              '<td>' + escapeHtml(a.door) + '</td>' +
+              '<td>' + escapeHtml(a.baggage) + '</td>' +
+              '</tr>';
+          });
+          tbody.innerHTML = rows;
+        }
+        var grid = document.getElementById('acGrid');
+        if (grid && TTX_DATA.aircraftDetails) {
+          var cards = '';
+          TTX_DATA.aircraftDetails.forEach(function (d) {
+            cards += '<div class="ac-card">' +
+              '<div class="ac-head"><div class="ac-badge">✈️</div><div>' +
+              '<h4>' + escapeHtml(d.name) + '</h4>' +
+              '<p>' + escapeHtml(d.operator) + '</p></div></div>' +
+              '<div class="stat-grid">' +
+              '<div class="stat"><span class="num">' + escapeHtml(d.pax) + '</span><span class="lbl">Pax</span></div>' +
+              '<div class="stat"><span class="num">' + escapeHtml(d.crew) + '</span><span class="lbl">Crew</span></div>' +
+              '<div class="stat"><span class="num">' + escapeHtml(d.total) + '</span><span class="lbl">Total</span></div>' +
+              '<div class="stat"><span class="num">' + escapeHtml(d.wheels) + '</span><span class="lbl">Wheels</span></div>' +
+              '</div><div class="spec-rows">';
+            (d.specs || []).forEach(function (sp) {
+              cards += '<div class="spec-row"><span class="k">' + escapeHtml(sp.k) + '</span><span class="v">' + escapeHtml(sp.v) + '</span></div>';
+            });
+            cards += '</div></div>';
+          });
+          grid.innerHTML = cards;
+        }
+      } catch (e) {
+        if (window.console) console.warn('aircraft render skipped:', e);
+      }
+    };
+    renderAircraft();
+
     /* ================= VERSION HISTORY (changelog) ================= */
     var APP_VERSION = '2026.09.30';
     var CHANGELOG = [
