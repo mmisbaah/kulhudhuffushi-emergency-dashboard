@@ -968,18 +968,81 @@ label.tab.kb-focus{
   .ref-card{ break-inside:avoid; }
 }
 
-/* ---------- Footer / version ---------- */
-.app-footer{
+/* ---------- Bottom dock (fixed) + modal base ---------- */
+.app-dock{
+  position:fixed; left:0; right:0; bottom:0; z-index:60;
+  background:rgba(8,14,28,.86);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
   border-top:1px solid var(--line-soft);
-  margin-top:36px;
-  padding:16px 0 24px;
-  background:rgba(8,14,28,.5);
+  margin-top:0;
+  padding:0;
 }
+body{ padding-bottom:72px; }
+.dock-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:6px 18px;
+  padding-top:9px; padding-bottom:9px;
+  font-size:12px; color:var(--muted);
+}
+.dock-left{display:flex;align-items:center;gap:9px;min-width:0;}
+.dock-mark{
+  width:22px;height:22px;flex:0 0 22px;border-radius:7px;
+  display:grid;place-items:center;font-size:12px;
+  background:linear-gradient(145deg,#1e3a8a,#0e1c38);
+  border:1px solid #2c4a7a;color:#fff;
+}
+.dock-left strong{color:var(--text);font-size:12.5px;font-weight:600;white-space:nowrap;}
+.dock-sub{white-space:nowrap;color:var(--muted2);}
+.dock-center{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.dock-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.dock-right a{color:var(--blue);text-decoration:none;font-weight:500;white-space:nowrap;}
+.dock-right a:hover{text-decoration:underline;}
+.dock-kbd{color:var(--muted2);white-space:nowrap;}
+.dock-sep{color:var(--muted2);}
 .footer-ver{
   font-size:12px;
   color:var(--muted2);
   font-variant-numeric:tabular-nums;
   letter-spacing:.04em;
+}
+.app-footer .footer-ver{margin-left:auto;}
+/* Clear the fixed dock so it never covers the floating scroll button */
+.back-to-top{ bottom:60px; }
+@media (max-width:960px){
+  .dock-center{display:none;}
+}
+@media (max-width:700px){
+  .dock-kbd,.dock-sub{display:none;}
+}
+@media (max-width:520px){
+  .dock-left strong{display:none;}
+}
+
+/* Save chip — brief "✓ saved" flash in the scenario row */
+.save-chip{
+  margin-left:auto;font-size:11px;font-weight:700;color:var(--green);
+  opacity:0;transform:translateY(-2px);
+  transition:opacity .25s ease,transform .25s ease;
+  white-space:nowrap;pointer-events:none;padding-left:10px;
+}
+.save-chip.on{opacity:1;transform:none;}
+
+/* Shared modal base: full-screen scrim + centred panel (changelog,
+   history, guide, AAR, data/map editors…). Inner content may override
+   max-width/height inline. */
+.se-overlay{
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,.55);
+  overflow-y:auto;
+  padding:40px 20px;
+}
+.se-modal{
+  max-width:640px; margin:0 auto;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:24px;
 }
 
 /* ---------- Font size controls (WCAG 1.4.4 text resize) ---------- */
@@ -1756,6 +1819,7 @@ label.tab.kb-focus{
 
   /* White paper, black ink — also beats inline dark styles */
   html, body{ background:#fff !important; }
+  body{ padding-bottom:0 !important; }
   *{
     color:#000 !important;
     background:transparent !important;

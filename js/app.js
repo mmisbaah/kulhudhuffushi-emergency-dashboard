@@ -276,6 +276,317 @@
     var footerVer = document.getElementById('footerVer');
     if (footerVer) footerVer.textContent = 'v' + APP_VERSION;
 
+    /* ================= SAVE CHIP + RESTORE POINTS + HISTORY ================= */
+    /* Subtle "✓ saved" flash in the scenario row whenever exercise
+       state is written to this device. */
+    var flashSaved = function (label) {
+      var chip = document.getElementById('saveChip');
+      if (!chip) return;
+      chip.textContent = '✓ ' + (label || 'saved');
+      chip.classList.add('on');
+      clearTimeout(flashSaved._t);
+      flashSaved._t = setTimeout(function () { chip.classList.remove('on'); }, 1800);
+    };
+
+    var pickJSON = function (key) {
+      try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+    };
+
+    /* ---------- Restore points: undo for destructive actions ---------- */
+    var SNAPSHOT_KEY = 'ttx-restore-points';
+    var SNAPSHOT_MAX = 15;
+    var STATE_FIELDS = [
+      'ttx-timeline-events', 'ttx-checklist-state', 'ttx-casualties',
+      'ttx-resource-deployed', 'ttx-custom-scenarios'
+    ];
+    var suppressHook = false;
+
+    var collectState = function () {
+      var s = {};
+      STATE_FIELDS.forEach(function (k) { s[k] = pickJSON(k); });
+      return s;
+    };
+
+    var pushSnapshot = function (label) {
+      var points = pickJSON(SNAPSHOT_KEY);
+      if (!Array.isArray(points)) points = [];
+      points.push({
+        id: Date.now(), timestamp: new Date().toISOString(),
+        label: label || 'Manual point', data: collectState()
+      });
+      if (points.length > SNAPSHOT_MAX) points = points.slice(-SNAPSHOT_MAX);
+      try { localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(points)); } catch (e) {}
+      return true;
+    };
+
+    var restoreSnapshot = function (id) {
+      var points = pickJSON(SNAPSHOT_KEY);
+      if (!Array.isArray(points)) return false;
+      var pt = null;
+      points.forEach(function (p) { if (p && p.id === id) pt = p; });
+      if (!pt || !pt.data) return false;
+      pushSnapshot('Auto — before restore');   /* restoring is itself undoable */
+      suppressHook = true;
+      STATE_FIELDS.forEach(function (k) {
+        try {
+          var v = pt.data[k];
+          if (v === null || v === undefined) localStorage.removeItem(k);
+          else localStorage.setItem(k, JSON.stringify(v));
+        } catch (e) {}
+      });
+      suppressHook = false;
+      return true;
+    };
+
+    /* ---------- Per-scenario audit trail (last 50 changes) ---------- */
+    var HISTORY_KEY = 'ttx-version-history';
+    var HISTORY_MAX = 50;
+    var historyData = {};
+    try {
+      var hd0 = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+      if (hd0 && typeof hd0 === 'object') historyData = hd0;
+    } catch (e) {}
+
+    var addHistoryEntry = function (scenarioId, action, details) {
+      if (!historyData[scenarioId]) historyData[scenarioId] = [];
+      historyData[scenarioId].push({
+        timestamp: new Date().toISOString(), action: action, details: details
+      });
+      if (historyData[scenarioId].length > HISTORY_MAX) {
+        historyData[scenarioId] = historyData[scenarioId].slice(-HISTORY_MAX);
+      }
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData)); } catch (e) {}
+    };
+
+    /* ---------- Hook state writes: chip flash + audit entry ---------- */
+    var STATE_WATCH = {
+      'ttx-timeline-events':    'Timeline updated',
+      'ttx-checklist-state':    'Checklist updated',
+      'ttx-casualties':         'Casualties updated',
+      'ttx-resource-deployed':  'Resources updated',
+      'ttx-custom-scenarios':   'Scenario library updated',
+      'ttx-pin-positions':      'Map pins moved',
+      'ttx-crash-zone-positions': 'Crash zone moved',
+      'ttx-ics-names':          'ICS names saved'
+    };
+    var AUDIT_KEYS = {
+      'ttx-timeline-events': 1, 'ttx-checklist-state': 1, 'ttx-casualties': 1,
+      'ttx-resource-deployed': 1, 'ttx-custom-scenarios': 1
+    };
+
+    var summarizeState = function (key) {
+      try {
+        if (key === 'ttx-timeline-events') {
+          var t = pickJSON(key) || [];
+          return t.length + ' event' + (t.length === 1 ? '' : 's');
+        }
+        if (key === 'ttx-checklist-state') {
+          var c = pickJSON(key) || [];
+          var done = c.filter(function (x) { return !!x; }).length;
+          return done + '/' + c.length + ' checked';
+        }
+        if (key === 'ttx-casualties') {
+          var ca = pickJSON(key) || {}; var n = 0;
+          Object.keys(ca).forEach(function (s) { if (Array.isArray(ca[s])) n += ca[s].length; });
+          return n + ' card' + (n === 1 ? '' : 's');
+        }
+        if (key === 'ttx-resource-deployed') {
+          var re = pickJSON(key) || {}; var d = 0;
+          Object.keys(re).forEach(function (s) {
+            var o = re[s];
+            if (o && typeof o === 'object') {
+              Object.keys(o).forEach(function (t2) { d += Number(o[t2]) || 0; });
+            }
+          });
+          return d + ' units deployed';
+        }
+        if (key === 'ttx-custom-scenarios') {
+          var sc = pickJSON(key) || [];
+          return sc.length + ' custom scenario' + (sc.length === 1 ? '' : 's');
+        }
+      } catch (e) {}
+      return '';
+    };
+
+    var currentScenarioId = function () {
+      try {
+        var sel = document.getElementById('scenarioSelect');
+        if (sel && sel.value) return sel.value;
+      } catch (e) {}
+      return 'general';
+    };
+
+    /* Only arm after real user input so start-up writes never flash */
+    var hookArmed = false;
+    var armHook = function () { hookArmed = true; };
+    document.addEventListener('pointerdown', armHook, { once: true, capture: true });
+    document.addEventListener('keydown', armHook, { once: true, capture: true });
+
+    var pendingKey = null, pendingTimer = null;
+    var flushPending = function () {
+      var key = pendingKey; pendingKey = null;
+      if (!key || suppressHook) return;
+      var label = STATE_WATCH[key];
+      if (!label || !AUDIT_KEYS[key]) return;
+      var sum = summarizeState(key);
+      addHistoryEntry(currentScenarioId(), 'updated', label + (sum ? ' — ' + sum : ''));
+    };
+
+    var origSetItem = localStorage.setItem;
+    localStorage.setItem = function (k, v) {
+      origSetItem.call(localStorage, k, v);
+      try {
+        if (!hookArmed || suppressHook) return;
+        var label = STATE_WATCH[k];
+        if (!label) return;
+        flashSaved('saved');
+        if (k === 'ttx-custom-scenarios') updateDockCount();
+        if (AUDIT_KEYS[k]) {
+          pendingKey = k;
+          clearTimeout(pendingTimer);
+          pendingTimer = setTimeout(flushPending, 1200);
+        }
+      } catch (e) {}
+    };
+
+    /* Live scenario count in the bottom dock */
+    var updateDockCount = function () {
+      var el = document.getElementById('dockScenarioCount');
+      if (!el) return;
+      var builtIn = (TTX_DATA.scenarios || []);
+      var ids = {};
+      builtIn.forEach(function (s) { ids[s.id] = 1; });
+      var custom = pickJSON('ttx-custom-scenarios');
+      if (!Array.isArray(custom)) custom = [];
+      var extra = custom.filter(function (c) { return c && !ids[c.id]; }).length;
+      var total = builtIn.length + extra;
+      el.textContent = total + ' scenario' + (total === 1 ? '' : 's');
+    };
+    updateDockCount();
+
+    /* ---------- History modal: restore points + audit trail ---------- */
+    var historyBtn = document.getElementById('historyBtn');
+    if (historyBtn) {
+      historyBtn.addEventListener('click', function () {
+        var existing = document.getElementById('historyOverlay');
+        if (existing) { existing.remove(); return; }
+
+        var ov = document.createElement('div');
+        ov.id = 'historyOverlay';
+        ov.className = 'se-overlay';
+        var html = '<div class="se-modal" style="max-width:680px;max-height:84vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">';
+        html += '<h3 style="margin:0;font-size:16px;">📜 History &amp; Restore Points</h3>';
+        html += '<button class="reset-btn" type="button" id="histClose" style="padding:5px 12px;">✕ Close</button></div>';
+
+        /* Restore points */
+        var points = pickJSON(SNAPSHOT_KEY);
+        if (!Array.isArray(points)) points = [];
+        if (points.length === 0) {
+          html += '<p style="color:var(--muted);margin:0 0 6px;font-size:12.5px;">No restore points yet. One is created automatically before every clear, reset, delete or import — the last 15 are kept here.</p>';
+        } else {
+          html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Restore points</h4>';
+          html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+          points.slice().reverse().forEach(function (pt) {
+            var date = new Date(pt.timestamp);
+            var d = pt.data || {};
+            var counts = [];
+            if (Array.isArray(d['ttx-timeline-events'])) counts.push(d['ttx-timeline-events'].length + ' timeline');
+            if (Array.isArray(d['ttx-casualties']) || (d['ttx-casualties'] && typeof d['ttx-casualties'] === 'object')) {
+              var cn = 0; var cObj = d['ttx-casualties'];
+              if (Array.isArray(cObj)) cn = cObj.length;
+              else Object.keys(cObj).forEach(function (s) { if (Array.isArray(cObj[s])) cn += cObj[s].length; });
+              counts.push(cn + ' casualties');
+            }
+            if (Array.isArray(d['ttx-checklist-state'])) {
+              counts.push(d['ttx-checklist-state'].filter(function (x) { return !!x; }).length + '/' + d['ttx-checklist-state'].length + ' ticks');
+            }
+            html += '<div style="padding:12px;background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">';
+            html += '<div style="min-width:0;">';
+            html += '<div style="font-size:12px;color:var(--muted);">' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + (counts.length ? ' · ' + counts.join(' · ') : '') + '</div>';
+            html += '</div>';
+            html += '<button class="reset-btn" type="button" style="padding:5px 14px;font-size:12px;" data-restore-id="' + pt.id + '">↶ Restore</button>';
+            html += '</div>';
+          });
+          html += '</div>';
+          html += '<p style="font-size:12px;color:var(--muted);margin:10px 0 0;">Restoring replaces the current timeline, checklist, casualties, resources and custom scenarios. Your present state is saved as a restore point first, so you can switch back.</p>';
+        }
+
+        /* Audit trail */
+        html += '<h4 style="margin:20px 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Change history</h4>';
+        html += '<select id="historyScenSel" style="width:100%;background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:8px 12px;color:var(--text);font:inherit;font-size:13px;">';
+        html += '<option value="">— Select a scenario —</option>';
+        var scenIds = {};
+        (typeof getAllScenarios === 'function' ? getAllScenarios() : (TTX_DATA.scenarios || [])).forEach(function (sc) {
+          scenIds[sc.id] = sc.name;
+          html += '<option value="' + escapeHtml(sc.id) + '">' + escapeHtml(sc.name) + '</option>';
+        });
+        if (historyData['general'] && historyData['general'].length) {
+          html += '<option value="general">General (no scenario)</option>';
+        }
+        html += '</select>';
+        html += '<div id="historyList" style="margin-top:10px;"><p style="color:var(--muted);margin:0;font-size:12.5px;">Select a scenario above to view its history.</p></div>';
+        html += '</div>';
+        ov.innerHTML = html;
+        document.body.appendChild(ov);
+
+        var close = function () { ov.remove(); };
+        document.getElementById('histClose').addEventListener('click', close);
+        ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+
+        /* Restore buttons */
+        Array.prototype.forEach.call(ov.querySelectorAll('[data-restore-id]'), function (btn) {
+          btn.addEventListener('click', function () {
+            var id = Number(btn.getAttribute('data-restore-id'));
+            if (!confirm('Restore this point? The current timeline, checklist, casualties, resources and custom scenarios will be replaced (your present state is saved as a restore point first).')) return;
+            if (restoreSnapshot(id)) {
+              flashSaved('restored');
+              setTimeout(function () { location.reload(); }, 400);
+            } else {
+              alert('That restore point could not be found.');
+            }
+          });
+        });
+
+        /* Audit list */
+        var scenSel = document.getElementById('historyScenSel');
+        var listEl = document.getElementById('historyList');
+        var renderList = function (scenarioId) {
+          if (!listEl) return;
+          if (!scenarioId) {
+            listEl.innerHTML = '<p style="color:var(--muted);margin:0;font-size:12.5px;">Select a scenario above to view its history.</p>';
+            return;
+          }
+          var entries = historyData[scenarioId] || [];
+          if (!entries.length) {
+            listEl.innerHTML = '<p style="color:var(--muted);margin:0;font-size:12.5px;">No history recorded for this scenario.</p>';
+            return;
+          }
+          var h = '<div style="display:flex;flex-direction:column;gap:8px;">';
+          entries.slice().reverse().forEach(function (entry) {
+            var date = new Date(entry.timestamp);
+            var dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            var color = entry.action === 'created' ? 'var(--green)'
+                      : entry.action === 'deleted' ? 'var(--red)'
+                      : entry.action === 'updated' ? 'var(--blue)'
+                      : 'var(--muted)';
+            h += '<div style="padding:11px 12px;background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;">';
+            h += '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + color + ';">' + escapeHtml(entry.action) + '</span>';
+            h += '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + dateStr + '</div>';
+            if (entry.details) h += '<div style="font-size:12.5px;color:var(--text);margin-top:6px;">' + escapeHtml(entry.details) + '</div>';
+            h += '</div>';
+          });
+          h += '</div>';
+          listEl.innerHTML = h;
+        };
+        if (scenSel) {
+          var pre = currentScenarioId();
+          if (pre && pre !== 'general' && scenIds[pre]) { scenSel.value = pre; renderList(pre); }
+          scenSel.addEventListener('change', function () { renderList(this.value); });
+        }
+      });
+    }
+
     /* ================= BACKUP / RESTORE (JSON) =================
        Serialises every ttx-* key (except the transient weather
        cache) into one portable JSON file, and restores it back. */
@@ -283,7 +594,8 @@
       'ttx-theme', 'ttx-font-scale',
       'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
       'ttx-custom-scenarios', 'ttx-ics-names',
-      'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events'
+      'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events',
+      'ttx-restore-points', 'ttx-version-history'
     ];
 
     var backupBtn = document.getElementById('backupBtn');
@@ -319,9 +631,13 @@
             var payload = JSON.parse(reader.result);
             var data = payload && payload.data;
             if (payload && payload.app === 'kulhudhuffushi-emergency-dashboard' && data && typeof data === 'object') {
+              pushSnapshot('Before backup restore');
+              suppressHook = true;
               BACKUP_KEYS.forEach(function (k) {
                 if (typeof data[k] === 'string') { localStorage.setItem(k, data[k]); count++; }
               });
+              suppressHook = false;
+              addHistoryEntry(currentScenarioId(), 'updated', 'Backup restored — ' + count + ' entries');
               ok = count > 0;
             }
           } catch (e) { ok = false; }
@@ -454,7 +770,8 @@
         var ov = document.getElementById('scenarioEditorOverlay') ||
                  document.getElementById('compareOverlay') ||
                  document.getElementById('icsOverlay') ||
-                 document.getElementById('changelogOverlay');
+                 document.getElementById('changelogOverlay') ||
+                 document.getElementById('historyOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
@@ -666,6 +983,7 @@
       updateProgress();
 
       reset.addEventListener('click', function () {
+        pushSnapshot('Before checklist reset');
         inputs.forEach(function (i) { i.checked = false; });
         updateProgress();
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
@@ -1146,7 +1464,14 @@
               ? 'Discard your changes and restore the original built-in scenario?'
               : 'Delete scenario "' + editing.name + '"? This cannot be undone.';
             if (!confirm(msg)) return;
+            pushSnapshot('Before scenario delete');
+            suppressHook = true;
             saveCustomScenarios(loadCustomScenarios().filter(function (c) { return c.id !== editing.id; }));
+            suppressHook = false;
+            addHistoryEntry(editing.id, isBuiltin ? 'updated' : 'deleted',
+              isBuiltin ? 'Override discarded — built-in restored' : '"' + editing.name + '" deleted');
+            flashSaved('saved');
+            updateDockCount();
             populateScenarioSelect('');
             if (scenarioSelect) scenarioSelect.dispatchEvent(new Event('change'));
             closeScenarioEditor();
@@ -1673,6 +1998,7 @@
         if (clearBtn) clearBtn.onclick = function () {
           if (!casualties.length) return;
           if (!confirm('Remove all ' + casualties.length + ' casualty cards?')) return;
+          pushSnapshot('Before casualty clear');
           saveCasualties(scenario.id, []);
           renderCasualtyTracker(scenario);
         };
@@ -2023,7 +2349,10 @@
 
     if (timelineClearBtn) {
       timelineClearBtn.addEventListener('click', function () {
-        if (confirm('Clear all timeline events?')) clearTimeline();
+        if (confirm('Clear all timeline events?')) {
+          pushSnapshot('Before timeline clear');
+          clearTimeline();
+        }
       });
     }
 

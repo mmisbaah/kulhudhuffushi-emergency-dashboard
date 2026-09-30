@@ -19,7 +19,7 @@
       if (fs >= 0.8 && fs <= 1.6) document.documentElement.style.zoom = fs;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930q">
+  <link rel="stylesheet" href="css/styles.css?v=20260930r">
 </head>
 <body>
 
@@ -53,6 +53,7 @@
       <button id="backupBtn" class="reset-btn" type="button" title="Download all dashboard data (scenarios, timeline, checklist, casualties) as a JSON backup file">💾 Backup</button>
       <button id="restoreBtn" class="reset-btn" type="button" title="Restore dashboard data from a JSON backup file">📂 Restore</button>
       <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
+      <button id="historyBtn" class="reset-btn" type="button" title="Restore points and per-scenario change history">📜 History</button>
       <button id="themeToggle" class="reset-btn" type="button" title="Cycle theme: dark → light → high contrast — shortcut: Ctrl/Alt + T">☀️</button>
       <div class="status-chip">
         <span class="dot-live"></span>
@@ -65,6 +66,7 @@
     <select id="scenarioSelect">
       <option value="">— Select a scenario —</option>
     </select>
+    <span id="saveChip" class="save-chip" role="status" aria-live="polite"></span>
     <div class="weather" id="weatherWidget" title="Current conditions at VRBK (Open-Meteo)" aria-live="polite"></div>
   </div>
 </header>
@@ -910,17 +912,34 @@
 
 </main>
 
-<footer class="app-footer">
-  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-    <span class="footer-ver" id="footerVer">v2026.09.30</span>
-    <button id="changelogBtn" class="reset-btn" type="button" style="padding:5px 12px;font-size:12px;" title="View version history">🕘 Version History</button>
+<footer class="app-footer app-dock">
+  <div class="wrap dock-inner">
+    <div class="dock-left">
+      <span class="dock-mark">✈</span>
+      <strong>HDK Emergency Exercise</strong>
+      <span class="dock-sub">Incident Commander Dashboard · VRBK / HDK</span>
+    </div>
+    <div class="dock-center">
+      <span id="dockScenarioCount">8 scenarios</span>
+      <span class="dock-sep">·</span>
+      <span>7 sections</span>
+      <span class="dock-sep">·</span>
+      <span>Browser-based, no server — your data stays on this device</span>
+    </div>
+    <div class="dock-right">
+      <span class="dock-kbd">Ctrl+1–7 tabs · Ctrl+T theme · Ctrl+P print</span>
+      <a href="https://github.com/mmisbaah/kulhudhuffushi-emergency-dashboard" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/mmisbaah/kulhudhuffushi-emergency-dashboard/actions/workflows/tests.yml" target="_blank" rel="noopener">Tests</a>
+      <span class="footer-ver" id="footerVer">v2026.09.30</span>
+      <button id="changelogBtn" class="reset-btn" type="button" style="padding:5px 12px;font-size:12px;" title="View version history">🕘 Version History</button>
+    </div>
   </div>
 </footer>
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/data.js?v=20260930q"></script>
-<script src="js/app.js?v=20260930q"></script>
+<script src="js/data.js?v=20260930r"></script>
+<script src="js/app.js?v=20260930r"></script>
 <script>
   /* Register the service worker (PWA/offline). Falls back silently
      on unsupported browsers or file:// (opening from disk). */
