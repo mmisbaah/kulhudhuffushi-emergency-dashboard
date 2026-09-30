@@ -4,6 +4,54 @@
 
 var TTX_DATA = {
 
+  /* Regulatory & guidance references */
+  references: [
+    { src: 'ICAO', doc: 'Annex 14 to the Chicago Convention, Vol. I — Aerodromes',
+      scope: 'International standards for aerodrome design and operations, including aerodrome emergency planning (§9) and exercises.',
+      key: [
+        '§9.2 — emergency plan must be exercised at least every 2 years',
+        '§9.3 — plan covers aircraft accidents and unlawful interference',
+        'Zone system (hot/warm/cold) derived from these standards',
+        'Rescue and firefighting categories (Cat. 1–10) by runway length'
+      ] },
+    { src: 'ICAO', doc: 'Annex 17 — Security; and Doc 8973 (Aviation Security Manual)',
+      scope: 'Unlawful interference framework — applies to the active-shooter and hijack exercise scenarios.',
+      key: [
+        'Aviation security programme requirements for States',
+        'Airport security plan and response coordination',
+        'Threat classification and graduated response levels'
+      ] },
+    { src: 'FAA', doc: 'AC 150/5200-31C — Airport Emergency Plan',
+      scope: 'US guidance on preparing and exercising airport emergency plans — widely used as a structural model.',
+      key: [
+        'Recommended airport emergency plan content and structure',
+        'Exercise guidance: drill, walkthrough, tabletop and full-scale',
+        'Emergency response exercise frequency expectations',
+        'Hot Wash and AAR expectations after each exercise'
+      ] },
+    { src: 'EASA', doc: 'Regulation (EU) No 139/2013, AMC1 GM1 ADR-OPS',
+      scope: 'European aerodrome operations — emergency planning and readiness requirements.',
+      key: [
+        'ADR-OPS-300 — aerodrome emergency plan content',
+        'Exercise frequency and multi-agency participation',
+        'Cooperation with State and local emergency services'
+      ] },
+    { src: 'Maldives', doc: 'MACL Airport Emergency Plan (AEP) + CAAML aerodrome requirements',
+      scope: 'The governing local document — authority, agency roles and reporting lines for VRBK.',
+      key: [
+        'IC designation and ICP-to-EOC reporting lines',
+        'Agency roles: MNDF, Police, MAHAA, Coast Guard, MACL',
+        'Exercise schedule and AAR submission requirements'
+      ] },
+    { src: 'NFPA', doc: 'NFPA 1600 — Standard on Disaster/Emergency Management',
+      scope: 'Programme-level standard for emergency management, business continuity and disaster recovery.',
+      key: [
+        'Emergency management programme elements',
+        'Exercising, evaluation and improvement planning',
+        'Common terminology and training requirements'
+      ] }
+  ],
+
   /* Glossary of emergency-exercise and ICS terms */
   glossary: [
     { term: 'AAR', full: 'After Action Report', def: 'Post-exercise document recording what worked, what failed, and the corrective actions with owners and deadlines.' },

@@ -206,6 +206,30 @@
       });
     }
 
+    /* ================= REGULATORY REFERENCES (data-driven) ================= */
+    var renderReferences = function () {
+      try {
+        var grid = document.getElementById('refGrid');
+        if (!grid || !TTX_DATA.references) return;
+        var html = '';
+        TTX_DATA.references.forEach(function (r) {
+          html += '<div class="ref-card">' +
+            '<div class="ref-head"><span class="ref-src">' + escapeHtml(r.src) + '</span>' +
+            '<h4>' + escapeHtml(r.doc) + '</h4></div>' +
+            '<p class="ref-scope">' + escapeHtml(r.scope) + '</p>' +
+            '<ul class="ref-list">';
+          (r.key || []).forEach(function (k) {
+            html += '<li>' + escapeHtml(k) + '</li>';
+          });
+          html += '</ul></div>';
+        });
+        grid.innerHTML = html;
+      } catch (e) {
+        if (window.console) console.warn('references render skipped:', e);
+      }
+    };
+    renderReferences();
+
     /* ================= VERSION HISTORY (changelog) ================= */
     var APP_VERSION = '2026.09.30';
     var CHANGELOG = [

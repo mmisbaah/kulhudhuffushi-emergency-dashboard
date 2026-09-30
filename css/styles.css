@@ -914,6 +914,52 @@ label.tab.kb-focus{
   .glossary-card{ break-inside:avoid; }
 }
 
+/* ---------- Regulatory references ---------- */
+.ref-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:14px;
+}
+.ref-card{
+  background:var(--panel);
+  border:1px solid var(--line-soft);
+  border-left:4px solid var(--blue);
+  border-radius:var(--radius-sm);
+  padding:15px 16px;
+}
+.ref-card:hover{ border-color:#33507d; }
+.ref-head{ margin-bottom:8px; }
+.ref-src{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--amber);
+  margin-bottom:6px;
+}
+.ref-card h4{ margin:0; font-size:13.5px; font-weight:700; line-height:1.4; }
+.ref-scope{
+  margin:0 0 10px;
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.5;
+}
+.ref-list{
+  margin:0;
+  padding-left:17px;
+  list-style:square;
+}
+.ref-list li{
+  font-size:12px;
+  color:var(--text);
+  margin-bottom:5px;
+  line-height:1.45;
+}
+@media print{
+  .ref-card{ break-inside:avoid; }
+}
+
 /* ---------- Footer / version ---------- */
 .app-footer{
   border-top:1px solid var(--line-soft);
@@ -1425,6 +1471,16 @@ body.lang-dv{
 }
 [data-theme="light"] .glossary-filter::placeholder{ color:#64748b; }
 [data-theme="light"] .glossary-count{ color:#475569; }
+[data-theme="light"] .ref-card{
+  background:#ffffff;
+  border-color:#e2e8f0;
+  border-left-color:#2563eb;
+}
+[data-theme="light"] .ref-card:hover{ border-color:#93c5fd; }
+[data-theme="light"] .ref-card h4{ color:#000000; }
+[data-theme="light"] .ref-scope{ color:#1f2937; }
+[data-theme="light"] .ref-list li{ color:#000000; }
+[data-theme="light"] .ref-src{ color:#b45309; }
 
 /* =====================================================
    HIGH-CONTRAST THEME — solid black/white, thick borders.
@@ -1478,6 +1534,15 @@ body.lang-dv{
 [data-theme="hc"] .g-full{ color:#ffff00; }
 [data-theme="hc"] .g-def,
 [data-theme="hc"] .glossary-count{ color:#ffffff; }
+[data-theme="hc"] .ref-card{
+  background:#000000;
+  border-color:#ffffff;
+  border-left-color:#7ab8ff;
+}
+[data-theme="hc"] .ref-card h4,
+[data-theme="hc"] .ref-scope,
+[data-theme="hc"] .ref-list li{ color:#ffffff; }
+[data-theme="hc"] .ref-src{ color:#ffc107; }
 [data-theme="hc"] .app-header,
 [data-theme="hc"] .tabs,
 [data-theme="hc"] .sub-nav{
