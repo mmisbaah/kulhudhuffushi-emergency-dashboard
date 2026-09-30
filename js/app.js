@@ -595,7 +595,7 @@
       'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
       'ttx-custom-scenarios', 'ttx-ics-names',
       'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events',
-      'ttx-restore-points', 'ttx-version-history'
+      'ttx-restore-points', 'ttx-version-history', 'ttx-clock'
     ];
 
     var backupBtn = document.getElementById('backupBtn');
@@ -739,9 +739,123 @@
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) loadWeather(false);
     });
+
+    /* ---------- Weather search modal: any location (Open-Meteo) ---------- */
+    var renderWxResult = function (loc, w) {
+      var result = document.getElementById('wxSearchResult');
+      if (!result || !w || !w.current) return;
+      var c = w.current;
+      var code = WX_CODES[c.weather_code] || ['🌡', '—'];
+      var wind = Math.round(c.wind_speed_10m);
+      var dir = windDirLabel(c.wind_direction_10m);
+      var temp = Math.round(c.temperature_2m);
+      var feels = Math.round(c.apparent_temperature);
+
+      var html = '<div style="text-align:center;padding:18px;background:var(--panel2);border:1px solid var(--line-soft);border-radius:10px;">';
+      html += '<div style="font-size:44px;margin-bottom:6px;">' + code[0] + '</div>';
+      html += '<div style="font-size:14px;font-weight:600;color:var(--text);">' + escapeHtml(loc.name) + (loc.country ? ', ' + escapeHtml(loc.country) : '') + '</div>';
+      html += '<div style="font-size:32px;font-weight:700;color:var(--text);margin:8px 0 2px;">' + temp + '°C</div>';
+      html += '<div style="font-size:12px;color:var(--muted);">Feels like ' + feels + '°C · ' + code[1] + '</div>';
+      html += '</div>';
+
+      var tile = function (label, value) {
+        return '<div style="padding:11px 12px;background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;">' +
+          '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">' + label + '</div>' +
+          '<div style="font-size:16px;font-weight:600;color:var(--text);margin-top:2px;">' + value + '</div></div>';
+      };
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">';
+      html += tile('Wind', wind + ' kt ' + dir);
+      html += tile('Direction', c.wind_direction_10m + '° ' + dir);
+      html += tile('Humidity', Math.round(c.relative_humidity_2m) + '%');
+      html += tile('Pressure', Math.round(c.pressure_msl) + ' hPa');
+      html += '</div>';
+
+      /* Exercise impact assessment */
+      var impacts = [];
+      if (wind > 30) impacts.push('⚠ High winds — check smoke drift, helicopter and lifting operations');
+      if (temp > 35) impacts.push('⚠ Extreme heat — monitor responders for heat stress');
+      if (temp < 5) impacts.push('⚠ Cold conditions — consider hypothermia risk for casualties');
+      if (c.weather_code >= 500 && c.weather_code < 600) impacts.push('🌧 Rain may reduce visibility and runway conditions');
+      if (c.weather_code >= 200 && c.weather_code < 300) impacts.push('⛈ Thunderstorms — consider lightning safety for outdoor operations');
+      if (c.weather_code === 45 || c.weather_code === 48) impacts.push('🌫 Fog — reduced visibility affects rescue vehicle movement');
+      if (!impacts.length) impacts.push('✓ Weather conditions are favourable for exercise operations');
+
+      html += '<div style="margin-top:12px;padding:12px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.28);border-left:3px solid var(--blue);border-radius:8px;">';
+      html += '<div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px;">Exercise Impact Assessment</div>';
+      impacts.forEach(function (imp) {
+        html += '<div style="font-size:12.5px;color:var(--text);margin-top:4px;">' + imp + '</div>';
+      });
+      html += '</div>';
+      result.innerHTML = html;
+    };
+
+    var openWeatherModal = function () {
+      var existing = document.getElementById('weatherOverlay');
+      if (existing) { existing.remove(); return; }
+
+      var ov = document.createElement('div');
+      ov.id = 'weatherOverlay';
+      ov.className = 'se-overlay';
+      var html = '<div class="se-modal" style="max-width:560px;max-height:84vh;overflow-y:auto;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+      html += '<h3 style="margin:0;font-size:16px;">🌦 Weather anywhere</h3>';
+      html += '<button class="reset-btn" type="button" id="wxClose" style="padding:5px 12px;">✕ Close</button></div>';
+      html += '<p style="color:var(--muted);font-size:12.5px;margin:0 0 12px;">Current conditions for any airport or city worldwide (Open-Meteo, needs internet). The header widget stays fixed to VRBK / Kulhudhuffushi.</p>';
+      html += '<div style="display:flex;gap:8px;">';
+      html += '<input class="se-input" id="wxSearchInput" type="search" placeholder="e.g. Kulhudhuffushi, Malé, London…" style="flex:1;min-width:0;" value="Kulhudhuffushi" aria-label="Search location">';
+      html += '<button class="reset-btn" type="button" id="wxSearchBtn" style="padding:8px 16px;white-space:nowrap;">Search</button>';
+      html += '</div>';
+      html += '<div id="wxSearchResult" style="margin-top:14px;" aria-live="polite"></div>';
+      html += '</div>';
+      ov.innerHTML = html;
+      document.body.appendChild(ov);
+
+      var input = document.getElementById('wxSearchInput');
+      var result = document.getElementById('wxSearchResult');
+      var fetchWx = function () {
+        var q = (input.value || '').trim();
+        if (!q) { result.innerHTML = '<p style="color:var(--red);margin:0;">Enter a location.</p>'; return; }
+        result.innerHTML = '<p style="color:var(--muted);margin:0;">Fetching weather…</p>';
+        var geoUrl = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(q) + '&count=1&language=en&format=json';
+        fetch(geoUrl)
+          .then(function (r) { if (!r.ok) throw new Error('geo ' + r.status); return r.json(); })
+          .then(function (g) {
+            if (!g.results || !g.results.length) {
+              result.innerHTML = '<p style="color:var(--red);margin:0;">Location not found. Try a different city or airport name.</p>';
+              return null;
+            }
+            var loc = g.results[0];
+            var wUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.latitude + '&longitude=' + loc.longitude +
+              '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,pressure_msl' +
+              '&wind_speed_unit=kn&timezone=auto';
+            return fetch(wUrl)
+              .then(function (r2) { if (!r2.ok) throw new Error('wx ' + r2.status); return r2.json(); })
+              .then(function (w) { renderWxResult(loc, w); });
+          })
+          .catch(function () {
+            result.innerHTML = '<p style="color:var(--red);margin:0;">Failed to fetch weather data. Check your internet connection and try again.</p>';
+          });
+      };
+
+      document.getElementById('wxClose').addEventListener('click', function () { ov.remove(); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+      document.getElementById('wxSearchBtn').addEventListener('click', fetchWx);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); fetchWx(); }
+      });
+      input.focus();
+      fetchWx();   /* show the default location straight away */
+    };
+
     if (weatherEl) {
-      weatherEl.addEventListener('click', function () { loadWeather(true); });
+      weatherEl.addEventListener('click', openWeatherModal);
       weatherEl.style.cursor = 'pointer';
+      weatherEl.setAttribute('role', 'button');
+      weatherEl.setAttribute('tabindex', '0');
+      weatherEl.setAttribute('title', 'Current conditions at VRBK — click for weather anywhere');
+      weatherEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWeatherModal(); }
+      });
     }
 
     /* ================= KEYBOARD SHORTCUTS =================
@@ -771,7 +885,8 @@
                  document.getElementById('compareOverlay') ||
                  document.getElementById('icsOverlay') ||
                  document.getElementById('changelogOverlay') ||
-                 document.getElementById('historyOverlay');
+                 document.getElementById('historyOverlay') ||
+                 document.getElementById('weatherOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
@@ -1494,6 +1609,8 @@
         if (ts) ts.style.display = scenario ? '' : 'none';
         /* Editor buttons state */
         if (editBtn) editBtn.disabled = !scenario;
+        /* Exercise clock follows the scenario */
+        if (typeof renderClockPanel === 'function') renderClockPanel();
       });
 
       /* Action buttons next to the select */
@@ -2240,13 +2357,14 @@
       updateUndoButtons();
     };
 
-    var addTimelineEvent = function (time, text, category) {
+    var addTimelineEvent = function (time, text, category, tplus) {
       snapshotTimeline();
       timelineEvents.push({
         id: Date.now() + Math.random().toString(36).substr(2, 9),
         time: time,
         text: text,
         category: category || 'info',
+        tplus: tplus || null,
         timestamp: new Date().toISOString()
       });
       saveTimeline();
@@ -2280,7 +2398,8 @@
         else if (evt.category === 'casualty') catColor = '#ef4444';
 
         html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line-soft);">';
-        html += '<div style="flex:0 0 60px;font-size:12px;font-weight:700;color:' + catColor + ';font-variant-numeric:tabular-nums;">' + evt.time + '</div>';
+        html += '<div style="flex:0 0 60px;font-size:12px;font-weight:700;color:' + catColor + ';font-variant-numeric:tabular-nums;">' + evt.time +
+          (evt.tplus ? '<span class="tl-tplus" title="Exercise clock at release">T+ ' + evt.tplus.replace(/^00:/, '') + '</span>' : '') + '</div>';
         html += '<div style="flex:1;font-size:13px;color:#c4d3e8;">' + evt.text + '</div>';
         html += '<button class="reset-btn" style="flex:0 0 auto;padding:2px 8px;font-size:11px;" onclick="deleteTimelineEvent(\'' + evt.id + '\')">×</button>';
         html += '</div>';
@@ -2298,6 +2417,9 @@
     timelineSection.style.cssText = 'background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px;margin-top:20px;';
 
     var timelineHTML = '<h3 style="margin:0 0 16px;font-size:16px;">' + "Exercise Timeline" + '</h3>';
+
+    /* Exercise clock + inject player (hidden until a scenario is chosen) */
+    timelineHTML += '<div id="clockMount"></div>';
 
     timelineHTML += '<div class="tl-form" style="display:grid;grid-template-columns:100px 1fr 120px auto;gap:8px;margin-bottom:16px;align-items:end;">';
     timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">' + "Time" + '</label><input id="timelineTime" type="text" placeholder="09:30" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
@@ -2376,7 +2498,7 @@
         if (scenarioName) report += 'Scenario: ' + scenarioName + '\n';
         report += 'Generated: ' + new Date().toLocaleString() + '\n\n';
         timelineEvents.forEach(function (evt) {
-          report += '[' + evt.time + '] [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
+          report += '[' + evt.time + ']' + (evt.tplus ? ' [T+' + evt.tplus + ']' : '') + ' [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
         });
         var blob = new Blob([report], { type: 'text/plain' });
         var url = URL.createObjectURL(blob);
@@ -2437,7 +2559,7 @@
         report += 'No events recorded.\n';
       } else {
         timelineEvents.forEach(function (evt) {
-          report += '[' + evt.time + '] [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
+          report += '[' + evt.time + ']' + (evt.tplus ? ' [T+' + evt.tplus + ']' : '') + ' [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
         });
       }
       report += '\n';
@@ -2456,6 +2578,318 @@
       URL.revokeObjectURL(url);
     });
     timelineSection.appendChild(aarBtn);
+
+    /* ================= EXERCISE CLOCK & INJECT PLAYER ================= */
+    var CLOCK_KEY = 'ttx-clock';
+    var clockState = {
+      scenarioId: null, startWall: null, accumulated: 0,
+      running: false, startedAt: null,
+      mode: 'manual', autoLog: true, released: []
+    };
+    try {
+      var rawClock = JSON.parse(localStorage.getItem(CLOCK_KEY) || 'null');
+      if (rawClock && typeof rawClock === 'object') {
+        Object.keys(clockState).forEach(function (k) {
+          if (rawClock[k] !== undefined) clockState[k] = rawClock[k];
+        });
+        if (clockState.running && !clockState.startedAt) clockState.startedAt = Date.now();
+      }
+    } catch (e) {}
+
+    var saveClock = function () {
+      try { localStorage.setItem(CLOCK_KEY, JSON.stringify(clockState)); } catch (e) {}
+      flashSaved('clock');
+    };
+
+    /* Cue (latest released inject) must survive re-renders of the panel */
+    var clockCue = { visible: false, text: '' };
+
+    var resetClockState = function () {
+      clockState.scenarioId = clockScenId();
+      clockState.startWall = null;
+      clockState.accumulated = 0;
+      clockState.running = false;
+      clockState.startedAt = null;
+      clockState.released = [];
+      clockCue.visible = false;
+      clockCue.text = '';
+    };
+
+    var clockElapsed = function () {
+      var ms = clockState.accumulated || 0;
+      if (clockState.running && clockState.startedAt) ms += Date.now() - clockState.startedAt;
+      return ms;
+    };
+
+    var fmtTplus = function (ms) {
+      var s = Math.max(0, Math.floor(ms / 1000));
+      var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+      var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      return pad(h) + ':' + pad(m) + ':' + pad(sec);
+    };
+
+    var clockScenId = function () {
+      var sel = document.getElementById('scenarioSelect');
+      return sel && sel.value ? sel.value : null;
+    };
+
+    var clockScenObj = function () {
+      return findScenario(clockScenId());
+    };
+
+    /* Injects are strings like "09:05 — Aircraft crashes …".
+       Schedule offsets are computed relative to the first parseable time. */
+    var parseInjectSchedule = function (scenario) {
+      var out = [];
+      if (!scenario || !Array.isArray(scenario.injects)) return out;
+      var base = null;
+      scenario.injects.forEach(function (raw, idx) {
+        var text = String(raw), offsetMin = null;
+        var m = String(raw).match(/^\s*(\d{1,2}):(\d{2})\s*(?:—|-|–|:)?\s*(.*)$/);
+        if (m) {
+          var mins = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+          if (base === null) base = mins;
+          offsetMin = mins - base;
+          if (offsetMin < 0) offsetMin += 24 * 60; /* crosses midnight */
+          if (m[3]) text = m[3];
+        }
+        if (offsetMin === null) offsetMin = idx * 5; /* no time in string → every 5 min */
+        out.push({ idx: idx, text: text || String(raw), offsetMs: offsetMin * 60000 });
+      });
+      return out;
+    };
+
+    var clockAudioCtx = null;
+    var beep = function () {
+      try {
+        if (!clockAudioCtx) clockAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (clockAudioCtx.state === 'suspended') clockAudioCtx.resume();
+        [0, 0.24].forEach(function (t, i) {
+          var o = clockAudioCtx.createOscillator();
+          var g = clockAudioCtx.createGain();
+          o.type = 'sine';
+          o.frequency.value = i === 0 ? 880 : 660;
+          g.gain.setValueAtTime(0.0001, clockAudioCtx.currentTime + t);
+          g.gain.exponentialRampToValueAtTime(0.22, clockAudioCtx.currentTime + t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, clockAudioCtx.currentTime + t + 0.2);
+          o.connect(g); g.connect(clockAudioCtx.destination);
+          o.start(clockAudioCtx.currentTime + t);
+          o.stop(clockAudioCtx.currentTime + t + 0.22);
+        });
+      } catch (e) {}
+    };
+
+    var renderCue = function () {
+      var cue = document.getElementById('clockCue');
+      var txt = document.getElementById('clockCueText');
+      if (!cue || !txt) return;
+      txt.textContent = clockCue.text;
+      cue.style.display = clockCue.visible ? 'flex' : 'none';
+    };
+
+    var showCue = function (text) {
+      clockCue.visible = true;
+      clockCue.text = text;
+      renderCue();
+    };
+
+    var releaseInject = function (idx) {
+      var sc = clockScenObj();
+      if (!sc) return;
+      var sched = parseInjectSchedule(sc);
+      var item = sched[idx];
+      if (!item || clockState.released.indexOf(idx) !== -1) return;
+      clockState.released.push(idx);
+      saveClock();
+      beep();
+      showCue(item.text);
+      if (clockState.autoLog) {
+        var now = new Date();
+        var wallDate = clockState.startWall ? new Date(clockState.startWall + clockElapsed()) : now;
+        var wall = wallDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        var tplus = clockState.startWall ? fmtTplus(clockElapsed()) : null;
+        addTimelineEvent(wall, item.text, 'inject', tplus);
+      }
+      renderClockPanel();
+    };
+
+    var renderClockPanel = function () {
+      var mount = document.getElementById('clockMount');
+      if (!mount) return;
+
+      var scId = clockScenId();
+      /* Clock state belongs to one scenario — reset when the user switches */
+      if (scId && clockState.scenarioId && clockState.scenarioId !== scId) {
+        resetClockState();
+        saveClock();
+      }
+      if (scId) clockState.scenarioId = scId;
+
+      var sc = clockScenObj();
+      if (!sc) { mount.innerHTML = ''; return; }
+
+      var sched = parseInjectSchedule(sc);
+      var isRunning = clockState.running;
+      var started = clockState.startWall !== null;
+
+      var html = '<div class="clock-card">';
+      html += '<div class="clock-head"><span class="clock-title">⏱ Exercise Clock</span><span id="clockStatus" class="clock-status">Not started</span></div>';
+      html += '<div class="clock-main">';
+      html += '<div class="clock-tplus" id="clockTplus">T+ 00:00:00</div>';
+      html += '<div class="clock-wall" id="clockWall">Start wall time —</div>';
+      html += '<div class="clock-btns">';
+      html += '<button id="clockStartBtn" class="reset-btn" type="button">' + (isRunning ? '⏸ Pause' : (started ? '▶ Resume' : '▶ Start')) + '</button>';
+      html += '<button id="clockResetBtn" class="reset-btn" type="button">↺ Reset</button>';
+      html += '</div>';
+      html += '<div class="clock-mode">';
+      html += '<label><input type="radio" name="clockPace" value="manual" ' + (clockState.mode !== 'auto' ? 'checked' : '') + '> Manual pacing</label>';
+      html += '<label><input type="radio" name="clockPace" value="auto" ' + (clockState.mode === 'auto' ? 'checked' : '') + '> Auto-release</label>';
+      html += '<label><input type="checkbox" id="clockAutoLog" ' + (clockState.autoLog ? 'checked' : '') + '> Log injects to timeline</label>';
+      html += '</div>';
+      html += '</div>';
+
+      html += '<div class="clock-next" id="clockNext"></div>';
+      html += '<div class="clock-cue" id="clockCue" role="alert" style="display:none;"><span class="cue-bell">🔔</span><span id="clockCueText"></span><button type="button" id="clockCueClose" aria-label="Dismiss inject">✕</button></div>';
+
+      /* Inject player list */
+      html += '<h4 class="clock-inject-h">Exercise Injects</h4>';
+      html += '<div class="inject-list">';
+      var nextIdx = -1;
+      for (var i = 0; i < sched.length; i++) {
+        if (clockState.released.indexOf(sched[i].idx) === -1) { nextIdx = i; break; }
+      }
+      sched.forEach(function (item, i) {
+        var released = clockState.released.indexOf(item.idx) !== -1;
+        var cls = released ? 'done' : (i === nextIdx ? 'next' : 'future');
+        html += '<div class="inject-row ' + cls + '" style="margin-bottom:6px;">';
+        html += '<span class="inject-badge">' + (released ? '✓' : (i + 1)) + '</span>';
+        html += '<span class="inject-time">T+' + fmtTplus(item.offsetMs).replace(/^00:/, '') + '</span>';
+        html += '<span class="inject-text">' + escapeHtml(item.text) + '</span>';
+        if (!released && i === nextIdx && clockState.mode !== 'auto') {
+          html += '<button class="reset-btn inject-release" type="button" data-idx="' + item.idx + '">Release</button>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div>';
+
+      mount.innerHTML = html;
+      renderCue(); /* restore cue (showCue may run before re-renders) */
+
+      /* Controls */
+      var startBtn = document.getElementById('clockStartBtn');
+      startBtn.addEventListener('click', function () {
+        if (clockState.running) {
+          clockState.accumulated = clockElapsed();
+          clockState.running = false;
+          clockState.startedAt = null;
+        } else {
+          if (clockState.startWall === null) clockState.startWall = Date.now();
+          clockState.startedAt = Date.now();
+          clockState.running = true;
+        }
+        saveClock();
+        renderClockPanel();
+      });
+
+      document.getElementById('clockResetBtn').addEventListener('click', function () {
+        if (!confirm('Reset the exercise clock? T+ time and released injects will be cleared (timeline entries already logged are kept).')) return;
+        resetClockState();
+        saveClock();
+        renderClockPanel();
+      });
+
+      Array.prototype.forEach.call(mount.querySelectorAll('input[name="clockPace"]'), function (r) {
+        r.addEventListener('change', function () {
+          clockState.mode = r.value;
+          saveClock();
+          renderClockPanel();
+        });
+      });
+
+      var autoLogEl = document.getElementById('clockAutoLog');
+      if (autoLogEl) {
+        autoLogEl.addEventListener('change', function () {
+          clockState.autoLog = autoLogEl.checked;
+          saveClock();
+        });
+      }
+
+      Array.prototype.forEach.call(mount.querySelectorAll('.inject-release'), function (b) {
+        b.addEventListener('click', function () {
+          releaseInject(parseInt(b.getAttribute('data-idx'), 10));
+        });
+      });
+
+      var cueClose = document.getElementById('clockCueClose');
+      if (cueClose) {
+        cueClose.addEventListener('click', function () {
+          clockCue.visible = false;
+          renderCue();
+        });
+      }
+
+      updateClockLive();
+    };
+
+    var updateClockLive = function () {
+      var tEl = document.getElementById('clockTplus');
+      if (!tEl) return;
+      var elapsed = clockElapsed();
+      tEl.textContent = 'T+ ' + fmtTplus(elapsed);
+
+      var wallEl = document.getElementById('clockWall');
+      wallEl.textContent = clockState.startWall
+        ? 'Wall time ' + new Date(clockState.startWall + elapsed).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        : 'Wall time —';
+
+      var statusEl = document.getElementById('clockStatus');
+      statusEl.textContent = clockState.running ? '● Running' : (clockState.startWall ? '⏸ Paused' : 'Not started');
+      statusEl.classList.toggle('running', clockState.running);
+
+      var startBtn = document.getElementById('clockStartBtn');
+      if (startBtn) startBtn.textContent = clockState.running ? '⏸ Pause' : (clockState.startWall ? '▶ Resume' : '▶ Start');
+
+      /* Next-inject countdown */
+      var nextEl = document.getElementById('clockNext');
+      var sc = clockScenObj();
+      var sched = parseInjectSchedule(sc);
+      var next = null;
+      for (var i = 0; i < sched.length; i++) {
+        if (clockState.released.indexOf(sched[i].idx) === -1) { next = sched[i]; break; }
+      }
+      if (!next) {
+        nextEl.innerHTML = '<b>All injects released ✓</b>';
+      } else if (clockState.mode === 'auto') {
+        var due = next.offsetMs - elapsed;
+        if (due <= 0) {
+          nextEl.innerHTML = '<b>Next inject due now!</b>';
+        } else {
+          nextEl.innerHTML = 'Next inject in <b>' + fmtTplus(due) + '</b> (auto)';
+        }
+      } else {
+        nextEl.innerHTML = 'Next inject ready — press <b>Release</b> when the controller calls it';
+      }
+    };
+
+    var checkAutoDue = function () {
+      if (clockState.mode !== 'auto' || !clockState.running) return;
+      var sc = clockScenObj();
+      var sched = parseInjectSchedule(sc);
+      var elapsed = clockElapsed();
+      sched.forEach(function (item) {
+        if (item.offsetMs <= elapsed && clockState.released.indexOf(item.idx) === -1) {
+          releaseInject(item.idx);
+        }
+      });
+    };
+
+    setInterval(function () {
+      if (!document.getElementById('clockTplus')) return;
+      updateClockLive();
+      checkAutoDue();
+    }, 1000);
+
 
   } catch (err) {
     if (window.console) console.warn('Enhancement script skipped:', err);
