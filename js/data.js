@@ -161,6 +161,78 @@ var TTX_DATA = {
         '16:15 — Runway blocked, airport closed to all traffic',
         '16:20 — Recovery equipment requested from Malé'
       ]
+    },
+    {
+      id: 'water-rescue',
+      name: 'Ditching / Water Rescue',
+      aircraft: 'ATR 72-600',
+      soulsOnBoard: 74,
+      fuelLoad: '5,000 kg',
+      fireInvolved: false,
+      casualties: { red: 5, yellow: 15, green: 40, deceased: 6 },
+      resources: { arff: 1, ambulances: 5, fireTrucks: 1, buses: 2 },
+      injects: [
+        '10:00 — ATR 72 declares emergency, ditches in the lagoon short of Runway 09',
+        '10:04 — Life rafts deployed, passengers in water awaiting recovery',
+        '10:08 — Strong current drifts survivors toward the reef channel',
+        '10:12 — Coast Guard and dive team requested from Kulhudhuffushi harbour',
+        '10:18 — Two passengers unaccounted for in headcount',
+        '10:25 — Aircraft fuselage partially submerged, sinking risk reported'
+      ]
+    },
+    {
+      id: 'volcanic-ash',
+      name: 'Volcanic Ash Arrival',
+      aircraft: 'Dash 8 Q400',
+      soulsOnBoard: 82,
+      fuelLoad: '6,530 L',
+      fireInvolved: false,
+      casualties: { red: 1, yellow: 8, green: 45, deceased: 0 },
+      resources: { arff: 1, ambulances: 2, fireTrucks: 1, buses: 2 },
+      injects: [
+        '08:00 — VAAC Melbourne advises ash cloud approaching Maldivian airspace',
+        '08:20 — Inbound flights diverted; Q400 lands with ash-contaminated engines',
+        '08:35 — Ashfall grounds all operations, visibility dropping on runway',
+        '08:50 — Passengers and crew report respiratory irritation on board',
+        '09:10 — Water supply and eye-wash requested for decontamination',
+        '09:30 — Runway closure declared, aircraft inspection schedule issued'
+      ]
+    },
+    {
+      id: 'active-shooter',
+      name: 'Active Shooter — Terminal',
+      aircraft: null,
+      soulsOnBoard: 150,
+      fuelLoad: 'N/A',
+      fireInvolved: false,
+      casualties: { red: 6, yellow: 10, green: 60, deceased: 4 },
+      resources: { arff: 1, ambulances: 6, fireTrucks: 1, buses: 2 },
+      injects: [
+        '13:00 — Shots reported inside the terminal check-in hall',
+        '13:02 — Police respond; terminal enters lockdown, flights suspended',
+        '13:06 — Casualties reported near the security checkpoint',
+        '13:10 — Suspect movement unknown, CCTV feed partially lost',
+        '13:15 — Family Assistance Center activation requested',
+        '13:22 — Hostage situation reported in the departure lounge'
+      ]
+    },
+    {
+      id: 'earthquake',
+      name: 'Earthquake — Structural Damage',
+      aircraft: null,
+      soulsOnBoard: 200,
+      fuelLoad: 'N/A',
+      fireInvolved: true,
+      casualties: { red: 10, yellow: 30, green: 80, deceased: 8 },
+      resources: { arff: 2, ambulances: 8, fireTrucks: 3, buses: 3 },
+      injects: [
+        '07:30 — M6.4 earthquake strikes; violent shaking felt across the airport',
+        '07:33 — Terminal roof partially collapsed, structural damage reported',
+        '07:36 — Fuel farm fire breaks out at the hydrant system',
+        '07:40 — Runway cracks reported, all aircraft movement stopped',
+        '07:48 — Trapped workers located under collapsed section',
+        '07:55 — Aftershock warning issued; SAR teams pause operations'
+      ]
     }
   ],
 
