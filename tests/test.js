@@ -132,6 +132,18 @@ check('app.js has the map customization editor',
 check('app.js builds map UI via buildMapUI()', appjs.includes('var buildMapUI = function'));
 check('styles.css styles the map editor', css.includes('.maploc-row') && css.includes('.maped-field'));
 
+/* ---------- User guide + PWA update toast ---------- */
+check('index.html has Guide button and dock link',
+  html.includes('id="guideBtn"') && html.includes('id="guideDockLink"'));
+check('app.js builds the user guide modal', appjs.includes('var openGuide') && appjs.includes('guideOverlay'));
+check('changelog dropped the Dhivehi toggle item', !appjs.includes('Dhivehi / English'));
+check('index.html registers SW with update toast',
+  html.includes('updateToast') && html.includes('SKIP_WAITING'));
+const swjs = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+check('sw.js handles SKIP_WAITING', swjs.includes("'SKIP_WAITING'") || swjs.includes('"SKIP_WAITING"'));
+check('sw.js cache is versioned', /hdk-emergency-v\d+/.test(swjs));
+check('styles.css styles guide + toast', css.includes('.guide-toc') && css.includes('#updateToast'));
+
 /* ---------- Static syntax gates ---------- */
 ['js/app.js', 'js/data.js', 'sw.js'].forEach(f => {
   const code = fs.readFileSync(path.join(ROOT, f), 'utf8');

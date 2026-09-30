@@ -19,7 +19,7 @@
       if (fs >= 0.8 && fs <= 1.6) document.documentElement.style.zoom = fs;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930v">
+  <link rel="stylesheet" href="css/styles.css?v=20260930w">
 </head>
 <body>
 
@@ -44,6 +44,7 @@
       </div>
     </div>
     <div class="header-controls">
+      <button id="guideBtn" class="reset-btn" type="button" title="User guide — how to use this dashboard">❔ Guide</button>
       <div class="font-controls" role="group" aria-label="Text size">
         <button id="fontDec" class="reset-btn font-btn" type="button" title="Decrease text size" aria-label="Decrease text size">A−</button>
         <button id="fontReset" class="reset-btn font-btn font-scale" type="button" title="Reset text size to 100%">100%</button>
@@ -929,6 +930,7 @@
     </div>
     <div class="dock-right">
       <span class="dock-kbd">Ctrl+1–7 tabs · Ctrl+T theme · Ctrl+P print</span>
+      <a href="#" id="guideDockLink">Guide</a>
       <a href="https://github.com/mmisbaah/kulhudhuffushi-emergency-dashboard" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/mmisbaah/kulhudhuffushi-emergency-dashboard/actions/workflows/tests.yml" target="_blank" rel="noopener">Tests</a>
       <span class="footer-ver" id="footerVer">v2026.09.30</span>
@@ -942,16 +944,69 @@
 <!-- Print-only container: AAR / ICS markup is written here before window.print() -->
 <div id="printRoot" aria-hidden="true"></div>
 
-<script src="js/data.js?v=20260930v"></script>
-<script src="js/app.js?v=20260930v"></script>
+<script src="js/data.js?v=20260930w"></script>
+<script src="js/app.js?v=20260930w"></script>
 <script>
-  /* Register the service worker (PWA/offline). Falls back silently
-     on unsupported browsers or file:// (opening from disk). */
-  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  /* Service worker (PWA/offline) + "new version ready" toast.
+     The worker WAITS when an update arrives; we offer a Reload toast
+     instead of force-reloading the user mid-exercise. */
+  (function () {
+    if (!('serviceWorker' in navigator)) return;
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
+
+    var updateRequested = false;
+    var refreshing = false;
+
+    var showUpdateToast = function (worker) {
+      if (document.getElementById('updateToast')) return;
+      var toast = document.createElement('div');
+      toast.id = 'updateToast';
+      toast.setAttribute('role', 'status');
+      toast.innerHTML =
+        '<span>🔄 New version ready — reload to update.</span>' +
+        '<button type="button" id="updateToastBtn">Reload</button>' +
+        '<button type="button" id="updateToastX" aria-label="Dismiss update notice">✕</button>';
+      document.body.appendChild(toast);
+      document.getElementById('updateToastBtn').addEventListener('click', function () {
+        updateRequested = true;
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+        if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+        else location.reload();
+      });
+      document.getElementById('updateToastX').addEventListener('click', function () {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      });
+    };
+
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function () {});
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        reg.update().catch(function () {});
+
+        /* A worker may already be waiting from an earlier visit — offer it. */
+        if (reg.waiting && navigator.serviceWorker.controller) showUpdateToast(reg.waiting);
+
+        /* Watch for an update found now or later. */
+        var watch = function (w) {
+          if (!w) return;
+          var check = function () {
+            if (w.state === 'installed' && navigator.serviceWorker.controller) showUpdateToast(w);
+          };
+          w.addEventListener('statechange', check);
+          check();
+        };
+        watch(reg.installing);
+        reg.addEventListener('updatefound', function () { watch(reg.installing); });
+      }).catch(function (err) {
+        if (window.console) console.warn('Service worker registration failed:', err);
+      });
     });
-  }
+
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!updateRequested || refreshing) return;
+      refreshing = true;
+      location.reload();
+    });
+  })();
 </script>
 
 </body>

@@ -220,13 +220,22 @@
     var APP_VERSION = '2026.09.30';
     var CHANGELOG = [
       { v: '2026.09.30', items: [
-        'Dhivehi / English language toggle with RTL layout',
+        'User Guide modal — ❔ Guide button in the header and Guide link in the dock',
+        'Fixed bottom dock with live scenario count, shortcut hints and links',
+        'Save chip plus 📜 History: restore points and a per-scenario audit trail',
+        '⏱ Exercise clock with T+ timer, scheduled inject release and audio cue',
+        '📋 After Action Report modal: live preview, facilitator notes, .md export, copy and print',
+        'ICS forms extended to 201–206 and 209',
+        'Worldwide weather search modal (Open-Meteo geocoding)',
+        '📊 Data summary with scenarios-only export / import',
+        '🗺 Customize Map editor: zone ring radii, location list, JSON export/import',
+        'Update toast when a new version is ready to install',
         'PWA: installable, offline support via service worker',
         'JSON backup / restore of all dashboard data',
         'High-contrast theme (dark → light → high contrast cycle)',
         'Text size controls with Ctrl +/−/0 shortcuts',
         'Accessibility: skip link, visible focus rings, ARIA labels',
-        'Print-friendly export (PDF) and ICS 201/202/203 forms'
+        'Print-friendly export (PDF)'
       ]},
       { v: '2026.09.29', items: [
         'Exercise timeline with inject tracker and undo/redo',
@@ -275,6 +284,178 @@
     }
     var footerVer = document.getElementById('footerVer');
     if (footerVer) footerVer.textContent = 'v' + APP_VERSION;
+
+    /* ================= USER GUIDE ================= */
+    var openGuide = function (e) {
+      if (e) e.preventDefault();
+      var existing = document.getElementById('guideOverlay');
+      if (existing) { existing.remove(); return; }
+
+      var ov = document.createElement('div');
+      ov.id = 'guideOverlay';
+      ov.className = 'se-overlay';
+
+      var html = '<div class="se-modal guide-modal" role="dialog" aria-modal="true" aria-label="User guide" style="max-width:860px;max-height:88vh;overflow-y:auto;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+      html += '<h3 style="margin:0;font-size:17px;">❔ User Guide — How to Use This App</h3>';
+      html += '<button class="reset-btn" type="button" id="guideClose" style="padding:4px 12px;">✕ Close</button></div>';
+      html += '<p class="section-sub" style="margin:0 0 14px;">A browser-based tool for running airport emergency tabletop exercises (TTX). Everything runs locally — no account, no server — and your data stays on this device.</p>';
+
+      html += '<div class="guide-toc">' +
+        '<a href="#g-start">Quick start</a>' +
+        '<a href="#g-layout">Screen layout</a>' +
+        '<a href="#g-tabs">The 7 sections</a>' +
+        '<a href="#g-scenario">Scenarios &amp; timeline</a>' +
+        '<a href="#g-clock">Exercise clock</a>' +
+        '<a href="#g-tools">Header tools</a>' +
+        '<a href="#g-map">Interactive map</a>' +
+        '<a href="#g-checklist">Checklist &amp; flow</a>' +
+        '<a href="#g-keys">Shortcuts</a>' +
+        '<a href="#g-data">Saving &amp; backup</a>' +
+        '<a href="#g-mobile">Mobile &amp; touch</a>' +
+        '<a href="#g-install">Offline install</a>' +
+        '<a href="#g-export">Printing &amp; exports</a>' +
+        '</div>';
+
+      html += '<div class="guide-sec" id="g-start"><h3>🚀 Quick start</h3><ol>' +
+        '<li><strong>Pick a scenario</strong> — choose one in the <strong>Scenario</strong> dropdown in the header (use <strong>+ New</strong> / <strong>✎ Edit</strong> / <strong>⇄ Compare</strong> beside it to build your own). The scenario panel with key facts &amp; injects and the <strong>Exercise Timeline</strong> appear at the top of the page.</li>' +
+        '<li><strong>Review the reference tabs</strong> — use the <strong>7 tabs</strong> below the header to walk through your IC role, team labels, the airport map, incident zones, emergency types, aircraft specs and the exercise flow.</li>' +
+        '<li><strong>Run the exercise</strong> — log injects and decisions in the <strong>Timeline</strong>, start the <strong>⏱ Exercise clock</strong>, check off the <strong>IC Checklist</strong>, and keep <strong>Resources</strong> and <strong>Casualties</strong> up to date as the play unfolds.</li>' +
+        '<li><strong>Wrap up</strong> — open the <strong>📋 After Action Report</strong>, review <strong>📜 History</strong>, back up with <strong>💾 Backup</strong> or <strong>📊 Data</strong>, then print or export the <strong>⬇ Export PDF</strong> package.</li>' +
+        '</ol></div>';
+
+      html += '<div class="guide-sec" id="g-layout"><h3>🖥 Screen layout</h3><ul>' +
+        '<li><strong>Header (top)</strong> — app title plus the tool buttons. It scrolls away as you read, giving the content full space.</li>' +
+        '<li><strong>Scenario row</strong> — the dropdown that selects the active scenario, the scenario action buttons (<strong>+ New</strong>, <strong>✎ Edit</strong>, <strong>⇄ Compare</strong>, <strong>📄 ICS Forms</strong>), the <strong>✓ saved</strong> chip and the live weather widget.</li>' +
+        '<li><strong>Tab bar</strong> — the 7 sections. It stays <strong>pinned to the top</strong> of the screen while you scroll. On phones it scrolls sideways and keeps the active tab in view.</li>' +
+        '<li><strong>Main content</strong> — everything belonging to the selected section.</li>' +
+        '<li><strong>Bottom dock</strong> — app info, live scenario count, shortcut hints, and the <em>Guide · GitHub · Tests</em> links plus the version history.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-tabs"><h3>📑 The 7 sections</h3><table class="guide-table">' +
+        '<tr><th style="width:1%;">Tab</th><th>What\'s inside</th></tr>' +
+        '<tr><td>IC Role</td><td>Incident Commander responsibilities across the three exercise phases: <strong>Before</strong> (preparation), <strong>During</strong> (execution) and <strong>After</strong> (evaluation).</td></tr>' +
+        '<tr><td>Team Labels</td><td><strong>8 ICS role cards</strong> (command and general staff) for assigning tabletop roles to players and participating agencies.</td></tr>' +
+        '<tr><td>Key Locations</td><td>Interactive airport map with <strong>13 draggable numbered pins</strong> in 5 categories, the crash site with zone rings, and a legend with reset buttons and the map editor.</td></tr>' +
+        '<tr><td>Incident Zones</td><td>Concentric hot, warm and cold zone diagram with guidance cards and a casualty-flow diagram through the zones.</td></tr>' +
+        '<tr><td>Emergency Types</td><td>Cards covering the airport emergency categories used in exercises.</td></tr>' +
+        '<tr><td>Aircraft Specs</td><td>Side and top aircraft diagrams (doors, holds, fuel tanks, gear), specs for <strong>6 aircraft</strong>, a <strong>9-type</strong> comparison table, the boarding flow and emergency planning implications.</td></tr>' +
+        '<tr><td>Exercise Flow &amp; Checklist</td><td>The <strong>7-step</strong> exercise flow, the <strong>11-item</strong> IC checklist with a live progress bar, a filterable <strong>glossary</strong> and the <strong>regulatory references</strong> behind the content.</td></tr>' +
+        '</table></div>';
+
+      html += '<div class="guide-sec" id="g-scenario"><h3>🎬 Scenarios &amp; the Exercise Timeline</h3><ul>' +
+        '<li><strong>8 built-in scenarios</strong> cover crashes, fires, spills, ditching, volcanic ash, security and structural events — pick one from the dropdown.</li>' +
+        '<li><strong>+ New / ✎ Edit</strong> opens the scenario editor: name, aircraft, souls on board, category, estimated casualties (red / yellow / green / deceased), required resources (ARFF, ambulances, fire trucks, buses) and exercise injects. Custom scenarios are saved on your device and appear in the dropdown marked <em>(custom)</em>.</li>' +
+        '<li><strong>⇄ Compare</strong> puts two scenarios side by side.</li>' +
+        '<li><strong>Exercise Timeline</strong> (appears once a scenario is selected):' +
+          '<ul><li>Add events: <strong>time</strong>, <strong>description</strong> and a <strong>category</strong> — Info, Inject, Decision, Milestone or Casualty (colour-coded).</li>' +
+          '<li>Delete a single event, or use <strong>↺ Undo / ↻ Redo</strong> (' + '<span class="kg">Ctrl+Z</span> / <span class="kg">Ctrl+Shift+Z</span> or <span class="kg">Ctrl+Y</span>).</li>' +
+          '<li><strong>Clear All Events</strong> — a restore point is saved first, so you can undo it from History.</li>' +
+          '<li><strong>⬇ Export timeline</strong> downloads the log as a timestamped .txt file.</li></ul></li>' +
+        '<li><strong>📋 After Action Report</strong> (button under the timeline) — a live report with 8 sections: scenario, checklist status, resources, casualty totals, exercise clock, full timeline, facilitator notes and a blank improvement plan. Type <strong>notes</strong> (saved as you type), then <strong>Download .md</strong>, <strong>⧉ Copy Markdown</strong> or <strong>🖨 Print</strong>.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-clock"><h3>⏱ Exercise clock &amp; inject player</h3><ul>' +
+        '<li><strong>Start / Pause / Reset</strong> a live T+ clock for the exercise — it survives page reloads.</li>' +
+        '<li>Release injects <strong>manually</strong> one at a time, or let the clock <strong>release them automatically</strong> on the schedule written into the scenario.</li>' +
+        '<li>Released injects are logged to the timeline with a <strong>T+ badge</strong> and an audio cue, and marked <strong>Done</strong> in the schedule.</li>' +
+        '<li>The clock resets when you switch scenarios, and its state is saved on this device.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-tools"><h3>🧰 Header &amp; row tools</h3><ul>' +
+        '<li><strong>❔ Guide</strong> — this help page, always available here and from the dock.</li>' +
+        '<li><strong>A− / 100% / A+</strong> — text size controls (also <span class="kg">Ctrl +/−/0</span>).</li>' +
+        '<li><strong>⬇ Export PDF</strong> — builds a complete exercise package (scenario, ICS forms, resources, casualties, checklist) and opens the print dialog — choose "Save as PDF".</li>' +
+        '<li><strong>💾 Backup / 📂 Restore</strong> — download or reload everything as one JSON file.</li>' +
+        '<li><strong>📊 Data</strong> — statistics tile grid (scenarios, checklist, events, casualties, resources, storage) plus scenarios-only export / import for moving data between devices.</li>' +
+        '<li><strong>📜 History</strong> — restore points (undo destructive actions) and a timestamped audit trail of the last 50 changes per scenario.</li>' +
+        '<li><strong>☀️ Theme</strong> — cycles dark → light → high contrast (<span class="kg">Ctrl+T</span>); your choice is remembered.</li>' +
+        '<li><strong>🌤 Weather</strong> — the widget shows live conditions for VRBK; <strong>click it</strong> to search weather for any place worldwide (needs internet).</li>' +
+        '<li><strong>📄 ICS Forms</strong> — seven styled forms: ICS 201 Briefing, 202 Objectives, 203 Organization, 204 Assignment List, 205 Communications List, 206 Medical Plan and 209 Incident Summary — auto-filled from the scenario, timeline and trackers, with editable names and channels that are remembered.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-map"><h3>🗺 Interactive map (Key Locations tab)</h3><ul>' +
+        '<li>Drag the <strong>numbered pins</strong> with a mouse <em>or a finger</em> to match your airport\'s layout.</li>' +
+        '<li>Drag the <strong>crash site and zone rings</strong> together as one group.</li>' +
+        '<li>The <strong>legend</strong> explains each pin category and includes buttons to reset pin positions and the crash site.</li>' +
+        '<li><strong>✏️ Customize Map</strong> — rename, recategorise, delete and add locations, and tune the <strong>zone ring radii</strong> for both the map and the Incident Zones diagram.</li>' +
+        '<li><strong>⬇ Export JSON / 📂 Import JSON</strong> — move a layout to another device or share it with a co-facilitator; <strong>↺ Reset to defaults</strong> restores factory values (with confirmation and a restore point).</li>' +
+        '<li>Positions, layout and zone sizes are <strong>saved automatically</strong> on this device.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-checklist"><h3>✅ Exercise flow, checklist, glossary &amp; references</h3><ul>' +
+        '<li>The <strong>Exercise Flow</strong> shows the 7-step sequence: select emergency type → define objectives → assign team labels → map key locations → establish zones → run the exercise → debrief &amp; update AEP.</li>' +
+        '<li>Check off each of the <strong>11 IC checklist items</strong> as it is completed; the progress bar and counter track completion.</li>' +
+        '<li><strong>Reset</strong> starts over — a restore point is saved first, and your ticks are kept in the browser between sessions.</li>' +
+        '<li>The <strong>Glossary</strong> (filterable) defines the exercise and ICS terms used above; the <strong>References</strong> cards cite the ICAO, FAA, EASA, MACL and NFPA source documents — useful justification for your AAR.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-keys"><h3>⌨️ Keyboard shortcuts</h3><table class="guide-table">' +
+        '<tr><th style="width:1%;">Keys</th><th>Action</th></tr>' +
+        '<tr><td><span class="kg">Ctrl / Alt + 1–7</span></td><td>Switch section (tabs left to right)</td></tr>' +
+        '<tr><td><span class="kg">Ctrl + T</span> / <span class="kg">Alt + T</span></td><td>Cycle theme (dark → light → high contrast)</td></tr>' +
+        '<tr><td><span class="kg">Ctrl + +</span> / <span class="kg">Ctrl + −</span> / <span class="kg">Ctrl + 0</span></td><td>Text bigger / smaller / reset to 100%</td></tr>' +
+        '<tr><td><span class="kg">Ctrl + Z</span></td><td>Undo the last timeline change</td></tr>' +
+        '<tr><td><span class="kg">Ctrl + Shift + Z</span> / <span class="kg">Ctrl + Y</span></td><td>Redo</td></tr>' +
+        '<tr><td><span class="kg">Esc</span></td><td>Close the open window (guide, forms, trackers, editors…)</td></tr>' +
+        '<tr><td><span class="kg">Ctrl + P</span></td><td>Print the exercise plan</td></tr>' +
+        '</table><p style="font-size:12.5px;color:var(--muted);margin:8px 0 0;">Shortcuts are ignored while you are typing in a field.</p></div>';
+
+      html += '<div class="guide-sec" id="g-data"><h3>💾 Saving, privacy &amp; backup</h3><ul>' +
+        '<li><strong>No account, no server</strong> — everything is stored in this browser on this device.</li>' +
+        '<li>Same device and browser = your scenarios, checklist, timeline, map layout &amp; zone sizes, resource and casualty trackers, clock, ICS names and AAR notes <strong>persist</strong> after you close the tab.</li>' +
+        '<li>Clearing site data — or switching browser/device — <strong>erases it</strong>, so export regularly.</li>' +
+        '<li><strong>💾 Backup / 📂 Restore</strong> — one JSON file with everything.</li>' +
+        '<li><strong>📊 Data → Export Scenarios Only</strong> — share just your custom scenarios with a colleague.</li>' +
+        '<li><strong>📜 History</strong> — restore points are captured automatically before destructive actions, so mistakes are undoable.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-mobile"><h3>📱 Mobile &amp; touch</h3><ul>' +
+        '<li>The tool buttons become <strong>one swipeable row</strong> under the title; the tab bar scrolls sideways and auto-scrolls so the active tab is always visible.</li>' +
+        '<li>Buttons, tabs and checklist items use <strong>larger tap targets</strong>, and the dock keeps its shortcuts out of the way of content.</li>' +
+        '<li>Drag the map pins with your <strong>finger</strong> — dragging never scrolls the page.</li>' +
+        '<li>Form fields use larger text so iOS Safari doesn\'t zoom when you tap them.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-install"><h3>📥 Offline &amp; installing</h3><ul>' +
+        '<li><strong>Works offline</strong> — after the first visit the dashboard loads with <strong>no internet connection</strong> (airport ops networks are unreliable). Weather is the only feature that needs a connection.</li>' +
+        '<li><strong>Install as an app</strong> — use your browser\'s <em>Install app</em> / <em>Add to Home Screen</em> for a home-screen icon and a full-screen window.</li>' +
+        '<li><strong>Updates</strong> — when a new version is published a small reload toast appears; one tap installs it without losing your place.</li>' +
+        '</ul></div>';
+
+      html += '<div class="guide-sec" id="g-export"><h3>🖨 Printing &amp; exports</h3><ul>' +
+        '<li><strong>Ctrl + P</strong> — the full plan in a clean paper layout (header, tabs and dock are left out).</li>' +
+        '<li><strong>⬇ Export PDF</strong> — a monochrome "complete exercise package" for the record.</li>' +
+        '<li><strong>Print (ICS / AAR)</strong> — the ICS forms and the After Action Report print <em>on their own</em>, clean and without the app around them.</li>' +
+        '<li><strong>.txt / .md exports</strong> — the timeline as .txt; the After Action Report as Markdown (.md) with copy-to-clipboard.</li>' +
+        '<li><strong>JSON exports</strong> — full backup, scenarios only, or a map layout, for backup and transfer.</li>' +
+        '</ul>' +
+        '<div class="notice" style="margin-top:12px;"><span class="ni">💡</span>' +
+        '<div><strong>Tip:</strong> this guide is always one tap away — the <strong>❔ Guide</strong> button in the header or the <strong>Guide</strong> link in the bottom dock. The <strong>Tests</strong> link runs the app\'s automated checks, and <strong>GitHub</strong> hosts the source.</div></div>' +
+        '</div>';
+
+      html += '</div>';
+      ov.innerHTML = html;
+      document.body.appendChild(ov);
+
+      document.getElementById('guideClose').addEventListener('click', function () { ov.remove(); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+
+      /* TOC anchors scroll inside the modal instead of moving the page */
+      var modal = ov.querySelector('.guide-modal');
+      ov.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+        if (!a) return;
+        e.preventDefault();
+        var target = modal.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView();
+      });
+    };
+
+    var guideBtn = document.getElementById('guideBtn');
+    if (guideBtn) guideBtn.addEventListener('click', openGuide);
+    var guideDockLink = document.getElementById('guideDockLink');
+    if (guideDockLink) guideDockLink.addEventListener('click', openGuide);
 
     /* ================= SAVE CHIP + RESTORE POINTS + HISTORY ================= */
     /* Subtle "✓ saved" flash in the scenario row whenever exercise
@@ -1071,7 +1252,8 @@
                  document.getElementById('weatherOverlay') ||
                  document.getElementById('aarOverlay') ||
                  document.getElementById('dataOverlay') ||
-                 document.getElementById('mapOverlay');
+                 document.getElementById('mapOverlay') ||
+                 document.getElementById('guideOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }

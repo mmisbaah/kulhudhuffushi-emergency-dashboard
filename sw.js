@@ -11,7 +11,7 @@
      because every asset URL is version-busted with ?v=.
    ===================================================== */
 
-var CACHE = 'hdk-emergency-v1';
+var CACHE = 'hdk-emergency-v2';
 
 var CORE = [
   './',
@@ -31,8 +31,16 @@ self.addEventListener('install', function (event) {
       return Promise.all(CORE.map(function (url) {
         return cache.add(new Request(url, { cache: 'reload' })).catch(function () {});
       }));
-    }).then(function () { return self.skipWaiting(); })
+    })
+    /* NOTE: no skipWaiting() here — the new worker WAITS so the page can
+       show the "new version ready" toast; the user taps Reload, which
+       posts {type:'SKIP_WAITING'} (see the message listener below). */
   );
+});
+
+/* Page asks the waiting worker to take over → toast reload flow */
+self.addEventListener('message', function (event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', function (event) {
