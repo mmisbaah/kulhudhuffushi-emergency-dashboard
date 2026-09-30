@@ -19,7 +19,7 @@
       if (fs >= 0.8 && fs <= 1.6) document.documentElement.style.zoom = fs;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930x">
+  <link rel="stylesheet" href="css/styles.css?v=20260930y">
 </head>
 <body>
 
@@ -56,6 +56,7 @@
       <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
       <button id="dataBtn" class="reset-btn" type="button" title="Data summary, scenario export/import and storage stats">📊 Data</button>
       <button id="historyBtn" class="reset-btn" type="button" title="Restore points and per-scenario change history">📜 History</button>
+      <button id="printBtn" class="reset-btn" type="button" title="Print the whole exercise plan — every section, one per page (shortcut: Ctrl+P)">🖨️ Print</button>
       <button id="themeToggle" class="reset-btn" type="button" title="Cycle theme: dark → light → high contrast — shortcut: Ctrl/Alt + T">☀️</button>
       <div class="status-chip">
         <span class="dot-live"></span>
@@ -63,6 +64,7 @@
       </div>
     </div>
   </div>
+  <div class="print-header" id="printHeader"><span>Kulhudhuffushi Airport — Emergency Exercise Plan · VRBK / HDK</span><span id="printDate"></span></div>
   <div class="wrap scenario-row">
     <label for="scenarioSelect" class="scenario-label">Scenario:</label>
     <select id="scenarioSelect">
@@ -944,8 +946,8 @@
 <!-- Print-only container: AAR / ICS markup is written here before window.print() -->
 <div id="printRoot" aria-hidden="true"></div>
 
-<script src="js/data.js?v=20260930x"></script>
-<script src="js/app.js?v=20260930x"></script>
+<script src="js/data.js?v=20260930y"></script>
+<script src="js/app.js?v=20260930y"></script>
 <script>
   /* Service worker (PWA/offline) + "new version ready" toast.
      The worker WAITS when an update arrives; we offer a Reload toast

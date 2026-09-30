@@ -235,7 +235,13 @@
         'High-contrast theme (dark → light → high contrast cycle)',
         'Text size controls with Ctrl +/−/0 shortcuts',
         'Accessibility: skip link, visible focus rings, ARIA labels',
-        'Print-friendly export (PDF)'
+        'Print-friendly export (PDF)',
+        '🖨️ Print button + Ctrl+P — full-plan print with a dated print header',
+        'Resource tracker: per-type location & notes, ⬇ Export status (.txt), ↺ Reset all (restore point)',
+        'Casualty cards: location field + ⬇ Export casualty report (.txt)',
+        'Police / security and medical team resource types across tracker, panel, ICS, AAR and PDF',
+        'Scenario library grown to 17 built-ins — every sibling-app scenario plus 4 exclusive',
+        'Ctrl+E shortcut opens the scenario editor'
       ]},
       { v: '2026.09.29', items: [
         'Exercise timeline with inject tracker and undo/redo',
@@ -344,8 +350,8 @@
         '</table></div>';
 
       html += '<div class="guide-sec" id="g-scenario"><h3>🎬 Scenarios &amp; the Exercise Timeline</h3><ul>' +
-        '<li><strong>8 built-in scenarios</strong> cover crashes, fires, spills, ditching, volcanic ash, security and structural events — pick one from the dropdown.</li>' +
-        '<li><strong>+ New / ✎ Edit</strong> opens the scenario editor: name, aircraft, souls on board, category, estimated casualties (red / yellow / green / deceased), required resources (ARFF, ambulances, fire trucks, buses) and exercise injects. Custom scenarios are saved on your device and appear in the dropdown marked <em>(custom)</em>.</li>' +
+        '<li><strong>17 built-in scenarios</strong> cover crashes, fires, spills, ditching, volcanic ash, security, structural, bomb threat, power failure, medical, runway incursion, severe weather, hijack, mass casualty, hazMat and perimeter events — pick one from the dropdown.</li>' +
+        '<li><strong>+ New / ✎ Edit</strong> (<span class="kg">Ctrl+E</span>) opens the scenario editor: name, aircraft, souls on board, category, estimated casualties (red / yellow / green / deceased), required resources (ARFF, ambulances, fire trucks, buses, police/security, medical teams) and exercise injects. Custom scenarios are saved on your device and appear in the dropdown marked <em>(custom)</em>.</li>' +
         '<li><strong>⇄ Compare</strong> puts two scenarios side by side.</li>' +
         '<li><strong>Exercise Timeline</strong> (appears once a scenario is selected):' +
           '<ul><li>Add events: <strong>time</strong>, <strong>description</strong> and a <strong>category</strong> — Info, Inject, Decision, Milestone or Casualty (colour-coded).</li>' +
@@ -364,6 +370,7 @@
 
       html += '<div class="guide-sec" id="g-tools"><h3>🧰 Header &amp; row tools</h3><ul>' +
         '<li><strong>❔ Guide</strong> — this help page, always available here and from the dock.</li>' +
+        '<li><strong>🖨️ Print</strong> — prints the whole plan (every section, one per page) with a dated print header; shortcut <span class="kg">Ctrl+P</span>.</li>' +
         '<li><strong>A− / 100% / A+</strong> — text size controls (also <span class="kg">Ctrl +/−/0</span>).</li>' +
         '<li><strong>⬇ Export PDF</strong> — builds a complete exercise package (scenario, ICS forms, resources, casualties, checklist) and opens the print dialog — choose "Save as PDF".</li>' +
         '<li><strong>💾 Backup / 📂 Restore</strong> — download or reload everything as one JSON file.</li>' +
@@ -372,6 +379,8 @@
         '<li><strong>☀️ Theme</strong> — cycles dark → light → high contrast (<span class="kg">Ctrl+T</span>); your choice is remembered.</li>' +
         '<li><strong>🌤 Weather</strong> — the widget shows live conditions for VRBK; <strong>click it</strong> to search weather for any place worldwide (needs internet).</li>' +
         '<li><strong>📄 ICS Forms</strong> — seven styled forms: ICS 201 Briefing, 202 Objectives, 203 Organization, 204 Assignment List, 205 Communications List, 206 Medical Plan and 209 Incident Summary — auto-filled from the scenario, timeline and trackers, with editable names and channels that are remembered.</li>' +
+        '<li><strong>🚒 Resources</strong> — track required units per type (ARFF, ambulances, fire trucks, buses, police/security, medical teams) with per-type <strong>location &amp; notes</strong>, <strong>⬇ Export status</strong> as a .txt report, or <strong>↺ Reset all</strong> deployments (a restore point is saved first).</li>' +
+        '<li><strong>🚑 Casualties</strong> — per-patient cards with triage, <strong>location</strong>, transport status and notes; <strong>⬇ Export</strong> a casualty report (.txt) or <strong>Clear</strong> all (a restore point is saved first).</li>' +
         '</ul></div>';
 
       html += '<div class="guide-sec" id="g-map"><h3>🗺 Interactive map (Key Locations tab)</h3><ul>' +
@@ -393,6 +402,7 @@
       html += '<div class="guide-sec" id="g-keys"><h3>⌨️ Keyboard shortcuts</h3><table class="guide-table">' +
         '<tr><th style="width:1%;">Keys</th><th>Action</th></tr>' +
         '<tr><td><span class="kg">Ctrl / Alt + 1–7</span></td><td>Switch section (tabs left to right)</td></tr>' +
+        '<tr><td><span class="kg">Ctrl + E</span></td><td>Open the scenario editor</td></tr>' +
         '<tr><td><span class="kg">Ctrl + T</span> / <span class="kg">Alt + T</span></td><td>Cycle theme (dark → light → high contrast)</td></tr>' +
         '<tr><td><span class="kg">Ctrl + +</span> / <span class="kg">Ctrl + −</span> / <span class="kg">Ctrl + 0</span></td><td>Text bigger / smaller / reset to 100%</td></tr>' +
         '<tr><td><span class="kg">Ctrl + Z</span></td><td>Undo the last timeline change</td></tr>' +
@@ -424,10 +434,10 @@
         '</ul></div>';
 
       html += '<div class="guide-sec" id="g-export"><h3>🖨 Printing &amp; exports</h3><ul>' +
-        '<li><strong>Ctrl + P</strong> — the full plan in a clean paper layout (header, tabs and dock are left out).</li>' +
+        '<li><strong>🖨️ Print / Ctrl + P</strong> — the full plan in a clean paper layout (header, tabs and dock are left out).</li>' +
         '<li><strong>⬇ Export PDF</strong> — a monochrome "complete exercise package" for the record.</li>' +
         '<li><strong>Print (ICS / AAR)</strong> — the ICS forms and the After Action Report print <em>on their own</em>, clean and without the app around them.</li>' +
-        '<li><strong>.txt / .md exports</strong> — the timeline as .txt; the After Action Report as Markdown (.md) with copy-to-clipboard.</li>' +
+        '<li><strong>.txt / .md exports</strong> — the timeline, resource status and casualty report as .txt; the After Action Report as Markdown (.md) with copy-to-clipboard.</li>' +
         '<li><strong>JSON exports</strong> — full backup, scenarios only, or a map layout, for backup and transfer.</li>' +
         '</ul>' +
         '<div class="notice" style="margin-top:12px;"><span class="ni">💡</span>' +
@@ -478,7 +488,7 @@
     var SNAPSHOT_MAX = 15;
     var STATE_FIELDS = [
       'ttx-timeline-events', 'ttx-checklist-state', 'ttx-casualties',
-      'ttx-resource-deployed', 'ttx-custom-scenarios'
+      'ttx-resource-deployed', 'ttx-resource-meta', 'ttx-custom-scenarios'
     ];
     var suppressHook = false;
 
@@ -545,6 +555,7 @@
       'ttx-checklist-state':    'Checklist updated',
       'ttx-casualties':         'Casualties updated',
       'ttx-resource-deployed':  'Resources updated',
+      'ttx-resource-meta':      'Resource details updated',
       'ttx-custom-scenarios':   'Scenario library updated',
       'ttx-pin-positions':      'Map pins moved',
       'ttx-crash-zone-positions': 'Crash zone moved',
@@ -553,7 +564,7 @@
     };
     var AUDIT_KEYS = {
       'ttx-timeline-events': 1, 'ttx-checklist-state': 1, 'ttx-casualties': 1,
-      'ttx-resource-deployed': 1, 'ttx-custom-scenarios': 1
+      'ttx-resource-deployed': 1, 'ttx-resource-meta': 1, 'ttx-custom-scenarios': 1
     };
 
     var summarizeState = function (key) {
@@ -581,6 +592,19 @@
             }
           });
           return d + ' units deployed';
+        }
+        if (key === 'ttx-resource-meta') {
+          var m = pickJSON(key) || {}; var n = 0;
+          Object.keys(m).forEach(function (s) {
+            var o = m[s];
+            if (o && typeof o === 'object') {
+              Object.keys(o).forEach(function (t) {
+                var v = o[t];
+                if (v && (v.location || v.notes)) n++;
+              });
+            }
+          });
+          return n + ' detail' + (n === 1 ? '' : 's') + ' saved';
         }
         if (key === 'ttx-custom-scenarios') {
           var sc = pickJSON(key) || [];
@@ -776,7 +800,8 @@
       'ttx-theme', 'ttx-font-scale',
       'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
       'ttx-custom-scenarios', 'ttx-ics-names',
-      'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events',
+      'ttx-casualties', 'ttx-resource-deployed', 'ttx-resource-meta',
+      'ttx-timeline-events',
       'ttx-restore-points', 'ttx-version-history', 'ttx-clock', 'ttx-aar-notes',
       'ttx-map-config'
     ];
@@ -1241,6 +1266,21 @@
         el.isContentEditable;
     };
 
+    /* ---------- Full-plan print (header button + Ctrl+P) ---------- */
+    var fullPlanPrint = function () {
+      /* clear any markup-print leftovers from the AAR / ICS flows */
+      document.body.classList.remove('print-markup');
+      var pr = document.getElementById('printRoot');
+      if (pr) pr.innerHTML = '';
+      window.print();
+    };
+    var printBtn = document.getElementById('printBtn');
+    if (printBtn) printBtn.addEventListener('click', fullPlanPrint);
+    window.addEventListener('beforeprint', function () {
+      var pd = document.getElementById('printDate');
+      if (pd) pd.textContent = 'Printed: ' + new Date().toLocaleString();
+    });
+
     document.addEventListener('keydown', function (e) {
       /* Esc closes the scenario editor / comparison / ICS forms (even while typing) */
       if (e.key === 'Escape') {
@@ -1261,6 +1301,13 @@
       if (e.metaKey || e.ctrlKey && e.altKey) return;
       if (isTypingTarget(e.target)) return;
 
+      /* Print the whole plan: Ctrl+P */
+      if (e.ctrlKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        fullPlanPrint();
+        return;
+      }
+
       /* Timeline undo/redo: Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z */
       if (e.ctrlKey && (e.key === 'z' || e.key === 'Z' || e.key === 'y' || e.key === 'Y')) {
         var tl = document.getElementById('timelineSection');
@@ -1279,6 +1326,15 @@
       if (e.key === 't' || e.key === 'T') {
         e.preventDefault();
         if (themeToggle) themeToggle.click();
+        return;
+      }
+
+      /* Scenario editor: Ctrl+E */
+      if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault();
+        var seb = document.getElementById('scenEditBtn');
+        if (seb && !seb.disabled) seb.click();
+        else { var snb = document.getElementById('scenNewBtn'); if (snb) snb.click(); }
         return;
       }
 
@@ -2254,7 +2310,7 @@
       var sc = editing || {
         name: '', aircraft: '', soulsOnBoard: '', fuelLoad: '', fireInvolved: false,
         casualties: { red: 0, yellow: 0, green: 0, deceased: 0 },
-        resources: { arff: 0, ambulances: 0, fireTrucks: 0, buses: 0 },
+        resources: { arff: 0, ambulances: 0, fireTrucks: 0, buses: 0, police: 0, medical: 0 },
         injects: []
       };
       var isCustom = editing ? isCustomScenario(editing.id) : false;
@@ -2294,6 +2350,8 @@
       html += numField('se-amb', 'Ambulances', sc.resources.ambulances);
       html += numField('se-firetrucks', 'Fire trucks', sc.resources.fireTrucks);
       html += numField('se-buses', 'Buses', sc.resources.buses);
+      html += numField('se-police', 'Police / security', sc.resources.police);
+      html += numField('se-medical', 'Medical teams', sc.resources.medical);
       html += '</div>';
 
       html += '<div class="se-field"><label for="se-injects">Exercise injects <span class="se-hint">(one per line, start with time e.g. 09:00 —)</span></label>' +
@@ -2327,7 +2385,7 @@
           fuelLoad: document.getElementById('se-fuel').value.trim() || 'N/A',
           fireInvolved: document.getElementById('se-fire').checked,
           casualties: { red: v('se-red'), yellow: v('se-yellow'), green: v('se-green'), deceased: v('se-deceased') },
-          resources: { arff: v('se-arff'), ambulances: v('se-amb'), fireTrucks: v('se-firetrucks'), buses: v('se-buses') },
+          resources: { arff: v('se-arff'), ambulances: v('se-amb'), fireTrucks: v('se-firetrucks'), buses: v('se-buses'), police: v('se-police'), medical: v('se-medical') },
           injects: document.getElementById('se-injects').value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean)
         };
         var customs = loadCustomScenarios();
@@ -2387,6 +2445,7 @@
       var newBtn = document.createElement('button');
       newBtn.type = 'button';
       newBtn.className = 'reset-btn';
+      newBtn.id = 'scenNewBtn';
       newBtn.textContent = "+ New";
       newBtn.title = 'Create a new scenario';
       newBtn.addEventListener('click', function () { openScenarioEditor('new'); });
@@ -2394,6 +2453,7 @@
       var editBtn = document.createElement('button');
       editBtn.type = 'button';
       editBtn.className = 'reset-btn';
+      editBtn.id = 'scenEditBtn';
       editBtn.textContent = "✎ Edit";
       editBtn.title = 'Edit the selected scenario';
       editBtn.disabled = true;
@@ -2483,6 +2543,8 @@
           ['Ambulances', function (s) { return (s.resources && s.resources.ambulances) || 0; }, 'num'],
           ['Fire Trucks', function (s) { return (s.resources && s.resources.fireTrucks) || 0; }, 'num'],
           ['Buses', function (s) { return (s.resources && s.resources.buses) || 0; }, 'num'],
+          ['Police / Security', function (s) { return (s.resources && s.resources.police) || 0; }, 'num'],
+          ['Medical Teams', function (s) { return (s.resources && s.resources.medical) || 0; }, 'num'],
           ['Exercise Injects', function (s) { return (s.injects || []).length; }, 'num']
         ];
 
@@ -2662,7 +2724,8 @@
               (c.green || 0) + ' green · ' + (c.deceased || 0) + ' deceased.</p>';
             var r = sc.resources || {};
             h += '<p>Resources requested: ' + (r.arff || 0) + ' ARFF · ' + (r.ambulances || 0) + ' ambulances · ' +
-              (r.fireTrucks || 0) + ' fire trucks · ' + (r.buses || 0) + ' buses.</p>';
+              (r.fireTrucks || 0) + ' fire trucks · ' + (r.buses || 0) + ' buses · ' +
+              (r.police || 0) + ' police/security · ' + (r.medical || 0) + ' medical teams.</p>';
           } else {
             h += '<p>No scenario selected — fill in manually.</p>';
           }
@@ -2752,7 +2815,8 @@
             ['Command', 'Establish ICP, unified command, overall control', 'ICP, command staff', 'Command channel'],
             ['ARFF', 'Extinguish fire, rescue trapped occupants', 'ARFF × ' + (res.arff != null ? res.arff : '____'), 'Fire ground channel'],
             ['EMS / Triage', 'Triage, treatment, transport', 'Ambulances × ' + (res.ambulances != null ? res.ambulances : '____'), 'EMS channel'],
-            ['Security / Perimeter', 'Establish cordon, control access', 'Police / security unit', 'Security channel'],
+            ['Medical', 'On-scene treatment, casualty care', 'Medical teams × ' + (res.medical != null ? res.medical : '____'), 'EMS channel'],
+            ['Security / Perimeter', 'Establish cordon, control access', 'Police × ' + (res.police != null ? res.police : '____'), 'Security channel'],
             ['Logistics', 'Staging, resupply, communications', 'Staging area, comms unit', 'Logistics channel'],
             ['Family Assistance', 'Support for families and survivors', 'FAC team', 'FAC channel']
           ];
@@ -2797,7 +2861,7 @@
           h += '<table class="ics-table"><thead><tr><th>Resource</th><th>Quantity</th><th>Base / Location</th><th>Notes</th></tr></thead><tbody>';
           var med = [
             ['Ambulances', res.ambulances != null ? String(res.ambulances) : '____', 'Transport to hospital'],
-            ['Medical teams', '____', 'On-scene treatment'],
+            ['Medical teams', res.medical != null ? String(res.medical) : '____', 'On-scene treatment'],
             ['Hospital — primary', '1', 'Receiving hospital'],
             ['Hospital — secondary', '1', 'Backup / overflow']
           ];
@@ -2903,6 +2967,8 @@
       scenario.resources.ambulances = n(scenario.resources.ambulances);
       scenario.resources.fireTrucks = n(scenario.resources.fireTrucks);
       scenario.resources.buses = n(scenario.resources.buses);
+      scenario.resources.police = n(scenario.resources.police);
+      scenario.resources.medical = n(scenario.resources.medical);
       if (scenario.soulsOnBoard === null || scenario.soulsOnBoard === undefined) scenario.soulsOnBoard = 0;
       if (!scenario.fuelLoad) scenario.fuelLoad = 'N/A';
 
@@ -2928,6 +2994,8 @@
       html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.ambulances + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Ambulances" + '</span></div>';
       html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.fireTrucks + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Fire Trucks" + '</span></div>';
       html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.buses + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Buses" + '</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.police + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Police / Security" + '</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.medical + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Medical Teams" + '</span></div>';
       html += '</div>';
 
       /* ---- Resource tracker: deployed vs available (persisted per scenario) ---- */
@@ -2939,6 +3007,7 @@
       html += '<div class="ct-toolbar">';
       html += '<button class="reset-btn" type="button" id="ctAdd" title="Add a casualty card">' + "+ Add Casualty" + '</button>';
       html += '<button class="reset-btn" type="button" id="ctSeed" title="Create one card per estimated casualty in the scenario">' + "Generate from Estimates" + '</button>';
+      html += '<button class="reset-btn" type="button" id="ctExport" title="Download the casualty report as a .txt file">' + "⬇ Export" + '</button>';
       html += '<button class="reset-btn" type="button" id="ctClear" title="Remove all casualty cards">' + "Clear" + '</button>';
       html += '<span class="ct-tally" id="ctTally"></span>';
       html += '</div>';
@@ -2983,6 +3052,7 @@
         ref: seq,
         triage: triage || 'Red (Immediate)',
         transport: 'Awaiting transport',
+        location: '',
         note: ''
       };
     };
@@ -2995,6 +3065,7 @@
 
       var addBtn = document.getElementById('ctAdd');
       var seedBtn = document.getElementById('ctSeed');
+      var exportBtn = document.getElementById('ctExport');
       var clearBtn = document.getElementById('ctClear');
       var tally = document.getElementById('ctTally');
 
@@ -3020,6 +3091,41 @@
           });
           saveCasualties(scenario.id, arr);
           renderCasualtyTracker(scenario);
+        };
+        if (exportBtn) exportBtn.onclick = function () {
+          var lines = [];
+          lines.push('CASUALTY REPORT');
+          lines.push('Scenario: ' + (scenario.name || ''));
+          lines.push('Generated: ' + new Date().toLocaleString());
+          lines.push('==================================================');
+          if (!casualties.length) {
+            lines.push('No casualty cards recorded.');
+          }
+          casualties.forEach(function (c, idx) {
+            lines.push('');
+            lines.push('Tag: C-' + (idx + 1));
+            lines.push('  Triage: ' + (c.triage || ''));
+            lines.push('  Location: ' + (c.location || 'N/A'));
+            lines.push('  Transport: ' + (c.transport || ''));
+            lines.push('  Notes: ' + (c.note || 'N/A'));
+          });
+          var counts = {};
+          casualties.forEach(function (c) { counts[c.triage] = (counts[c.triage] || 0) + 1; });
+          var transported = casualties.filter(function (c) { return c.transport !== 'Awaiting transport'; }).length;
+          lines.push('');
+          lines.push('Summary: ' + casualties.length + ' total · ' +
+            (counts['Red (Immediate)'] || 0) + ' red · ' +
+            (counts['Yellow (Delayed)'] || 0) + ' yellow · ' +
+            (counts['Green (Minor)'] || 0) + ' green · ' +
+            (counts['Deceased'] || 0) + ' deceased · ' +
+            transported + ' transported');
+          var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'Casualty-Report-' + new Date().toISOString().slice(0, 10) + '.txt';
+          a.click();
+          URL.revokeObjectURL(url);
         };
         if (clearBtn) clearBtn.onclick = function () {
           if (!casualties.length) return;
@@ -3063,6 +3169,8 @@
         h += '<div class="ct-card ' + triageCls + '" data-ct="' + c.id + '">';
         h += '<div class="ct-head"><span class="ct-ref">C-' + (idx + 1) + '</span>';
         h += '<button class="ct-del" type="button" title="Remove this casualty" aria-label="Remove casualty C-' + (idx + 1) + '">×</button></div>';
+        h += '<label class="ct-lbl">' + "Location" + '</label>';
+        h += '<input class="ct-loc" type="text" placeholder="Where found / treated" value="" aria-label="Location for C-' + (idx + 1) + '">';
         h += '<label class="ct-lbl">' + "Triage" + '</label>';
         h += '<select class="ct-sel ct-triage" aria-label="Triage status for C-' + (idx + 1) + '">';
         CT_TRIAGE.forEach(function (t) {
@@ -3080,10 +3188,13 @@
       });
       wrap.innerHTML = h;
 
-      /* Fix the note value attribute (needs escaped value) */
+      /* Fix the note/location value attributes (need escaped values) */
       casualties.forEach(function (c, idx) {
         var card = wrap.children[idx];
-        if (card) card.querySelector('.ct-note').value = c.note || '';
+        if (card) {
+          card.querySelector('.ct-note').value = c.note || '';
+          card.querySelector('.ct-loc').value = c.location || '';
+        }
       });
 
       wrap.querySelectorAll('.ct-card').forEach(function (card) {
@@ -3108,6 +3219,10 @@
 
         card.querySelector('.ct-note').addEventListener('input', function (e) {
           update({ note: e.target.value });
+        });
+
+        card.querySelector('.ct-loc').addEventListener('input', function (e) {
+          update({ location: e.target.value });
         });
 
         card.querySelector('.ct-del').addEventListener('click', function () {
@@ -3141,8 +3256,68 @@
       { key: 'arff',        labelKey: 'panel.arff' },
       { key: 'ambulances',  labelKey: 'panel.ambulances' },
       { key: 'fireTrucks',  labelKey: 'panel.fireTrucks' },
-      { key: 'buses',       labelKey: 'panel.buses' }
+      { key: 'buses',       labelKey: 'panel.buses' },
+      { key: 'police',      labelKey: 'panel.police' },
+      { key: 'medical',     labelKey: 'panel.medical' }
     ];
+    var RT_LABELS = {
+      arff: 'ARFF Vehicles', ambulances: 'Ambulances', fireTrucks: 'Fire Trucks',
+      buses: 'Buses', police: 'Police / Security', medical: 'Medical Teams'
+    };
+
+    /* Per-type location & notes (reference detail, persisted per scenario) */
+    var META_KEY = 'ttx-resource-meta';
+    var openMetaKeys = {};   /* scenId:type → details row open (session-only) */
+
+    var loadMeta = function (scenarioId) {
+      try {
+        var all = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+        var m = all[scenarioId];
+        return (m && typeof m === 'object') ? m : {};
+      } catch (e) { return {}; }
+    };
+
+    var saveMeta = function (scenarioId, obj) {
+      try {
+        var all = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+        all[scenarioId] = obj;
+        localStorage.setItem(META_KEY, JSON.stringify(all));
+      } catch (e) {}
+    };
+
+    /* Download the resource status report as a timestamped .txt */
+    var exportResourceStatus = function (scenario) {
+      var required = scenario.resources || {};
+      var deployed = loadDeployed(scenario.id);
+      var meta = loadMeta(scenario.id);
+      var lines = [];
+      lines.push('RESOURCE STATUS REPORT');
+      lines.push('Scenario: ' + (scenario.name || ''));
+      lines.push('Generated: ' + new Date().toLocaleString());
+      lines.push('==================================================');
+      var totalNeed = 0, totalHave = 0;
+      RT_TYPES.forEach(function (rt) {
+        var need = Number(required[rt.key]) || 0;
+        var have = Math.min(Number(deployed[rt.key]) || 0, need);
+        var lbl = RT_LABELS[rt.key] || rt.key;
+        totalNeed += need;
+        totalHave += have;
+        lines.push('');
+        lines.push(lbl + ': ' + have + '/' + need + ' deployed (' + (need - have) + ' available)');
+        var m = meta[rt.key] || {};
+        if (m.location) lines.push('  Location: ' + m.location);
+        if (m.notes) lines.push('  Notes: ' + m.notes);
+      });
+      lines.push('');
+      lines.push('Total: ' + totalHave + ' of ' + totalNeed + ' units deployed');
+      var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'Resource-Status-' + new Date().toISOString().slice(0, 10) + '.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
 
     function renderResourceTracker(scenario) {
       var wrap = document.getElementById('resourceTracker');
@@ -3150,15 +3325,17 @@
 
       var required = scenario.resources || {};
       var deployed = loadDeployed(scenario.id);
+      var meta = loadMeta(scenario.id);
 
       var h = '';
-      var RT_LABELS = { arff: 'ARFF Vehicles', ambulances: 'Ambulances', fireTrucks: 'Fire Trucks', buses: 'Buses' };
       RT_TYPES.forEach(function (rt) {
         var lbl = RT_LABELS[rt.key] || rt.key;
         var need = Number(required[rt.key]) || 0;
         var have = Math.min(Number(deployed[rt.key]) || 0, need);
         var pct = need === 0 ? 100 : Math.round((have / need) * 100);
         var statusCls = need === 0 ? 'rt-ok' : (have >= need ? 'rt-ok' : (have > 0 ? 'rt-part' : 'rt-none'));
+        var m = meta[rt.key] || {};
+        var open = !!openMetaKeys[scenario.id + ':' + rt.key];
 
         h += '<div class="rt-item">';
         h += '<div class="rt-label">' + lbl + '</div>';
@@ -3169,6 +3346,11 @@
         h += '</div>';
         h += '<div class="rt-bar"><div class="rt-fill ' + statusCls + '" style="width:' + pct + '%"></div></div>';
         h += '<div class="rt-status">' + (need === 0 ? "Not required" : (have >= need ? "✓ All deployed" : (need - have) + ' ' + "still available")) + '</div>';
+        h += '<button type="button" class="rt-meta-btn" data-meta="' + rt.key + '" aria-expanded="' + open + '">' + (open ? '▾' : '▸') + ' Details</button>';
+        h += '<div class="rt-meta" data-metafor="' + rt.key + '"' + (open ? '' : ' hidden') + '>';
+        h += '<input class="rt-meta-loc" type="text" placeholder="Location (e.g. Apron 2)" value="' + escapeHtml(m.location) + '" aria-label="Location for ' + lbl + '">';
+        h += '<input class="rt-meta-note" type="text" placeholder="Notes (e.g. 1 unit servicing)" value="' + escapeHtml(m.notes) + '" aria-label="Notes for ' + lbl + '">';
+        h += '</div>';
         h += '</div>';
       });
 
@@ -3181,6 +3363,12 @@
       h += '<div class="rt-summary' + (totalNeed > 0 && totalHave >= totalNeed ? ' rt-ok' : '') + '">' +
         totalHave + ' ' + "of" + ' ' + totalNeed + ' ' + "units deployed" +
         (totalNeed > 0 && totalHave >= totalNeed ? ' ' + "— resources complete ✓" : '') + '</div>';
+
+      /* Tracker actions */
+      h += '<div class="rt-actions">' +
+        '<button type="button" class="reset-btn" id="rtExportBtn">⬇ Export status</button>' +
+        '<button type="button" class="reset-btn" id="rtResetBtn">↺ Reset all</button>' +
+        '</div>';
 
       wrap.innerHTML = h;
 
@@ -3195,6 +3383,41 @@
           saveDeployed(scenario.id, cur);
           renderResourceTracker(scenario);
         });
+      });
+
+      /* Per-type location & notes */
+      wrap.querySelectorAll('.rt-meta-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var key = btn.getAttribute('data-meta');
+          var row = wrap.querySelector('.rt-meta[data-metafor="' + key + '"]');
+          if (!row) return;
+          var open = !row.hidden;
+          row.hidden = open;
+          btn.setAttribute('aria-expanded', String(!open));
+          btn.textContent = (open ? '▸' : '▾') + ' Details';
+          openMetaKeys[scenario.id + ':' + key] = !open;
+        });
+      });
+      wrap.querySelectorAll('.rt-meta-loc, .rt-meta-note').forEach(function (inp) {
+        inp.addEventListener('input', function () {
+          var key = inp.closest('.rt-meta').getAttribute('data-metafor');
+          var m = loadMeta(scenario.id);
+          m[key] = m[key] || {};
+          if (inp.classList.contains('rt-meta-loc')) m[key].location = inp.value;
+          else m[key].notes = inp.value;
+          saveMeta(scenario.id, m);
+        });
+      });
+
+      /* Export status report / reset all deployments */
+      var expBtn = wrap.querySelector('#rtExportBtn');
+      if (expBtn) expBtn.addEventListener('click', function () { exportResourceStatus(scenario); });
+      var rstBtn = wrap.querySelector('#rtResetBtn');
+      if (rstBtn) rstBtn.addEventListener('click', function () {
+        if (!confirm('Reset all deployed resources to 0?')) return;
+        pushSnapshot('Before resource reset');
+        saveDeployed(scenario.id, {});
+        renderResourceTracker(scenario);
       });
     }
 
@@ -3444,7 +3667,9 @@
       { key: 'arff', label: 'ARFF Vehicles' },
       { key: 'ambulances', label: 'Ambulances' },
       { key: 'fireTrucks', label: 'Fire Trucks' },
-      { key: 'buses', label: 'Buses' }
+      { key: 'buses', label: 'Buses' },
+      { key: 'police', label: 'Police / Security' },
+      { key: 'medical', label: 'Medical Teams' }
     ];
 
     var aarScenario = function () {

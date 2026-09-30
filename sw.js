@@ -11,7 +11,7 @@
      because every asset URL is version-busted with ?v=.
    ===================================================== */
 
-var CACHE = 'hdk-emergency-v2';
+var CACHE = 'hdk-emergency-v3';
 
 var CORE = [
   './',

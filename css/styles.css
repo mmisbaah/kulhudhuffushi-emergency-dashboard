@@ -8,6 +8,37 @@
   --radius:14px; --radius-sm:10px;
 }
 
+/* ---------- Print header (screen-hidden, shown on paper) ---------- */
+.print-header{ display:none; }
+
+/* ---------- Resource tracker: details rows + actions ---------- */
+.rt-actions{
+  grid-column:1/-1;
+  display:flex; gap:8px; justify-content:flex-end;
+  margin-top:2px;
+}
+.rt-meta{
+  grid-column:1/-1;
+  display:flex; gap:8px;
+}
+.rt-meta[hidden]{ display:none !important; }
+.rt-meta input{
+  flex:1; min-width:0;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  color:var(--text);
+  font:inherit; font-size:12px;
+  padding:5px 7px;
+}
+.rt-meta-btn{
+  background:none; border:none;
+  color:var(--blue);
+  font:inherit; font-size:11px;
+  cursor:pointer; padding:2px 0;
+}
+.rt-meta-btn:hover{ text-decoration:underline; }
+
 /* Light theme color variables — cascade after :root so they win.
    All component overrides live in ONE block at the END of this file. */
 [data-theme="light"]{
@@ -1502,7 +1533,8 @@ body{ padding-bottom:72px; }
   margin:5px 0 3px;
 }
 .ct-sel,
-.ct-note{
+.ct-note,
+.ct-loc{
   width:100%; box-sizing:border-box;
   background:var(--panel);
   border:1px solid var(--line);
@@ -1512,7 +1544,8 @@ body{ padding-bottom:72px; }
   padding:5px 7px;
 }
 .ct-sel:focus,
-.ct-note:focus{
+.ct-note:focus,
+.ct-loc:focus{
   outline:2px solid var(--blue,#3b82f6);
   outline-offset:1px;
   border-color:transparent;
@@ -1521,7 +1554,7 @@ body{ padding-bottom:72px; }
 @media print{
   .ct-toolbar{ display:none !important; }
   .ct-card{ break-inside:avoid; }
-  .ct-sel, .ct-note{ border-color:#999 !important; color:#000 !important; background:#fff !important; }
+  .ct-sel, .ct-note, .ct-loc{ border-color:#999 !important; color:#000 !important; background:#fff !important; }
 }
 
 /* ---------- ICS form generator ---------- */
@@ -2153,6 +2186,7 @@ body{ padding-bottom:72px; }
   input[type="checkbox"]:checked{ background:#000 !important; }
 
   /* Chrome that makes no sense on paper */
+  .app-header,
   .tabs,
   .sub-nav,
   .app-footer,
@@ -2168,6 +2202,15 @@ body{ padding-bottom:72px; }
   .status-chip,
   #themeToggle{
     display:none !important;
+  }
+
+  /* Dated print header */
+  .print-header{
+    display:flex !important;
+    justify-content:space-between; gap:12px;
+    font-size:13pt; font-weight:700;
+    border-bottom:2px solid #000;
+    padding-bottom:4mm; margin-bottom:6mm;
   }
 
   /* Print every section, one per page */

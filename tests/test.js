@@ -56,12 +56,16 @@ check('scenario ids slug-safe', SC.every(s => /^[a-z0-9-]+$/.test(s.id)));
 check('scenarios have name', SC.every(s => typeof s.name === 'string' && s.name.length > 0));
 check('scenarios have 4 casualty classes', SC.every(s =>
   s.casualties && ['red', 'yellow', 'green', 'deceased'].every(k => Number.isInteger(s.casualties[k]) && s.casualties[k] >= 0)));
-check('scenarios have 4 resource types', SC.every(s =>
-  s.resources && ['arff', 'ambulances', 'fireTrucks', 'buses'].every(k => Number.isInteger(s.resources[k]) && s.resources[k] >= 0)));
+check('scenarios have 6 resource types', SC.every(s =>
+  s.resources && ['arff', 'ambulances', 'fireTrucks', 'buses', 'police', 'medical'].every(k => Number.isInteger(s.resources[k]) && s.resources[k] >= 0)));
 check('scenarios have injects (>=4)', SC.every(s => Array.isArray(s.injects) && s.injects.length >= 4));
 check('scenario soulsOnBoard is number >= 0', SC.every(s => Number.isFinite(s.soulsOnBoard) && s.soulsOnBoard >= 0));
 check('required exercise scenarios present',
   ['atr72-crash', 'water-rescue', 'volcanic-ash', 'active-shooter', 'earthquake'].every(id => SC.some(s => s.id === id)));
+check('built-in scenarios >= 17', SC.length >= 17, 'found ' + SC.length);
+check('sibling-app scenario coverage',
+  ['bomb-threat', 'power-failure', 'medical-emergency', 'runway-incursion', 'severe-weather',
+   'hijack-threat', 'mass-casualty', 'chemical-spill', 'security-breach'].every(id => SC.some(s => s.id === id)));
 
 /* ---------- Aircraft ---------- */
 const AC = TTX_DATA.aircraftComparison || [];
@@ -113,12 +117,12 @@ check('styles.css has no Thaana/Dhivehi fonts', !/Thaana|Dhivehi/i.test(css));
 const keysFound = [...appjs.matchAll(/'(ttx-[a-z-]+)'/g)].map(m => m[1]);
 ['ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
  'ttx-custom-scenarios', 'ttx-ics-names', 'ttx-casualties',
- 'ttx-resource-deployed', 'ttx-timeline-events', 'ttx-map-config'].forEach(k => {
+ 'ttx-resource-deployed', 'ttx-resource-meta', 'ttx-timeline-events', 'ttx-map-config'].forEach(k => {
   check('app.js uses storage key ' + k, keysFound.includes(k));
 });
 const backupBlock = appjs.slice(appjs.indexOf('BACKUP_KEYS'), appjs.indexOf('BACKUP_KEYS') + 700);
 ['ttx-theme', 'ttx-font-scale', 'ttx-checklist-state', 'ttx-timeline-events',
- 'ttx-clock', 'ttx-aar-notes', 'ttx-map-config'].forEach(k => {
+ 'ttx-clock', 'ttx-aar-notes', 'ttx-map-config', 'ttx-resource-meta'].forEach(k => {
   check('BACKUP_KEYS includes ' + k, backupBlock.includes("'" + k + "'"));
 });
 check('BACKUP_KEYS excludes ttx-lang', !backupBlock.includes("'ttx-lang'"));
@@ -143,6 +147,27 @@ const swjs = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 check('sw.js handles SKIP_WAITING', swjs.includes("'SKIP_WAITING'") || swjs.includes('"SKIP_WAITING"'));
 check('sw.js cache is versioned', /hdk-emergency-v\d+/.test(swjs));
 check('styles.css styles guide + toast', css.includes('.guide-toc') && css.includes('#updateToast'));
+
+/* ---------- Feature parity: print, exports, shortcuts, resource types ---------- */
+check('index.html has the Print button', html.includes('id="printBtn"'));
+check('app.js wires full-plan print', appjs.includes('fullPlanPrint') && appjs.includes('beforeprint'));
+check('styles.css prints the dated header', css.includes('.print-header'));
+check('app.js has Ctrl+E scenario editor shortcut',
+  appjs.includes('scenEditBtn') && appjs.includes('scenNewBtn'));
+check('app.js has Ctrl+P print shortcut', /e\.key === 'p' \|\| e\.key === 'P'/.test(appjs));
+check('resource tracker exports status report',
+  appjs.includes('rtExportBtn') && appjs.includes('Resource-Status-'));
+check('resource tracker resets with restore point',
+  appjs.includes('rtResetBtn') && appjs.includes('Before resource reset'));
+check('resource tracker has per-type location & notes',
+  appjs.includes('rt-meta-loc') && appjs.includes('rt-meta-note') && appjs.includes('ttx-resource-meta'));
+check('casualty tracker exports report',
+  appjs.includes('ctExport') && appjs.includes('Casualty-Report-'));
+check('casualty cards have a location field', appjs.includes('ct-loc'));
+check('AAR covers police + medical resource types',
+  appjs.includes("key: 'police'") && appjs.includes("key: 'medical'"));
+check('scenario editor covers police + medical',
+  appjs.includes('se-police') && appjs.includes('se-medical'));
 
 /* ---------- Static syntax gates ---------- */
 ['js/app.js', 'js/data.js', 'sw.js'].forEach(f => {

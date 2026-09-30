@@ -238,7 +238,7 @@ var TTX_DATA = {
       fuelLoad: '5,000 kg',
       fireInvolved: true,
       casualties: { red: 8, yellow: 22, green: 34, deceased: 10 },
-      resources: { arff: 2, ambulances: 6, fireTrucks: 2, buses: 2 },
+      resources: { arff: 2, ambulances: 6, fireTrucks: 2, buses: 2, police: 3, medical: 2 },
       injects: [
         '09:00 — ATR 72 reports gear malfunction, requests priority landing',
         '09:05 — Aircraft crashes short of Runway 12, breaks apart',
@@ -256,7 +256,7 @@ var TTX_DATA = {
       fuelLoad: 'N/A',
       fireInvolved: true,
       casualties: { red: 4, yellow: 18, green: 60, deceased: 0 },
-      resources: { arff: 1, ambulances: 4, fireTrucks: 3, buses: 1 },
+      resources: { arff: 1, ambulances: 4, fireTrucks: 3, buses: 1, police: 3, medical: 2 },
       injects: [
         '14:00 — Smoke reported in terminal kitchen',
         '14:03 — Fire alarm activated, sprinkler system fails',
@@ -274,7 +274,7 @@ var TTX_DATA = {
       fuelLoad: '6,530 L',
       fireInvolved: false,
       casualties: { red: 0, yellow: 2, green: 5, deceased: 0 },
-      resources: { arff: 1, ambulances: 1, fireTrucks: 1, buses: 0 },
+      resources: { arff: 1, ambulances: 1, fireTrucks: 1, buses: 0, police: 2, medical: 1 },
       injects: [
         '11:00 — Fuel bowser hose ruptures during refuelling',
         '11:02 — Approximately 2,000 L of Jet A-1 spills across apron',
@@ -292,7 +292,7 @@ var TTX_DATA = {
       fuelLoad: '1,885 kg',
       fireInvolved: false,
       casualties: { red: 2, yellow: 6, green: 12, deceased: 2 },
-      resources: { arff: 1, ambulances: 3, fireTrucks: 1, buses: 1 },
+      resources: { arff: 1, ambulances: 3, fireTrucks: 1, buses: 1, police: 2, medical: 2 },
       injects: [
         '16:00 — Dornier 228 reports gear indication problem',
         '16:05 — Low pass confirms gear not extended',
@@ -310,7 +310,7 @@ var TTX_DATA = {
       fuelLoad: '5,000 kg',
       fireInvolved: false,
       casualties: { red: 5, yellow: 15, green: 40, deceased: 6 },
-      resources: { arff: 1, ambulances: 5, fireTrucks: 1, buses: 2 },
+      resources: { arff: 1, ambulances: 5, fireTrucks: 1, buses: 2, police: 2, medical: 2 },
       injects: [
         '10:00 — ATR 72 declares emergency, ditches in the lagoon short of Runway 12',
         '10:04 — Life rafts deployed, passengers in water awaiting recovery',
@@ -328,7 +328,7 @@ var TTX_DATA = {
       fuelLoad: '6,530 L',
       fireInvolved: false,
       casualties: { red: 1, yellow: 8, green: 45, deceased: 0 },
-      resources: { arff: 1, ambulances: 2, fireTrucks: 1, buses: 2 },
+      resources: { arff: 1, ambulances: 2, fireTrucks: 1, buses: 2, police: 2, medical: 1 },
       injects: [
         '08:00 — VAAC Melbourne advises ash cloud approaching Maldivian airspace',
         '08:20 — Inbound flights diverted; Q400 lands with ash-contaminated engines',
@@ -346,7 +346,7 @@ var TTX_DATA = {
       fuelLoad: 'N/A',
       fireInvolved: false,
       casualties: { red: 6, yellow: 10, green: 60, deceased: 4 },
-      resources: { arff: 1, ambulances: 6, fireTrucks: 1, buses: 2 },
+      resources: { arff: 1, ambulances: 6, fireTrucks: 1, buses: 2, police: 4, medical: 2 },
       injects: [
         '13:00 — Shots reported inside the terminal check-in hall',
         '13:02 — Police respond; terminal enters lockdown, flights suspended',
@@ -364,7 +364,7 @@ var TTX_DATA = {
       fuelLoad: 'N/A',
       fireInvolved: true,
       casualties: { red: 10, yellow: 30, green: 80, deceased: 8 },
-      resources: { arff: 2, ambulances: 8, fireTrucks: 3, buses: 3 },
+      resources: { arff: 2, ambulances: 8, fireTrucks: 3, buses: 3, police: 3, medical: 3 },
       injects: [
         '07:30 — M6.4 earthquake strikes; violent shaking felt across the airport',
         '07:33 — Terminal roof partially collapsed, structural damage reported',
@@ -372,6 +372,182 @@ var TTX_DATA = {
         '07:40 — Runway cracks reported, all aircraft movement stopped',
         '07:48 — Trapped workers located under collapsed section',
         '07:55 — Aftershock warning issued; SAR teams pause operations'
+      ]
+    },
+    {
+      id: 'bomb-threat',
+      name: 'Bomb Threat — Terminal Evacuation',
+      aircraft: null,
+      soulsOnBoard: 0,
+      fuelLoad: 'N/A',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 1, green: 8, deceased: 0 },
+      resources: { arff: 0, ambulances: 2, fireTrucks: 1, buses: 3, police: 3, medical: 1 },
+      injects: [
+        '10:00 — Anonymous call claims explosive device in terminal',
+        '10:05 — Threat assessed as credible by security',
+        '10:10 — Terminal evacuation initiated, passengers moved to assembly area',
+        '10:15 — Bomb disposal unit requested from Malé',
+        '10:20 — All flights suspended, airport in lockdown',
+        '10:25 — Media arrives, PIO must manage public messaging',
+        '10:30 — Secondary screening of all outbound baggage required'
+      ]
+    },
+    {
+      id: 'power-failure',
+      name: 'Total Power Failure',
+      aircraft: null,
+      soulsOnBoard: 0,
+      fuelLoad: 'N/A',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 2, green: 5, deceased: 0 },
+      resources: { arff: 1, ambulances: 2, fireTrucks: 1, buses: 2, police: 2, medical: 1 },
+      injects: [
+        '22:00 — Complete power failure across airport',
+        '22:02 — Emergency lighting activates, runway lights offline',
+        '22:05 — All arriving flights diverted to alternate airports',
+        '22:10 — Passengers stranded in terminal, no HVAC',
+        '22:15 — Backup generator fails to start for critical systems',
+        '22:20 — Water pressure drops, sanitation systems affected',
+        '22:25 — Coordinate with FENAKA for restoration timeline'
+      ]
+    },
+    {
+      id: 'medical-emergency',
+      name: 'Medical Emergency — Aircraft Onboard',
+      aircraft: 'ATR 72-600',
+      soulsOnBoard: 74,
+      fuelLoad: '5,000 kg',
+      fireInvolved: false,
+      casualties: { red: 1, yellow: 3, green: 10, deceased: 0 },
+      resources: { arff: 0, ambulances: 2, fireTrucks: 0, buses: 0, police: 1, medical: 2 },
+      injects: [
+        '13:00 — Pilot reports passenger in cardiac arrest, requests priority landing',
+        '13:05 — Aircraft cleared for immediate landing on Runway 12',
+        '13:10 — Aircraft on ground, EMS boarding at gate',
+        '13:12 — Passenger unconscious, CPR in progress',
+        '13:15 — Ambulance transports passenger to Kulhudhuffushi Regional Hospital',
+        '13:20 — Remaining passengers held for questioning and care',
+        '13:25 — Aircraft inspection required before next departure'
+      ]
+    },
+    {
+      id: 'runway-incursion',
+      name: 'Runway Incursion — Vehicle on Runway',
+      aircraft: 'Dash 8 Q400',
+      soulsOnBoard: 82,
+      fuelLoad: '6,530 L',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 1, green: 3, deceased: 0 },
+      resources: { arff: 1, ambulances: 1, fireTrucks: 1, buses: 0, police: 2, medical: 1 },
+      injects: [
+        '08:00 — Maintenance vehicle enters Runway 12 without clearance',
+        '08:01 — Tower instructs arriving aircraft to go around',
+        '08:02 — Aircraft executes go-around, minimum separation 200 feet',
+        '08:05 — Vehicle located and escorted off runway',
+        '08:10 — Runway inspection for debris and damage',
+        '08:15 — Operations resume, significant delays expected',
+        '08:20 — Investigation launched, driver interviewed'
+      ]
+    },
+    {
+      id: 'severe-weather',
+      name: 'Severe Weather — Tropical Squall',
+      aircraft: null,
+      soulsOnBoard: 0,
+      fuelLoad: 'N/A',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 0, green: 2, deceased: 0 },
+      resources: { arff: 1, ambulances: 1, fireTrucks: 1, buses: 2, police: 2, medical: 1 },
+      injects: [
+        '15:00 — Weather alert: severe tropical squall warning for the island',
+        '15:05 — Wind shear detected on final approach',
+        '15:08 — Arriving aircraft executes go-around',
+        '15:10 — All operations suspended, aircraft hold at alternate airports',
+        '15:15 — Terminal passengers moved away from windows',
+        '15:20 — Debris reported on runway and taxiways',
+        '15:25 — Damage assessment of infrastructure begins',
+        '15:30 — Coordinate with Maldives Meteorological Service for all-clear'
+      ]
+    },
+    {
+      id: 'hijack-threat',
+      name: 'Unlawful Interference — Hijack Threat',
+      aircraft: 'ATR 42-600',
+      soulsOnBoard: 52,
+      fuelLoad: '4,000 kg',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 0, green: 0, deceased: 0 },
+      resources: { arff: 1, ambulances: 1, fireTrucks: 1, buses: 0, police: 3, medical: 1 },
+      injects: [
+        '11:00 — Pilot reports possible hijacker onboard, squawks 7500',
+        '11:02 — Aircraft cleared for priority landing, remote stand assigned',
+        '11:05 — Law enforcement notified, tactical team mobilized',
+        '11:10 — Aircraft on ground at remote stand, engines running',
+        '11:15 — Negotiation team establishes contact',
+        '11:20 — Passengers report demands being made',
+        '11:25 — Fuel exhaustion risk if situation prolonged',
+        '11:30 — Coordinate with national security agencies'
+      ]
+    },
+    {
+      id: 'mass-casualty',
+      name: 'Mass Casualty — Multi-Incident',
+      aircraft: 'ATR 72-600',
+      soulsOnBoard: 74,
+      fuelLoad: '5,000 kg',
+      fireInvolved: true,
+      casualties: { red: 15, yellow: 30, green: 20, deceased: 9 },
+      resources: { arff: 2, ambulances: 8, fireTrucks: 3, buses: 4, police: 3, medical: 3 },
+      injects: [
+        '17:00 — Aircraft crashes on landing at Runway 12, breaks into three sections',
+        '17:02 — Fire erupts in center fuselage section',
+        '17:05 — Multiple casualties reported across wreckage',
+        '17:08 — Mutual aid requested from Malé and regional islands',
+        '17:10 — Triage overwhelmed, request additional medical teams',
+        '17:15 — Hospital capacity reached, activate mass casualty plan',
+        '17:20 — Family reception center overwhelmed, request additional staff',
+        '17:25 — Media presence growing, establish remote briefing area'
+      ]
+    },
+    {
+      id: 'chemical-spill',
+      name: 'HazMat Spill — Cargo Area',
+      aircraft: null,
+      soulsOnBoard: 0,
+      fuelLoad: 'N/A',
+      fireInvolved: false,
+      casualties: { red: 1, yellow: 4, green: 6, deceased: 0 },
+      resources: { arff: 1, ambulances: 2, fireTrucks: 2, buses: 1, police: 2, medical: 2 },
+      injects: [
+        '09:00 — Cargo handler reports chemical leak in freight terminal',
+        '09:02 — Substance identified as corrosive liquid',
+        '09:05 — Area evacuated, two workers showing symptoms',
+        '09:10 — HazMat team dispatched, PPE required',
+        '09:15 — Wind direction shifts, vapor drifts toward terminal',
+        '09:20 — Terminal ventilation shut down to prevent ingress',
+        '09:25 — Decontamination corridor established',
+        '09:30 — Environmental Protection Agency notified'
+      ]
+    },
+    {
+      id: 'security-breach',
+      name: 'Security Breach — Perimeter Intrusion',
+      aircraft: null,
+      soulsOnBoard: 0,
+      fuelLoad: 'N/A',
+      fireInvolved: false,
+      casualties: { red: 0, yellow: 0, green: 1, deceased: 0 },
+      resources: { arff: 0, ambulances: 1, fireTrucks: 0, buses: 0, police: 3, medical: 1 },
+      injects: [
+        '02:00 — Motion sensors detect perimeter breach near Runway 12 threshold',
+        '02:02 — Security patrols dispatched to investigate',
+        '02:05 — Two individuals spotted on airside, fleeing toward fence',
+        '02:08 — All departures suspended, aircraft held at gates',
+        '02:10 — Individuals apprehended by security',
+        '02:15 — Perimeter inspection for additional breaches',
+        '02:20 — Operations resume with enhanced security patrols',
+        '02:25 — Review CCTV footage and access control logs'
       ]
     }
   ],
