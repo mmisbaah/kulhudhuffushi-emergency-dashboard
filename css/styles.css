@@ -745,7 +745,34 @@ label.tab:focus-within{
   outline-color:#1d4ed8 !important;
 }
 /* The tab radios are visually hidden — surface focus on their label.
-   (label[for] cannot be targeted by CSS, so app.js mirrors focus.) */
+   CSS sibling rules do this without JS (radio precedes .tabs in DOM);
+   app.js adds .kb-focus as a fallback for older engines. */
+.tab-radio:focus-visible ~ .tabs label.tab.kb-focus{
+  outline:2px solid #60a5fa !important;
+  outline-offset:2px;
+}
+[data-theme="light"] .tab-radio:focus-visible ~ .tabs label.tab.kb-focus{
+  outline-color:#1d4ed8 !important;
+}
+#ttx-tab-phases:focus-visible    ~ .tabs label.tab[for="ttx-tab-phases"],
+#ttx-tab-teams:focus-visible     ~ .tabs label.tab[for="ttx-tab-teams"],
+#ttx-tab-locations:focus-visible ~ .tabs label.tab[for="ttx-tab-locations"],
+#ttx-tab-zones:focus-visible     ~ .tabs label.tab[for="ttx-tab-zones"],
+#ttx-tab-emergencies:focus-visible ~ .tabs label.tab[for="ttx-tab-emergencies"],
+#ttx-tab-aircraft:focus-visible  ~ .tabs label.tab[for="ttx-tab-aircraft"],
+#ttx-tab-checklist:focus-visible ~ .tabs label.tab[for="ttx-tab-checklist"]{
+  outline:2px solid #60a5fa !important;
+  outline-offset:2px;
+}
+[data-theme="light"] #ttx-tab-phases:focus-visible    ~ .tabs label.tab[for="ttx-tab-phases"],
+[data-theme="light"] #ttx-tab-teams:focus-visible     ~ .tabs label.tab[for="ttx-tab-teams"],
+[data-theme="light"] #ttx-tab-locations:focus-visible ~ .tabs label.tab[for="ttx-tab-locations"],
+[data-theme="light"] #ttx-tab-zones:focus-visible     ~ .tabs label.tab[for="ttx-tab-zones"],
+[data-theme="light"] #ttx-tab-emergencies:focus-visible ~ .tabs label.tab[for="ttx-tab-emergencies"],
+[data-theme="light"] #ttx-tab-aircraft:focus-visible  ~ .tabs label.tab[for="ttx-tab-aircraft"],
+[data-theme="light"] #ttx-tab-checklist:focus-visible ~ .tabs label.tab[for="ttx-tab-checklist"]{
+  outline-color:#1d4ed8 !important;
+}
 label.tab.kb-focus{
   outline:2px solid #60a5fa !important;
   outline-offset:2px;
