@@ -535,11 +535,52 @@
       radio.addEventListener('click', off);
     });
 
+    /* ================= TAB BAR SCROLL (mobile) =================
+       The tab strip scrolls horizontally on narrow screens. Show a
+       themed fade on whichever edge still has more to reveal, and
+       keep the active tab in view (centred) when it changes. */
+    var tabsWrap = document.querySelector('.tabs .wrap');
+    if (tabsWrap) {
+      var tabsBar = tabsWrap.closest('.tabs');
+      var updTabEdges = function () {
+        var over = tabsWrap.scrollWidth - tabsWrap.clientWidth;
+        tabsBar.classList.toggle('can-scroll-r', tabsWrap.scrollLeft < over - 4);
+        tabsBar.classList.toggle('can-scroll-l', tabsWrap.scrollLeft > 4);
+      };
+      var centreActiveTab = function (smooth) {
+        updTabEdges();
+        if (tabsWrap.scrollWidth <= tabsWrap.clientWidth + 1) return;
+        var radio = document.querySelector('.tab-radio:checked');
+        if (!radio) return;
+        var lab = document.querySelector('label.tab[for="' + radio.id + '"]');
+        if (!lab) return;
+        var target = lab.offsetLeft - (tabsWrap.clientWidth - lab.offsetWidth) / 2;
+        target = Math.max(0, Math.min(target, tabsWrap.scrollWidth - tabsWrap.clientWidth));
+        tabsWrap.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+      };
+      tabsWrap.addEventListener('scroll', updTabEdges, { passive: true });
+      window.addEventListener('resize', updTabEdges);
+      Array.prototype.forEach.call(document.querySelectorAll('.tab-radio'), function (radio) {
+        radio.addEventListener('change', function () { centreActiveTab(true); });
+      });
+      document.addEventListener('ttx:langchange', function () {
+        setTimeout(function () { centreActiveTab(false); }, 60);
+      });
+      centreActiveTab(false);
+    }
+
     /* ================= SUB NAV (Aircraft tab) ================= */
     var subNav = document.getElementById('aircraftSubNav');
     if (subNav) {
       var subNavLinks = subNav.querySelectorAll('.sub-nav-link');
       var sections = ['ac-comparison','ac-details','ac-diagrams','ac-fuel','ac-flow','ac-implications'].map(function(id){ return document.getElementById(id); });
+
+      /* The sticky chrome (tab bar + sub-nav) is taller on touch
+         devices, so measure it instead of hard-coding an offset. */
+      var stickyOffset = function () {
+        var tabsEl = document.querySelector('.tabs');
+        return (tabsEl ? tabsEl.offsetHeight : 0) + subNav.offsetHeight + 16;
+      };
 
       var setActiveLink = function(idx) {
         subNavLinks.forEach(function(link, i) {
@@ -552,7 +593,7 @@
           e.preventDefault();
           var target = sections[idx];
           if (target) {
-            var y = target.getBoundingClientRect().top + window.scrollY - 120;
+            var y = target.getBoundingClientRect().top + window.scrollY - stickyOffset();
             window.scrollTo({ top: y, behavior: 'smooth' });
           }
           setActiveLink(idx);
@@ -560,7 +601,7 @@
       });
 
       var onScroll = function() {
-        var scrollPos = window.scrollY + 160;
+        var scrollPos = window.scrollY + stickyOffset() + 40;
         var activeIdx = 0;
         sections.forEach(function(sec, idx) {
           if (sec && sec.offsetTop <= scrollPos) activeIdx = idx;

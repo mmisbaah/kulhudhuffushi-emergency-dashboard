@@ -89,6 +89,7 @@ body{
   background:rgba(8,14,28,.82);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line-soft);
+  --tabs-fade:rgba(8,14,28,.96);
 }
 .tabs .wrap{
   display:flex; gap:6px; overflow-x:auto;
@@ -711,7 +712,14 @@ textarea.se-input{resize:vertical; line-height:1.5;}
 }
 .wx-fresh.wx-cached{ color:var(--amber); }
 @media (max-width:820px){
-  .weather{ margin-left:0; margin-top:8px; flex-wrap:wrap; white-space:normal; }
+  /* Weather becomes a full-width strip under the scenario picker
+     instead of a tall column squeezing the header row */
+  .weather{
+    margin-left:0; flex:1 1 100%;
+    white-space:nowrap; flex-wrap:wrap; row-gap:4px;
+    justify-content:flex-start; padding:7px 12px;
+  }
+  .weather > span{ white-space:nowrap; }
 }
 @media print{
   .weather{ display:none !important; }
@@ -1278,6 +1286,144 @@ body.lang-dv{
 }
 
 /* =====================================================
+   MOBILE & TOUCH — layout compaction + touch targets.
+   Screen media only. Placed BEFORE the theme and print
+   blocks so light, high-contrast and print stay last
+   and authoritative.
+   ===================================================== */
+
+/* ---- Header controls: a wrapping row instead of inline styles ---- */
+.header-controls{
+  display:flex; align-items:center; justify-content:flex-end;
+  flex-wrap:wrap; gap:8px; min-width:0;
+}
+.header-controls .reset-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  white-space:nowrap; padding:7px 13px; font-size:12.5px;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.font-controls{ flex-wrap:nowrap; }
+
+/* Satisfying pressed feedback on tap/click */
+.header-controls .reset-btn:active,
+.tab:active,
+.sub-nav-link:active,
+.back-to-top:active{
+  transform:translateY(1px) scale(.96);
+}
+
+/* ---- Scenario row: selector grows, weather gets its own strip ---- */
+.scenario-row{
+  padding-top:10px; padding-bottom:10px;
+  flex-wrap:wrap; gap:6px 10px;
+}
+.scenario-label{
+  font-size:12px; color:var(--muted);
+  margin-right:8px; white-space:nowrap;
+}
+#scenarioSelect{
+  background:var(--panel); color:var(--text);
+  border:1px solid var(--line); border-radius:8px;
+  padding:7px 12px; font:inherit; font-size:13px;
+  flex:1 1 240px; min-width:0; width:auto;
+  min-height:38px; max-width:100%;
+  touch-action:manipulation;
+}
+#scenarioSelect:focus-visible{
+  outline:2px solid #3b82f6; outline-offset:1px;
+}
+
+/* ---- Tabs: horizontal scrolling with a themed edge affordance ---- */
+.tabs .wrap{
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  scroll-behavior:smooth;
+}
+.tab{
+  scroll-snap-align:center;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.tabs::before, .tabs::after{
+  content:""; position:absolute; top:0; bottom:0; width:44px;
+  opacity:0; transition:opacity .25s ease;
+  pointer-events:none; z-index:2;
+}
+.tabs::before{ left:0;  background:linear-gradient(to right, var(--tabs-fade), rgba(0,0,0,0)); }
+.tabs::after{  right:0; background:linear-gradient(to left,  var(--tabs-fade), rgba(0,0,0,0)); }
+.tabs.can-scroll-l::before,
+.tabs.can-scroll-r::after{ opacity:1; }
+
+@media (max-width:820px){
+  /* Stack the header: brand row, then the control row */
+  .app-header .wrap{
+    flex-wrap:wrap; gap:10px;
+    padding-top:10px; padding-bottom:10px;
+  }
+  .brand{ width:100%; }
+  .header-controls{
+    width:100%; justify-content:flex-start;
+  }
+  .scenario-row .scenario-label{ margin-right:0; }
+  main{ padding-top:22px; }
+
+  /* Sub-nav scrolls as one row instead of stacking sticky pills */
+  .sub-nav{
+    flex-wrap:nowrap; overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    padding:8px 10px; margin-bottom:16px;
+  }
+  .sub-nav::-webkit-scrollbar{ display:none; }
+  .sub-nav-link{ flex:0 0 auto; }
+
+  /* iOS Safari: 16px+ fields stop the automatic focus zoom */
+  #scenarioSelect, .glossary-filter, .se-input{ font-size:16px; }
+}
+
+@media (max-width:520px){
+  .brand-mark{
+    width:38px; height:38px; flex-basis:38px;
+    font-size:19px; border-radius:10px;
+  }
+  .brand h1{ font-size:14.5px; }
+  .brand p{ font-size:11.5px; }
+  .header-controls{ gap:6px; }
+  .header-controls .reset-btn{ padding:7px 10px; font-size:11.5px; }
+  .font-btn{ padding:7px 8px !important; }
+  .font-scale{ min-width:46px; }
+  main{ padding-top:18px; }
+  /* Horizontal only — the vertical padding feeds the sticky
+     tab-bar height that .sub-nav's top offset depends on */
+  .tab{ padding-left:12px; padding-right:12px; font-size:12.5px; }
+  .sub-nav{ gap:5px; }
+  .back-to-top{
+    right:14px;
+    bottom:calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ---- Coarse pointer: 44px minimum touch targets (WCAG 2.5.5) ----
+   Growing .tab to 44px makes the sticky tab bar 65px tall
+   (10 + 44 + 10 + 1px border), so .sub-nav's top moves with it. */
+@media (pointer:coarse){
+  .header-controls .reset-btn,
+  .reset-btn{ min-height:44px; }
+  .tab{
+    min-height:44px;
+    display:inline-flex; align-items:center;
+  }
+  .sub-nav{ top:65px; }
+  .sub-nav-link{
+    min-height:42px;
+    display:inline-flex; align-items:center;
+  }
+  #scenarioSelect, .glossary-filter, .se-input{ min-height:44px; }
+  .back-to-top{ width:48px; height:48px; font-size:20px; }
+}
+
+/* =====================================================
    LIGHT THEME — the ONE authoritative override block.
    Placed at end so it wins over dark styles above.
    ===================================================== */
@@ -1294,6 +1440,7 @@ body.lang-dv{
 [data-theme="light"] .tabs{
   background:rgba(255,255,255,.95);
   border-bottom-color:#e2e8f0;
+  --tabs-fade:rgba(255,255,255,.97);
 }
 
 /* Panels — kill dark gradients, force white surfaces */
@@ -1548,6 +1695,7 @@ body.lang-dv{
 [data-theme="hc"] .sub-nav{
   border-bottom:2px solid #ffffff;
 }
+[data-theme="hc"] .tabs{ --tabs-fade:#000000; }
 [data-theme="hc"] .card,
 [data-theme="hc"] .ac-card,
 [data-theme="hc"] .emg-card,
