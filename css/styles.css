@@ -1366,6 +1366,9 @@ body.lang-dv{
     width:100%; justify-content:flex-start;
   }
   .scenario-row .scenario-label{ margin-right:0; }
+  /* Scenario action buttons wrap inside the row instead of
+     poking past the right padding on narrow screens */
+  .scenario-actions{ flex-wrap:wrap; }
   main{ padding-top:22px; }
 
   /* Sub-nav scrolls as one row instead of stacking sticky pills */
@@ -1391,6 +1394,7 @@ body.lang-dv{
   .brand p{ font-size:11.5px; }
   .header-controls{ gap:6px; }
   .header-controls .reset-btn{ padding:7px 10px; font-size:11.5px; }
+  .scenario-row .reset-btn{ padding:7px 10px; font-size:11.5px; }
   .font-btn{ padding:7px 8px !important; }
   .font-scale{ min-width:46px; }
   main{ padding-top:18px; }

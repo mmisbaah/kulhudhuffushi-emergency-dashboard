@@ -556,7 +556,7 @@
         if (!lab) return;
         var target = lab.offsetLeft - (tabsWrap.clientWidth - lab.offsetWidth) / 2;
         target = Math.max(0, Math.min(target, tabsWrap.scrollWidth - tabsWrap.clientWidth));
-        tabsWrap.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+        tabsWrap.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'instant' });
       };
       tabsWrap.addEventListener('scroll', updTabEdges, { passive: true });
       window.addEventListener('resize', updTabEdges);
