@@ -94,6 +94,67 @@
 
     loadTheme();
 
+    /* ================= BACKUP / RESTORE (JSON) =================
+       Serialises every ttx-* key (except the transient weather
+       cache) into one portable JSON file, and restores it back. */
+    var BACKUP_KEYS = [
+      'ttx-theme', 'ttx-lang', 'ttx-font-scale',
+      'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
+      'ttx-custom-scenarios', 'ttx-ics-names',
+      'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events'
+    ];
+
+    var backupBtn = document.getElementById('backupBtn');
+    if (backupBtn) {
+      backupBtn.addEventListener('click', function () {
+        var payload = { app: 'kulhudhuffushi-emergency-dashboard', format: 1,
+                        exportedAt: new Date().toISOString(), data: {} };
+        BACKUP_KEYS.forEach(function (k) {
+          var v = localStorage.getItem(k);
+          if (v !== null) payload.data[k] = v;
+        });
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'dashboard-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    var restoreBtn = document.getElementById('restoreBtn');
+    var restoreFile = document.getElementById('restoreFile');
+    if (restoreBtn && restoreFile) {
+      restoreBtn.addEventListener('click', function () { restoreFile.click(); });
+      restoreFile.addEventListener('change', function () {
+        var file = restoreFile.files && restoreFile.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          var ok = false, count = 0;
+          try {
+            var payload = JSON.parse(reader.result);
+            var data = payload && payload.data;
+            if (payload && payload.app === 'kulhudhuffushi-emergency-dashboard' && data && typeof data === 'object') {
+              BACKUP_KEYS.forEach(function (k) {
+                if (typeof data[k] === 'string') { localStorage.setItem(k, data[k]); count++; }
+              });
+              ok = count > 0;
+            }
+          } catch (e) { ok = false; }
+          if (ok) {
+            alert('Backup restored (' + count + ' entries). Reloading…');
+            location.reload();
+          } else {
+            alert('This file is not a valid dashboard backup.');
+            restoreFile.value = '';
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
     /* ================= WEATHER (Open-Meteo, VRBK) ================= */
     var weatherEl = document.getElementById('weatherWidget');
     var WX_CACHE_KEY = 'ttx-wx-cache';
