@@ -82,7 +82,10 @@ var TTX_DATA = {
     { name: 'Dash 8 Q400',   pax: 78, crew: '2 + 2', total: 82, fuel: '6,530 L',  wheels: 4, door: 'Forward left', baggage: 'Fwd + aft holds' },
     { name: 'Dash 8-300',    pax: 50, crew: '2 + 2', total: 54, fuel: '3,160 L',  wheels: 4, door: 'Forward left', baggage: 'Fwd + aft holds' },
     { name: 'Dash 8-200',    pax: 37, crew: '2 + 1', total: 40, fuel: '3,160 L',  wheels: 4, door: 'Forward left', baggage: 'Fwd + aft holds' },
-    { name: 'Dornier 228',   pax: 19, crew: '2 + 1', total: 22, fuel: '1,885 kg', wheels: 4, door: 'Left main door', baggage: 'Fwd + aft holds' }
+    { name: 'Dornier 228',   pax: 19, crew: '2 + 1', total: 22, fuel: '1,885 kg', wheels: 4, door: 'Left main door', baggage: 'Fwd + aft holds' },
+    { name: 'Fokker 100',    pax: 100, crew: '2 + 4', total: 106, fuel: '~14,000 L', wheels: 4, door: 'Fwd left',     baggage: 'Fwd + aft holds' },
+    { name: 'A320-200',      pax: 150, crew: '2 + 4', total: 156, fuel: '~24,000 L', wheels: 4, door: 'Fwd + aft left', baggage: 'Fwd + aft holds' },
+    { name: 'Boeing 737-800', pax: 162, crew: '2 + 4', total: 168, fuel: '~26,000 L', wheels: 4, door: 'Fwd + aft left', baggage: 'Fwd + aft holds' }
   ],
 
   /* Scenarios for the scenario selector */
@@ -213,6 +216,45 @@ var TTX_DATA = {
         { k: 'Baggage holds', v: 'Fwd 90–120 kg · Aft 150–210 kg' },
         { k: 'Landing gear', v: 'Tricycle, retractable' },
         { k: 'Emergency exits', v: 'Main door + rear' }
+      ]
+    },
+    {
+      name: 'Fokker 100',
+      operator: 'Maldivian — jet operations from Velana Intl (WB/IB)',
+      pax: 100, crew: '2+4', total: 106, wheels: 4,
+      specs: [
+        { k: 'Fuel capacity', v: '~14,000 L' },
+        { k: 'Fuel storage', v: 'Wing + centre tanks' },
+        { k: 'Boarding door', v: 'Forward left' },
+        { k: 'Baggage holds', v: 'Forward + aft' },
+        { k: 'Landing gear', v: 'Tricycle, retractable' },
+        { k: 'Emergency exits', v: '4 main exits (2 per side)' }
+      ]
+    },
+    {
+      name: 'A320-200',
+      operator: 'Maldivian — international trunk routes, charters',
+      pax: 150, crew: '2+4', total: 156, wheels: 4,
+      specs: [
+        { k: 'Fuel capacity', v: '~24,000 L' },
+        { k: 'Fuel storage', v: 'Centre + wing tanks' },
+        { k: 'Boarding door', v: 'Forward + aft left' },
+        { k: 'Baggage holds', v: 'Forward + aft (bulk + containers)' },
+        { k: 'Landing gear', v: 'Tricycle, retractable' },
+        { k: 'Emergency exits', v: '4 main exits (2 per side)' }
+      ]
+    },
+    {
+      name: 'Boeing 737-800',
+      operator: 'Regional carriers — charters into Velana / Gan',
+      pax: 162, crew: '2+4', total: 168, wheels: 4,
+      specs: [
+        { k: 'Fuel capacity', v: '~26,000 L' },
+        { k: 'Fuel storage', v: 'Centre + wing tanks' },
+        { k: 'Boarding door', v: 'Forward + aft left' },
+        { k: 'Baggage holds', v: 'Forward + aft (bulk + containers)' },
+        { k: 'Landing gear', v: 'Tricycle, retractable' },
+        { k: 'Emergency exits', v: '4 doors + 4 overwing' }
       ]
     }
   ]

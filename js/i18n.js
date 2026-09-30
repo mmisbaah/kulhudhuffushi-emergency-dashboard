@@ -35,7 +35,7 @@ var TTX_I18N = {
     'head.locations': 'Key Locations — Kulhudhuffushi Airport',
     'head.zones': 'Aircraft Incident Zones',
     'head.emergencies': 'Types of Airport Emergencies',
-    'head.aircraft': 'Aircraft Used on Maldivian Domestic Routes',
+    'head.aircraft': 'Aircraft Types — Domestic Turboprops & Jets',
     'head.checklist': 'TTX Flow & IC Checklist',
 
     /* Section subtitles */
@@ -139,7 +139,7 @@ var TTX_I18N = {
     'head.locations': 'މުހިމަތުގެ ތަންތަން — ޚުލުދޫފުނި އެއިރައްޕޯޓް',
     'head.zones': 'އެއިރަފްޓް ހަދައްކަންތަކުގެ ޒޯންތައް',
     'head.emergencies': 'އެއިރައްޕޯޓްގެ އެމުރުޖީނިސަބްގެ ތަފާސްތައް',
-    'head.aircraft': 'ދިވެހި ދިވާއި މަރުކަޒުތަކަށް ބޭނުމުގައި ބޭނުމުގެ އެއިރަފްޓް',
+    'head.aircraft': 'އެއިރަފަޓުތައް — ދިވާއި ޓަބައްކައިއްޕެއްތައް އައި ޖަޓްތައް',
     'head.checklist': 'TTX ފްލޯއު އަށް IC ޗެކްލިސްޓް',
 
     /* Section subtitles */
