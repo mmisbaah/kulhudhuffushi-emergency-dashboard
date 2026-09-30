@@ -174,6 +174,38 @@
     };
     renderRoleCards();
 
+    /* ================= GLOSSARY (data-driven + filter) ================= */
+    var renderGlossary = function (filter) {
+      try {
+        var grid = document.getElementById('glossaryGrid');
+        if (!grid || !TTX_DATA.glossary) return;
+        var q = (filter || '').trim().toLowerCase();
+        var html = '', shown = 0;
+        TTX_DATA.glossary.forEach(function (g) {
+          if (q && (g.term + ' ' + g.full + ' ' + g.def).toLowerCase().indexOf(q) === -1) return;
+          shown++;
+          html += '<div class="glossary-card">' +
+            '<div class="g-term">' + escapeHtml(g.term) + '</div>' +
+            '<div class="g-full">' + escapeHtml(g.full) + '</div>' +
+            '<p class="g-def">' + escapeHtml(g.def) + '</p>' +
+            '</div>';
+        });
+        if (!shown) html = '<p class="glossary-empty">No terms match “' + escapeHtml(filter) + '”.</p>';
+        grid.innerHTML = html;
+        var count = document.getElementById('glossaryCount');
+        if (count) count.textContent = shown + ' / ' + TTX_DATA.glossary.length + ' terms';
+      } catch (e) {
+        if (window.console) console.warn('glossary render skipped:', e);
+      }
+    };
+    renderGlossary('');
+    var glossaryFilter = document.getElementById('glossaryFilter');
+    if (glossaryFilter) {
+      glossaryFilter.addEventListener('input', function () {
+        renderGlossary(glossaryFilter.value);
+      });
+    }
+
     /* ================= VERSION HISTORY (changelog) ================= */
     var APP_VERSION = '2026.09.30';
     var CHANGELOG = [

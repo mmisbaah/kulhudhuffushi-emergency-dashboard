@@ -4,6 +4,30 @@
 
 var TTX_DATA = {
 
+  /* Glossary of emergency-exercise and ICS terms */
+  glossary: [
+    { term: 'AAR', full: 'After Action Report', def: 'Post-exercise document recording what worked, what failed, and the corrective actions with owners and deadlines.' },
+    { term: 'AEP', full: 'Airport Emergency Plan', def: 'The airport’s standing plan for emergencies — roles, agencies, facilities and procedures the exercise tests.' },
+    { term: 'ARFF', full: 'Aircraft Rescue and Fire Fighting', def: 'Specialist fire service for aircraft incidents — rapid intervention, foam application, cabin rescue.' },
+    { term: 'CCP', full: 'Casualty Collection Point', def: 'Treatment and stabilisation area where triaged casualties are gathered before transport.' },
+    { term: 'EOC', full: 'Emergency Operations Center', def: 'Fixed strategic coordination facility — where the airport links with MACL, regional and national agencies.' },
+    { term: 'FAC', full: 'Family Assistance Center', def: 'Secure, private facility for families of those involved — identification, support, official notifications.' },
+    { term: 'Hot Wash', full: 'Hot Wash', def: 'Immediate debrief held right after the exercise while observations are fresh — feeds the AAR.' },
+    { term: 'IAP', full: 'Incident Action Plan', def: 'The written plan for one operational period: objectives, strategy, assignments and safety information.' },
+    { term: 'IC', full: 'Incident Commander', def: 'The individual with overall authority for the incident until formally relieved.' },
+    { term: 'ICP', full: 'Incident Command Post', def: 'The established physical location from which the IC directs the response — upwind and outside the warm zone.' },
+    { term: 'ICS', full: 'Incident Command System', def: 'Standardised command structure (Command + Operations/Planning/Logistics/Finance) used across agencies.' },
+    { term: 'Inject', full: 'Inject', def: 'A scripted piece of information or an event delivered to players during the exercise to drive decisions.' },
+    { term: 'MACL', full: 'Maldives Airports Company Limited', def: 'Operator of Velana International and regional airports — governing authority for the AEP.' },
+    { term: 'Mutual Aid', full: 'Mutual Aid', def: 'Pre-arranged agreements to share personnel and equipment with neighbouring islands and agencies.' },
+    { term: 'Size-up', full: 'Size-up', def: 'Initial rapid assessment of the incident — conditions, hazards, victims, resources needed.' },
+    { term: 'SOB', full: 'Souls On Board', def: 'Total persons on the aircraft: passengers + crew. The primary number driving casualty planning.' },
+    { term: 'Staging', full: 'Resource Staging Center', def: 'Controlled area where arriving resources are registered, briefed and assigned before deployment.' },
+    { term: 'TTX', full: 'Tabletop Exercise', def: 'Discussion-based exercise: players walk the scenario on paper — no deployment, low cost, high learning.' },
+    { term: 'Warm Zone', full: 'Warm Zone', def: 'The area between hot and cold zones — controlled, decontamination and casualty rescue under cover.' },
+    { term: 'VAAC', full: 'Volcanic Ash Advisory Centre', def: 'Regional centre (Melbourne) issuing ash-cloud advisories affecting aircraft and aerodromes.' }
+  ],
+
   /* IC role reference cards (ICS command & general staff) */
   roleCards: [
     { role: 'Incident Commander', tag: 'Command', who: 'The overall authority for the incident until relieved.',

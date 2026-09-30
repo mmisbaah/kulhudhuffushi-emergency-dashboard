@@ -20,7 +20,7 @@
       if (fs >= 0.8 && fs <= 1.6) document.documentElement.style.zoom = fs;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930l">
+  <link rel="stylesheet" href="css/styles.css?v=20260930m">
 </head>
 <body>
 
@@ -893,6 +893,15 @@
       <span class="ni">💡</span>
       <div><strong>Remember:</strong> the checklist is a memory aid, not a script. In a live event your judgement, the AEP, and the Incident Command System carry you — the checklist just keeps you from missing a step under pressure.</div>
     </div>
+
+    <h3 class="sub" id="glossary">Glossary</h3>
+    <div class="glossary-tools">
+      <input type="search" id="glossaryFilter" class="glossary-filter" placeholder="Filter terms… (e.g. ICP, AAR)" aria-label="Filter glossary terms">
+      <span class="glossary-count" id="glossaryCount"></span>
+    </div>
+    <div class="glossary-grid" id="glossaryGrid">
+      <!-- cards rendered from TTX_DATA.glossary -->
+    </div>
   </section>
 
 </main>
@@ -906,9 +915,9 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/i18n.js?v=20260930l"></script>
-<script src="js/data.js?v=20260930l"></script>
-<script src="js/app.js?v=20260930l"></script>
+<script src="js/i18n.js?v=20260930m"></script>
+<script src="js/data.js?v=20260930m"></script>
+<script src="js/app.js?v=20260930m"></script>
 <script>
   /* Register the service worker (PWA/offline). Falls back silently
      on unsupported browsers or file:// (opening from disk). */
