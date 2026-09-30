@@ -146,6 +146,34 @@
     };
     renderAircraft();
 
+    /* ================= IC ROLE CARDS (data-driven) ================= */
+    var renderRoleCards = function () {
+      try {
+        var grid = document.getElementById('roleGrid');
+        if (!grid || !TTX_DATA.roleCards) return;
+        var html = '';
+        TTX_DATA.roleCards.forEach(function (r) {
+          html += '<div class="role-card">' +
+            '<div class="role-head">' +
+            '<span class="role-tag role-tag-' + (/^Incident/.test(r.role) ? 'cmd' : (/Command Staff/.test(r.tag) ? 'cs' : 'gs')) + '">' + escapeHtml(r.tag) + '</span>' +
+            '<h4>' + escapeHtml(r.role) + '</h4>' +
+            '</div>' +
+            '<p class="role-who">' + escapeHtml(r.who) + '</p>' +
+            '<ul class="role-duties">';
+          (r.duties || []).forEach(function (d) {
+            html += '<li>' + escapeHtml(d) + '</li>';
+          });
+          html += '</ul>' +
+            '<div class="role-reports">' + escapeHtml(r.reports) + '</div>' +
+            '</div>';
+        });
+        grid.innerHTML = html;
+      } catch (e) {
+        if (window.console) console.warn('role cards render skipped:', e);
+      }
+    };
+    renderRoleCards();
+
     /* ================= VERSION HISTORY (changelog) ================= */
     var APP_VERSION = '2026.09.30';
     var CHANGELOG = [

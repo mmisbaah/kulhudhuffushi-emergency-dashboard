@@ -4,6 +4,74 @@
 
 var TTX_DATA = {
 
+  /* IC role reference cards (ICS command & general staff) */
+  roleCards: [
+    { role: 'Incident Commander', tag: 'Command', who: 'The overall authority for the incident until relieved.',
+      duties: [
+        'Sets objectives and approves the Incident Action Plan',
+        'Establishes the ICP and directs all response elements',
+        'Approves resource ordering and strategy changes',
+        'Briefs MACL / Regional Airports and agency heads'
+      ],
+      reports: 'Reports to: EOC / MACL Duty Manager' },
+    { role: 'Safety Officer', tag: 'Command Staff', who: 'Protects the responders — has authority to stop unsafe acts.',
+      duties: [
+        'Conducts responder safety briefings before deployment',
+        'Monitors hot/warm zone entries and PPE compliance',
+        'Issues mayday / stop-work authority when needed',
+        'Confirms accountability of all personnel on scene'
+      ],
+      reports: 'Reports to: Incident Commander' },
+    { role: 'Public Information Officer', tag: 'Command Staff', who: 'The single voice to media, families and the public.',
+      duties: [
+        'Issues statements and coordinates media staging',
+        'Coordinates with airline and airport communications',
+        'Protects operational information and casualty privacy',
+        'Feeds the Family Assistance Center with verified updates'
+      ],
+      reports: 'Reports to: Incident Commander' },
+    { role: 'Liaison Officer', tag: 'Command Staff', who: 'Single point of contact for assisting and cooperating agencies.',
+      duties: [
+        'Coordinates police, health, coast guard and MAHAA',
+        'Tracks agency arrivals at the Resource Staging Center',
+        'Resolves cross-agency resource conflicts',
+        'Feeds agency input into the planning cycle'
+      ],
+      reports: 'Reports to: Incident Commander' },
+    { role: 'Operations Section Chief', tag: 'General Staff', who: 'Runs the tactical response — fire, rescue, medical, security.',
+      duties: [
+        'Directs tactical groups and assigns work assignments',
+        'Manages zone cordons and entry control points',
+        'Reports tactical situation in the planning cycle',
+        'Requests additional resources through Logistics'
+      ],
+      reports: 'Reports to: Incident Commander' },
+    { role: 'Planning Section Chief', tag: 'General Staff', who: 'Owns the situation picture and the written plan.',
+      duties: [
+        'Maintains the master situation status board',
+        'Runs resource status and situation reporting',
+        'Drafts the IAP for IC approval each operational period',
+        'Captures timeline entries for the After Action Report'
+      ],
+      reports: 'Reports to: Incident Commander' },
+    { role: 'Logistics Section Chief', tag: 'General Staff', who: 'Provides everything the response needs to function.',
+      duties: [
+        'Orders and tracks resources (vehicles, equipment, staff)',
+        'Manages staging, feeding, rehab and communications',
+        'Supports the Family Assistance Center facilities',
+        'Arranges transport and mutual-aid support'
+      ],
+      reports: 'Reports to: Incident Commander' },
+    { role: 'Finance / Administration', tag: 'General Staff', who: 'Tracks cost, claims and contractual exposure.',
+      duties: [
+        'Records personnel hours and equipment usage',
+        'Processes emergency procurement and contracts',
+        'Logs claims and damage estimates',
+        'Compiles cost data for the After Action Report'
+      ],
+      reports: 'Reports to: Incident Commander' }
+  ],
+
   /* Checklist items for the IC Checklist tab */
   checklistItems: [
     'AEP reviewed and IC role officially confirmed',
