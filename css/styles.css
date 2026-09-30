@@ -706,6 +706,52 @@ textarea.se-input{resize:vertical; line-height:1.5;}
   .weather{ display:none !important; }
 }
 
+/* =====================================================
+   ACCESSIBILITY — skip link + visible focus indicators
+   ===================================================== */
+.skip-link{
+  position:absolute;
+  top:-60px; left:12px;
+  z-index:500;
+  background:#1d4ed8;
+  color:#ffffff !important;
+  padding:10px 18px;
+  border-radius:0 0 8px 8px;
+  font-size:13px;
+  font-weight:600;
+  text-decoration:none;
+  transition:top .15s ease;
+}
+.skip-link:focus{ top:0; }
+
+/* Keyboard focus must always be visible (WCAG 2.4.7) */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+label.tab:focus-within{
+  outline:2px solid #60a5fa !important;
+  outline-offset:2px;
+}
+[data-theme="light"] a:focus-visible,
+[data-theme="light"] button:focus-visible,
+[data-theme="light"] select:focus-visible,
+[data-theme="light"] input:focus-visible,
+[data-theme="light"] textarea:focus-visible,
+[data-theme="light"] [tabindex]:focus-visible,
+[data-theme="light"] label.tab:focus-within{
+  outline-color:#1d4ed8 !important;
+}
+/* The tab radios are visually hidden — surface focus on their label.
+   (label[for] cannot be targeted by CSS, so app.js mirrors focus.) */
+label.tab.kb-focus{
+  outline:2px solid #60a5fa !important;
+  outline-offset:2px;
+}
+[data-theme="light"] label.tab.kb-focus{ outline-color:#1d4ed8 !important; }
+
 /* ---------- Language: Dhivehi (ދިވެހި) ---------- */
 body.lang-dv{
   font-family:'Noto Sans Thaana','MV Faruma','Faruma','Dhivehi Write','Segoe UI',sans-serif;

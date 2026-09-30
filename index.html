@@ -12,7 +12,7 @@
       if (localStorage.getItem('ttx-lang') === 'dv') { document.documentElement.setAttribute('lang','dv'); document.documentElement.setAttribute('dir','rtl'); }
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930a">
+  <link rel="stylesheet" href="css/styles.css?v=20260930b">
 </head>
 <body>
 
@@ -24,6 +24,8 @@
 <input type="radio" name="ttx-tab" id="ttx-tab-emergencies" class="tab-radio">
 <input type="radio" name="ttx-tab" id="ttx-tab-aircraft" class="tab-radio">
 <input type="radio" name="ttx-tab" id="ttx-tab-checklist" class="tab-radio">
+
+<a class="skip-link" href="#mainContent">Skip to main content</a>
 
 <header class="app-header">
   <div class="wrap">
@@ -53,7 +55,7 @@
   </div>
 </header>
 
-<nav class="tabs">
+<nav class="tabs" aria-label="Dashboard sections">
   <div class="wrap">
     <label class="tab" for="ttx-tab-phases" title="Shortcut: Ctrl/Alt + 1"><span data-i18n="tab.phases">IC Role</span></label>
     <label class="tab" for="ttx-tab-teams" title="Shortcut: Ctrl/Alt + 2"><span data-i18n="tab.teams">Team Labels</span></label>
@@ -65,7 +67,7 @@
   </div>
 </nav>
 
-<main class="wrap">
+<main class="wrap" id="mainContent">
 
   <!-- ============ IC ROLE ============ -->
   <section id="phases" class="view">
@@ -1019,7 +1021,7 @@
 
     <div class="progress-shell">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="progress-num" id="progressNum">0 / 11</div>
+      <div class="progress-num" id="progressNum" aria-live="polite">0 / 11</div>
       <button class="reset-btn" id="resetBtn" type="button">Reset</button>
     </div>
 
@@ -1035,9 +1037,9 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/i18n.js?v=20260930a"></script>
-<script src="js/data.js?v=20260930a"></script>
-<script src="js/app.js?v=20260930a"></script>
+<script src="js/i18n.js?v=20260930b"></script>
+<script src="js/data.js?v=20260930b"></script>
+<script src="js/app.js?v=20260930b"></script>
 
 </body>
 </html>

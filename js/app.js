@@ -226,6 +226,19 @@
       }
     });
 
+    /* ================= KEYBOARD FOCUS MIRROR (tabs) =================
+       The tab radios are visually hidden, so a keyboard user gets no
+       focus ring. Mirror focus onto the visible label. */
+    Array.prototype.forEach.call(document.querySelectorAll('.tab-radio'), function (radio) {
+      var label = document.querySelector('label[for="' + radio.id + '"]');
+      if (!label) return;
+      var on = function () { label.classList.add('kb-focus'); };
+      var off = function () { label.classList.remove('kb-focus'); };
+      radio.addEventListener('focus', on);
+      radio.addEventListener('blur', off);
+      radio.addEventListener('click', off);
+    });
+
     /* ================= SUB NAV (Aircraft tab) ================= */
     var subNav = document.getElementById('aircraftSubNav');
     if (subNav) {
