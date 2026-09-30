@@ -595,7 +595,7 @@
       'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
       'ttx-custom-scenarios', 'ttx-ics-names',
       'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events',
-      'ttx-restore-points', 'ttx-version-history', 'ttx-clock'
+      'ttx-restore-points', 'ttx-version-history', 'ttx-clock', 'ttx-aar-notes'
     ];
 
     var backupBtn = document.getElementById('backupBtn');
@@ -886,7 +886,8 @@
                  document.getElementById('icsOverlay') ||
                  document.getElementById('changelogOverlay') ||
                  document.getElementById('historyOverlay') ||
-                 document.getElementById('weatherOverlay');
+                 document.getElementById('weatherOverlay') ||
+                 document.getElementById('aarOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
@@ -1640,7 +1641,7 @@
       icsBtn.type = 'button';
       icsBtn.className = 'reset-btn';
       icsBtn.textContent = "📄 ICS Forms";
-      icsBtn.title = 'Generate ICS 201 / 202 / 203 forms from exercise data';
+      icsBtn.title = 'Generate ICS 201–206 and 209 forms from exercise data';
       icsBtn.addEventListener('click', openIcsForms);
 
       var actions = document.createElement('span');
@@ -1765,6 +1766,10 @@
       html += '<button class="reset-btn ics-tab active" type="button" data-form="201">ICS 201 — Briefing</button>';
       html += '<button class="reset-btn ics-tab" type="button" data-form="202">ICS 202 — Objectives</button>';
       html += '<button class="reset-btn ics-tab" type="button" data-form="203">ICS 203 — Assignments</button>';
+      html += '<button class="reset-btn ics-tab" type="button" data-form="204">ICS 204 — Assignment List</button>';
+      html += '<button class="reset-btn ics-tab" type="button" data-form="205">ICS 205 — Comms</button>';
+      html += '<button class="reset-btn ics-tab" type="button" data-form="206">ICS 206 — Medical</button>';
+      html += '<button class="reset-btn ics-tab" type="button" data-form="209">ICS 209 — Summary</button>';
       html += '</div>';
       html += '<div id="icsBody"></div>';
       html += '<div class="se-actions">';
@@ -1825,12 +1830,44 @@
         } catch (e) { return []; }
       };
 
+      /* Casualty counts for the current scenario (string triage cards) */
+      var getCasCounts = function () {
+        var counts = { red: 0, yellow: 0, green: 0, deceased: 0, total: 0 };
+        try {
+          var all = JSON.parse(localStorage.getItem('ttx-casualties') || '{}');
+          var sel = document.getElementById('scenarioSelect');
+          var arr = (sel && sel.value && Array.isArray(all[sel.value])) ? all[sel.value] : [];
+          counts.total = arr.length;
+          arr.forEach(function (c) {
+            var tri = String(c.triage || '');
+            if (tri.indexOf('Red') === 0) counts.red++;
+            else if (tri.indexOf('Yellow') === 0) counts.yellow++;
+            else if (tri.indexOf('Green') === 0) counts.green++;
+            else if (tri.indexOf('Deceased') === 0) counts.deceased++;
+          });
+        } catch (e) {}
+        return counts;
+      };
+
+      /* Total resources deployed for the current scenario */
+      var getDeployedTotal = function () {
+        var n = 0;
+        try {
+          var all = JSON.parse(localStorage.getItem('ttx-resource-deployed') || '{}');
+          var sel = document.getElementById('scenarioSelect');
+          var obj = (sel && sel.value && all[sel.value] && typeof all[sel.value] === 'object') ? all[sel.value] : {};
+          Object.keys(obj).forEach(function (k) { n += Number(obj[k]) || 0; });
+        } catch (e) {}
+        return n;
+      };
+
       var names = loadIcsNames();
 
       var renderForm = function () {
         var body = document.getElementById('icsBody');
         if (!body) return;
         var sc = getScenario();
+        var res = (sc && sc.resources) ? sc.resources : {};
         var done = getChecklistState();
         var events = getTimeline();
         var now = new Date();
@@ -1908,7 +1945,7 @@
           h += '<div class="ics-cell"><label>Approved by (IC)</label><div>' + icsEscape(names.ic || '______________________') + '</div></div>';
           h += '</div>';
 
-        } else {
+        } else if (currentForm === '203') {
           h += '<div class="ics-head"><b>ICS 203 — ORGANIZATION ASSIGNMENT LIST</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
           h += '<div class="ics-cell"><label>Incident Name</label><div>' + icsEscape(sc ? sc.name : '______________________') + '</div></div>';
           h += '<table class="ics-table"><thead><tr><th>Position</th><th>Name</th><th>Contact / Agency</th></tr></thead><tbody>';
@@ -1934,6 +1971,109 @@
           });
           h += '</tbody></table>';
           h += '<p class="ics-note">Names entered here are saved in this browser and reused next time.</p>';
+
+        } else if (currentForm === '204') {
+          h += '<div class="ics-head"><b>ICS 204 — ASSIGNMENT LIST</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>1. Incident Name</label><div>' + icsEscape(sc ? sc.name : 'Airport Emergency Exercise') + '</div></div>';
+          h += '<div class="ics-cell"><label>2. Operational Period</label><div>' + dateStr + ' · ongoing</div></div>';
+          h += '</div>';
+          h += '<table class="ics-table"><thead><tr><th>Group / Unit</th><th>Assignment</th><th>Resources</th><th>Communications</th></tr></thead><tbody>';
+          var groups = [
+            ['Command', 'Establish ICP, unified command, overall control', 'ICP, command staff', 'Command channel'],
+            ['ARFF', 'Extinguish fire, rescue trapped occupants', 'ARFF × ' + (res.arff != null ? res.arff : '____'), 'Fire ground channel'],
+            ['EMS / Triage', 'Triage, treatment, transport', 'Ambulances × ' + (res.ambulances != null ? res.ambulances : '____'), 'EMS channel'],
+            ['Security / Perimeter', 'Establish cordon, control access', 'Police / security unit', 'Security channel'],
+            ['Logistics', 'Staging, resupply, communications', 'Staging area, comms unit', 'Logistics channel'],
+            ['Family Assistance', 'Support for families and survivors', 'FAC team', 'FAC channel']
+          ];
+          groups.forEach(function (g) {
+            h += '<tr><td><b>' + icsEscape(g[0]) + '</b></td><td>' + icsEscape(g[1]) + '</td><td>' + icsEscape(g[2]) + '</td><td>' + icsEscape(g[3]) + '</td></tr>';
+          });
+          h += '</tbody></table>';
+          h += '<p class="ics-note">Channels are filled in from your ICS 205 Communications List.</p>';
+
+        } else if (currentForm === '205') {
+          h += '<div class="ics-head"><b>ICS 205 — COMMUNICATIONS LIST</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>1. Incident Name</label><div>' + icsEscape(sc ? sc.name : 'Airport Emergency Exercise') + '</div></div>';
+          h += '<div class="ics-cell"><label>2. Radio System</label><div><input class="ics-input" data-ics="radioSystem" value="' + icsEscape(names.radioSystem || '') + '" placeholder="e.g. VHF + TETRA talkgroups"></div></div>';
+          h += '</div>';
+          h += '<table class="ics-table"><thead><tr><th>Function</th><th>Channel / Talkgroup</th><th>Callsign</th><th>Remarks</th></tr></thead><tbody>';
+          var comms = [
+            ['Command', 'CMD', 'Unified command net'],
+            ['Fire / ARFF', 'FIRE', 'Fire ground operations'],
+            ['EMS / Medical', 'EMS', 'Triage and transport'],
+            ['Security / Perimeter', 'SEC', 'Cordon control'],
+            ['Logistics', 'LOG', 'Staging and resupply'],
+            ['Airport Operations', 'AQD', 'Airfield status / redirects'],
+            ['ATC / Tower', 'TWR', 'Airfield closure and status']
+          ];
+          comms.forEach(function (c, i) {
+            var key = 'ch-' + c[1];
+            h += '<tr><td><b>' + icsEscape(c[0]) + '</b></td>' +
+              '<td><input class="ics-input" data-ics="' + key + '" value="' + icsEscape(names[key] || '') + '" placeholder="CH ______"></td>' +
+              '<td>' + icsEscape(c[1]) + '</td>' +
+              '<td>' + icsEscape(c[2]) + '</td></tr>';
+          });
+          h += '</tbody></table>';
+          h += '<p class="ics-note">Channels entered here are saved in this browser and reused next time.</p>';
+
+        } else if (currentForm === '206') {
+          h += '<div class="ics-head"><b>ICS 206 — MEDICAL PLAN</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>1. Incident Name</label><div>' + icsEscape(sc ? sc.name : 'Airport Emergency Exercise') + '</div></div>';
+          h += '<div class="ics-cell"><label>2. Operational Period</label><div>' + dateStr + ' · ongoing</div></div>';
+          h += '</div>';
+          h += '<table class="ics-table"><thead><tr><th>Resource</th><th>Quantity</th><th>Base / Location</th><th>Notes</th></tr></thead><tbody>';
+          var med = [
+            ['Ambulances', res.ambulances != null ? String(res.ambulances) : '____', 'Transport to hospital'],
+            ['Medical teams', '____', 'On-scene treatment'],
+            ['Hospital — primary', '1', 'Receiving hospital'],
+            ['Hospital — secondary', '1', 'Backup / overflow']
+          ];
+          med.forEach(function (m) {
+            h += '<tr><td><b>' + icsEscape(m[0]) + '</b></td><td>' + icsEscape(m[1]) + '</td>' +
+              '<td><input class="ics-input" data-ics="med-' + icsEscape(m[0].toLowerCase().replace(/[^a-z]+/g, '-')) + '" value="' +
+              icsEscape(names['med-' + m[0].toLowerCase().replace(/[^a-z]+/g, '-')] || '') + '" placeholder="________________"></td>' +
+              '<td>' + icsEscape(m[2]) + '</td></tr>';
+          });
+          h += '</tbody></table>';
+          var cc = getCasCounts();
+          h += '<div class="ics-cell" style="margin-top:12px;"><label>3. Triage summary (tracker)</label><div>' +
+            (cc.total
+              ? 'Red ' + cc.red + ' · Yellow ' + cc.yellow + ' · Green ' + cc.green + ' · Deceased ' + cc.deceased + ' · <b>Total ' + cc.total + '</b>'
+              : 'No casualties recorded yet — add cards in the Casualty Tracker.') +
+            '</div></div>';
+          h += '<div class="ics-cell"><label>4. Medical direction</label><div class="ics-lines"><p>_______________________________________________________</p><p>_______________________________________________________</p></div></div>';
+
+        } else {
+          /* ICS 209 — INCIDENT SUMMARY */
+          h += '<div class="ics-head"><b>ICS 209 — INCIDENT SUMMARY</b><span>Kulhudhuffushi Airport · VRBK/HDK</span></div>';
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>1. Incident Name</label><div>' + icsEscape(sc ? sc.name : 'Airport Emergency Exercise') + '</div></div>';
+          h += '<div class="ics-cell"><label>2. Date / Time</label><div>' + dateStr + ' · ' + timeStr + '</div></div>';
+          h += '<div class="ics-cell"><label>3. Location</label><div>Kulhudhuffushi Island (VRBK) — crash site</div></div>';
+          h += '<div class="ics-cell"><label>4. Reported By</label><div><input class="ics-input" data-ics="reportedBy" value="' + icsEscape(names.reportedBy || '') + '" placeholder="________________"></div></div>';
+          h += '</div>';
+          h += '<div class="ics-cell"><label>5. Incident Description</label><div class="ics-lines">';
+          if (sc) {
+            h += '<p>' + icsEscape(sc.name) + (sc.aircraft ? ' — ' + icsEscape(sc.aircraft) : '') +
+              (sc.soulsOnBoard ? ', ' + sc.soulsOnBoard + ' souls on board' : '') + '.</p>';
+            if (sc.description) h += '<p>' + icsEscape(sc.description) + '</p>';
+          } else {
+            h += '<p>_______________________________________________________</p>';
+          }
+          h += '</div></div>';
+          var cas9 = getCasCounts();
+          var st9 = getChecklistState();
+          h += '<div class="ics-grid">';
+          h += '<div class="ics-cell"><label>6. Casualties recorded</label><div>' + (cas9.total ? cas9.total + ' total (' + cas9.red + '/' + cas9.yellow + '/' + cas9.green + '/' + cas9.deceased + ')' : '—') + '</div></div>';
+          h += '<div class="ics-cell"><label>7. Actions logged</label><div>' + events.length + ' timeline events</div></div>';
+          h += '<div class="ics-cell"><label>8. Checklist progress</label><div>' + st9.length + ' / ' + (TTX_DATA.checklistItems || []).length + '</div></div>';
+          h += '<div class="ics-cell"><label>9. Resources deployed</label><div>' + getDeployedTotal() + ' units</div></div>';
+          h += '</div>';
+          h += '<div class="ics-cell"><label>10. Attachments</label><div>✓ ICS 201 · ✓ ICS 202 · ✓ ICS 203 · ✓ ICS 204 · ✓ ICS 205 · ✓ ICS 206 · ✓ Timeline · ✓ After Action Report</div></div>';
         }
 
         h += '</div>';
@@ -2514,70 +2654,337 @@
     loadTimeline();
     renderTimeline();
 
-    /* ================= AAR EXPORT ================= */
+    /* ================= AFTER ACTION REPORT (modal) ================= */
+    /* Shared print helper: fills #printRoot (shown only in @media print,
+       overriding the full-plan print rules) then prints. */
+    var printMarkup = function (html) {
+      var root = document.getElementById('printRoot');
+      if (root) root.innerHTML = html;
+      document.body.classList.add('print-markup');
+      window.print();
+    };
+    var clearPrintMarkup = function () {
+      document.body.classList.remove('print-markup');
+      var root = document.getElementById('printRoot');
+      if (root) root.innerHTML = '';
+    };
+    window.addEventListener('afterprint', clearPrintMarkup);
+
+    var AAR_NOTES_KEY = 'ttx-aar-notes';
+    var AAR_RES_TYPES = [
+      { key: 'arff', label: 'ARFF Vehicles' },
+      { key: 'ambulances', label: 'Ambulances' },
+      { key: 'fireTrucks', label: 'Fire Trucks' },
+      { key: 'buses', label: 'Buses' }
+    ];
+
+    var aarScenario = function () {
+      var sel = document.getElementById('scenarioSelect');
+      if (sel && sel.value) return findScenario(sel.value);
+      return null;
+    };
+
+    var collectAarData = function () {
+      var scenario = aarScenario();
+
+      var checklistState = pickJSON('ttx-checklist-state') || [];
+      var checklist = TTX_DATA.checklistItems.map(function (item, idx) {
+        return { text: item, done: checklistState[idx] === true };
+      });
+      var doneCount = checklist.filter(function (i) { return i.done; }).length;
+
+      /* Resources: required (scenario definition) vs deployed (tracker) */
+      var deployedAll = pickJSON('ttx-resource-deployed') || {};
+      var deployed = (scenario && deployedAll[scenario.id]) ? deployedAll[scenario.id] : {};
+      var required = (scenario && scenario.resources) ? scenario.resources : {};
+      var resources = AAR_RES_TYPES.map(function (t2) {
+        var need = Number(required[t2.key]) || 0;
+        var have = Number(deployed[t2.key]) || 0;
+        var status = need === 0 ? 'Not required'
+          : (have >= need ? have + '/' + need + ' complete'
+            : (have > 0 ? have + '/' + need + ' partial' : '0/' + need + ' missing'));
+        return { name: t2.label, required: need, deployed: have, status: status };
+      });
+
+      /* Casualties: per-scenario cards with string triage + transport status */
+      var casAll = pickJSON('ttx-casualties') || {};
+      var cas = (scenario && Array.isArray(casAll[scenario.id])) ? casAll[scenario.id] : [];
+      var counts = { red: 0, yellow: 0, green: 0, deceased: 0, transported: 0, total: cas.length };
+      cas.forEach(function (c) {
+        var tri = String(c.triage || '');
+        if (tri.indexOf('Red') === 0) counts.red++;
+        else if (tri.indexOf('Yellow') === 0) counts.yellow++;
+        else if (tri.indexOf('Green') === 0) counts.green++;
+        else if (tri.indexOf('Deceased') === 0) counts.deceased++;
+        var tr = String(c.transport || '');
+        if (tr === 'Loaded' || tr === 'En route' || tr === 'Arrived at hospital') counts.transported++;
+      });
+
+      var clock = pickJSON('ttx-clock');
+
+      return {
+        scenario: scenario,
+        checklist: checklist,
+        doneCount: doneCount,
+        resources: resources,
+        casualtyCounts: counts,
+        clock: clock,
+        timeline: timelineEvents
+      };
+    };
+
+    var clockElapsedMs = function (cl) {
+      if (!cl) return 0;
+      var ms = cl.accumulated || 0;
+      if (cl.running && cl.startedAt) ms += Date.now() - cl.startedAt;
+      return ms;
+    };
+
+    var buildAarMarkdown = function (d, notes) {
+      var L = [];
+      L.push('# Kulhudhuffushi Airport (VRBK) — After Action Report');
+      if (d.scenario) L.push('', '**Scenario:** ' + d.scenario.name);
+      L.push('', '**Generated:** ' + new Date().toLocaleString(), '', '---', '');
+
+      L.push('## 1. Scenario');
+      if (d.scenario) {
+        var s = d.scenario;
+        if (s.aircraft) L.push('- **Aircraft:** ' + s.aircraft);
+        if (s.soulsOnBoard) L.push('- **Souls on board:** ' + s.soulsOnBoard);
+        if (s.location) L.push('- **Location:** ' + s.location);
+        if (s.casualties) {
+          var ec = s.casualties;
+          L.push('- **Casualty estimates:** ' + (ec.red || 0) + ' red, ' + (ec.yellow || 0) +
+                 ' yellow, ' + (ec.green || 0) + ' green, ' + (ec.deceased || 0) + ' deceased');
+        }
+        if (s.description) L.push('', s.description);
+      } else {
+        L.push('No scenario selected.');
+      }
+
+      L.push('', '## 2. Checklist Status (' + d.doneCount + '/' + d.checklist.length + ' completed)');
+      d.checklist.forEach(function (i) { L.push('- [' + (i.done ? 'x' : ' ') + '] ' + i.text); });
+
+      L.push('', '## 3. Resources');
+      L.push('| Resource | Required | Deployed | Status |');
+      L.push('|---|---|---|---|');
+      d.resources.forEach(function (r) {
+        L.push('| ' + r.name + ' | ' + r.required + ' | ' + r.deployed + ' | ' + r.status + ' |');
+      });
+
+      var cc = d.casualtyCounts;
+      L.push('', '## 4. Casualties');
+      L.push('- Red (Immediate): ' + cc.red);
+      L.push('- Yellow (Delayed): ' + cc.yellow);
+      L.push('- Green (Minor): ' + cc.green);
+      L.push('- Deceased: ' + cc.deceased);
+      L.push('- Transported: ' + cc.transported);
+      L.push('- **Total: ' + cc.total + '**');
+
+      L.push('', '## 5. Exercise Clock');
+      if (d.clock && d.clock.startWall) {
+        L.push('- Start wall time: ' + new Date(d.clock.startWall).toLocaleString());
+        L.push('- Total elapsed: T+ ' + fmtTplus(clockElapsedMs(d.clock)));
+        L.push('- Released injects: ' + (d.clock.released ? d.clock.released.length : 0));
+      } else {
+        L.push('Clock not started for this exercise.');
+      }
+
+      L.push('', '## 6. Exercise Timeline');
+      if (!d.timeline.length) L.push('No events recorded.');
+      else d.timeline.forEach(function (e) {
+        L.push('- **[' + e.time + ']**' + (e.tplus ? ' (T+' + e.tplus + ')' : '') +
+               ' `' + e.category + '` — ' + e.text);
+      });
+
+      L.push('', '## 7. Facilitator / Observer Notes', '');
+      if (notes && notes.trim()) L.push(notes, '');
+      else L.push('_No notes recorded._', '');
+
+      L.push('## 8. Improvement Plan');
+      L.push('| # | Issue / Observation | Owner | Target date | Status |');
+      L.push('|---|---|---|---|---|');
+      for (var i = 1; i <= 5; i++) L.push('| ' + i + ' |  |  |  |  |');
+      L.push('');
+      return L.join('\n');
+    };
+
+    var renderAarPreview = function () {
+      var el = document.getElementById('aarContent');
+      if (!el) return;
+      var d = collectAarData();
+      var notesEl = document.getElementById('aarNotes');
+      var notes = notesEl ? notesEl.value : '';
+      var h = '';
+
+      /* 1 — Scenario */
+      h += '<div class="aar-sec"><h3>1. Scenario</h3>';
+      if (d.scenario) {
+        h += '<div class="aar-grid">';
+        h += '<div><span>Scenario</span><b>' + escapeHtml(d.scenario.name) + '</b></div>';
+        h += '<div><span>Date</span><b>' + new Date().toLocaleDateString() + '</b></div>';
+        if (d.scenario.aircraft) h += '<div><span>Aircraft</span><b>' + escapeHtml(d.scenario.aircraft) + '</b></div>';
+        if (d.scenario.soulsOnBoard) h += '<div><span>Souls on board</span><b>' + d.scenario.soulsOnBoard + '</b></div>';
+        if (d.scenario.location) h += '<div><span>Location</span><b>' + escapeHtml(d.scenario.location) + '</b></div>';
+        h += '</div>';
+        if (d.scenario.description) h += '<p class="aar-empty" style="font-style:normal;margin-top:8px;">' + escapeHtml(d.scenario.description) + '</p>';
+      } else {
+        h += '<p class="aar-empty">No scenario selected — pick a scenario to include its details.</p>';
+      }
+      h += '</div>';
+
+      /* 2 — Checklist */
+      h += '<div class="aar-sec"><h3>2. Checklist Status<span class="aar-count">' + d.doneCount + ' / ' + d.checklist.length + ' completed</span></h3><ul class="aar-list">';
+      d.checklist.forEach(function (i) {
+        h += '<li class="' + (i.done ? 'done' : '') + '"><span class="aar-box">' + (i.done ? '✓' : '') + '</span><span>' + escapeHtml(i.text) + '</span></li>';
+      });
+      h += '</ul></div>';
+
+      /* 3 — Resources */
+      h += '<div class="aar-sec"><h3>3. Resources</h3><table class="aar-tbl"><tr><th>Resource</th><th>Required</th><th>Deployed</th><th>Status</th></tr>';
+      d.resources.forEach(function (r) {
+        h += '<tr><td>' + escapeHtml(r.name) + '</td><td class="mono">' + r.required + '</td><td class="mono">' + r.deployed + '</td><td>' + escapeHtml(r.status) + '</td></tr>';
+      });
+      h += '</table></div>';
+
+      /* 4 — Casualties */
+      var cc = d.casualtyCounts;
+      h += '<div class="aar-sec"><h3>4. Casualties</h3>';
+      h += '<div class="aar-pills">';
+      h += '<span class="aar-pill s-red">Red: ' + cc.red + '</span>';
+      h += '<span class="aar-pill s-yellow">Yellow: ' + cc.yellow + '</span>';
+      h += '<span class="aar-pill s-green">Green: ' + cc.green + '</span>';
+      h += '<span class="aar-pill s-deceased">Deceased: ' + cc.deceased + '</span>';
+      h += '<span class="aar-pill s-transported">Transported: ' + cc.transported + '</span>';
+      h += '<span class="aar-pill s-total">Total: ' + cc.total + '</span>';
+      h += '</div>';
+      if (d.scenario && d.scenario.casualties) {
+        var ec = d.scenario.casualties;
+        h += '<div class="aar-grid">';
+        h += '<div><span>Estimated red</span><b>' + (ec.red || 0) + '</b></div>';
+        h += '<div><span>Estimated yellow</span><b>' + (ec.yellow || 0) + '</b></div>';
+        h += '<div><span>Estimated green</span><b>' + (ec.green || 0) + '</b></div>';
+        h += '<div><span>Estimated deceased</span><b>' + (ec.deceased || 0) + '</b></div>';
+        h += '</div>';
+      }
+      h += '</div>';
+
+      /* 5 — Exercise clock */
+      h += '<div class="aar-sec"><h3>5. Exercise Clock</h3>';
+      if (d.clock && d.clock.startWall) {
+        h += '<div class="aar-grid">';
+        h += '<div><span>Start wall time</span><b>' + new Date(d.clock.startWall).toLocaleString() + '</b></div>';
+        h += '<div><span>Total elapsed</span><b>T+ ' + fmtTplus(clockElapsedMs(d.clock)) + '</b></div>';
+        h += '<div><span>Released injects</span><b>' + (d.clock.released ? d.clock.released.length : 0) + '</b></div>';
+        h += '</div>';
+      } else {
+        h += '<p class="aar-empty">Clock not started for this exercise.</p>';
+      }
+      h += '</div>';
+
+      /* 6 — Timeline */
+      h += '<div class="aar-sec"><h3>6. Exercise Timeline<span class="aar-count">' + d.timeline.length + ' events</span></h3>';
+      if (!d.timeline.length) {
+        h += '<p class="aar-empty">No events recorded.</p>';
+      } else {
+        h += '<table class="aar-tbl"><tr><th style="width:70px;">Time</th><th style="width:74px;">T+</th><th style="width:88px;">Category</th><th>Event</th></tr>';
+        d.timeline.forEach(function (e) {
+          h += '<tr><td class="mono">[' + escapeHtml(e.time) + ']</td><td class="mono">' + (e.tplus ? 'T+' + escapeHtml(e.tplus) : '—') + '</td>' +
+               '<td><span class="aar-cat c-' + escapeHtml(e.category) + '">' + escapeHtml(e.category) + '</span></td>' +
+               '<td>' + escapeHtml(e.text) + '</td></tr>';
+        });
+        h += '</table>';
+      }
+      h += '</div>';
+
+      /* 7 — Notes */
+      h += '<div class="aar-sec"><h3>7. Facilitator / Observer Notes</h3>';
+      h += notes && notes.trim()
+        ? '<p class="aar-notes-body">' + escapeHtml(notes) + '</p>'
+        : '<p class="aar-empty">No notes recorded.</p>';
+      h += '</div>';
+
+      /* 8 — Improvement plan */
+      h += '<div class="aar-sec"><h3>8. Improvement Plan</h3>';
+      h += '<table class="aar-tbl"><tr><th>#</th><th>Issue / Observation</th><th>Owner</th><th>Target date</th><th>Status</th></tr>';
+      for (var i = 1; i <= 5; i++) h += '<tr><td class="mono">' + i + '</td><td></td><td></td><td></td><td></td></tr>';
+      h += '</table></div>';
+
+      el.innerHTML = h;
+    };
+
+    var openAarModal = function () {
+      var existing = document.getElementById('aarOverlay');
+      if (existing) { existing.remove(); return; }
+
+      var ov = document.createElement('div');
+      ov.id = 'aarOverlay';
+      ov.className = 'se-overlay';
+      var html = '<div class="se-modal" style="max-width:860px;max-height:88vh;overflow-y:auto;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+      html += '<h3 style="margin:0;font-size:16px;">📋 After Action Report</h3>';
+      html += '<button class="reset-btn" type="button" id="aarClose" style="padding:5px 12px;">✕ Close</button></div>';
+      html += '<label class="aar-notes-label" for="aarNotes">Facilitator / Observer Notes (saved as you type)</label>';
+      html += '<textarea class="se-input" id="aarNotes" rows="3" placeholder="Observations, strengths, weaknesses, opportunities…" style="line-height:1.5;resize:vertical;"></textarea>';
+      html += '<div class="aar-toolbar">';
+      html += '<button class="reset-btn" type="button" id="aarMdBtn">⬇ Download .md</button>';
+      html += '<button class="reset-btn" type="button" id="aarCopyBtn">⧉ Copy Markdown</button>';
+      html += '<button class="reset-btn" type="button" id="aarPrintBtn">🖨 Print / PDF</button>';
+      html += '</div>';
+      html += '<div class="aar-preview"><div id="aarContent"></div></div>';
+      html += '</div>';
+      ov.innerHTML = html;
+      document.body.appendChild(ov);
+
+      var notesEl = document.getElementById('aarNotes');
+      try { notesEl.value = localStorage.getItem(AAR_NOTES_KEY) || ''; } catch (e) {}
+      notesEl.addEventListener('input', function () {
+        try { localStorage.setItem(AAR_NOTES_KEY, notesEl.value); } catch (e) {}
+        renderAarPreview();
+      });
+
+      renderAarPreview();
+
+      document.getElementById('aarClose').addEventListener('click', function () { ov.remove(); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+
+      document.getElementById('aarMdBtn').addEventListener('click', function () {
+        var md = buildAarMarkdown(collectAarData(), notesEl.value);
+        var blob = new Blob([md], { type: 'text/markdown' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'AAR-' + (aarScenario() ? aarScenario().id + '-' : '') + new Date().toISOString().slice(0, 10) + '.md';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById('aarCopyBtn').addEventListener('click', function (e) {
+        var btn = e.currentTarget;
+        var md = buildAarMarkdown(collectAarData(), notesEl.value);
+        var done = function () {
+          btn.textContent = '✓ Copied!';
+          setTimeout(function () { btn.textContent = '⧉ Copy Markdown'; }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(md).then(done, function () { prompt('Copy the Markdown:', md); });
+        } else {
+          prompt('Copy the Markdown:', md);
+        }
+      });
+
+      document.getElementById('aarPrintBtn').addEventListener('click', function () {
+        printMarkup(document.getElementById('aarContent').innerHTML);
+      });
+    };
+
     var aarBtn = document.createElement('button');
     aarBtn.className = 'reset-btn';
     aarBtn.type = 'button';
-    aarBtn.textContent = 'Export AAR Summary';
+    aarBtn.textContent = '📋 After Action Report';
+    aarBtn.title = 'Preview, print or download the AAR for the current exercise';
     aarBtn.style.marginTop = '12px';
-    aarBtn.addEventListener('click', function () {
-      var scenarioName = '';
-      var scenarioSelect = document.getElementById('scenarioSelect');
-      if (scenarioSelect && scenarioSelect.value) {
-        var sc = TTX_DATA.scenarios.find(function (s) { return s.id === scenarioSelect.value; });
-        if (sc) scenarioName = sc.name;
-      }
-
-      var checklistState = [];
-      try {
-        var raw = localStorage.getItem('ttx-checklist-state');
-        if (raw) checklistState = JSON.parse(raw);
-      } catch (e) {}
-
-      var report = '';
-      report += '============================================================\n';
-      report += '  KULHUDHUFFUSHI AIRPORT — AFTER ACTION REPORT SUMMARY\n';
-      report += '============================================================\n\n';
-      report += 'Generated: ' + new Date().toLocaleString() + '\n';
-      if (scenarioName) report += 'Scenario: ' + scenarioName + '\n';
-      report += '\n';
-
-      report += '------------------------------------------------------------\n';
-      report += 'CHECKLIST STATUS\n';
-      report += '------------------------------------------------------------\n';
-      var checkedCount = 0;
-      TTX_DATA.checklistItems.forEach(function (item, idx) {
-        var checked = checklistState[idx] === true;
-        if (checked) checkedCount++;
-        report += (checked ? '[✓]' : '[ ]') + ' ' + item + '\n';
-      });
-      report += '\nProgress: ' + checkedCount + ' / ' + TTX_DATA.checklistItems.length + ' completed\n\n';
-
-      report += '------------------------------------------------------------\n';
-      report += 'EXERCISE TIMELINE\n';
-      report += '------------------------------------------------------------\n';
-      if (timelineEvents.length === 0) {
-        report += 'No events recorded.\n';
-      } else {
-        timelineEvents.forEach(function (evt) {
-          report += '[' + evt.time + ']' + (evt.tplus ? ' [T+' + evt.tplus + ']' : '') + ' [' + evt.category.toUpperCase() + '] ' + evt.text + '\n';
-        });
-      }
-      report += '\n';
-
-      report += '------------------------------------------------------------\n';
-      report += 'NOTES\n';
-      report += '------------------------------------------------------------\n';
-      report += '\n\n\n\n';
-
-      var blob = new Blob([report], { type: 'text/plain' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'AAR-Summary-' + new Date().toISOString().slice(0, 10) + '.txt';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+    aarBtn.addEventListener('click', openAarModal);
     timelineSection.appendChild(aarBtn);
 
     /* ================= EXERCISE CLOCK & INJECT PLAYER ================= */
