@@ -102,7 +102,7 @@ check('index.html has no data-i18n attributes', !html.includes('data-i18n'));
 check('index.html has no language toggle', !html.includes('langToggle'));
 check('index.html has no ttx-lang reference', !html.includes('ttx-lang'));
 check('index.html does not set dir=rtl', !/dir\s*=\s*["']rtl["']/.test(html));
-check('app.js has no t() translation calls', !/\bt\('[^']+'\)/.test(appjs));
+check('app.js has no t() translation calls', !/\bt\(/.test(appjs));
 check('app.js has no ttx-lang reference', !appjs.includes('ttx-lang'));
 check('app.js has no ttx:langchange listeners', !appjs.includes('ttx:langchange'));
 check('app.js has no data-i18n writes', !appjs.includes('data-i18n'));

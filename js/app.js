@@ -2243,8 +2243,9 @@
       var deployed = loadDeployed(scenario.id);
 
       var h = '';
+      var RT_LABELS = { arff: 'ARFF Vehicles', ambulances: 'Ambulances', fireTrucks: 'Fire Trucks', buses: 'Buses' };
       RT_TYPES.forEach(function (rt) {
-        var lbl = t(rt.labelKey);
+        var lbl = RT_LABELS[rt.key] || rt.key;
         var need = Number(required[rt.key]) || 0;
         var have = Math.min(Number(deployed[rt.key]) || 0, need);
         var pct = need === 0 ? 100 : Math.round((have / need) * 100);
