@@ -1,7 +1,8 @@
 /* =====================================================
    TESTS — run with:  node tests/test.js
-   Validates data integrity (data.js) and i18n parity
-   (i18n.js) without a browser. Exit code 1 on failure.
+   Validates data integrity (data.js), i18n removal
+   and source hygiene without a browser.
+   Exit code 1 on failure.
    ===================================================== */
 'use strict';
 const fs = require('fs');
@@ -26,13 +27,10 @@ function loadScript(rel) {
 }
 
 /* ---------- Load scripts ---------- */
-let D, I;
+let D;
 try { D = loadScript('js/data.js'); } catch (e) { console.error('FATAL data.js:', e.message); process.exit(1); }
-try { I = loadScript('js/i18n.js'); } catch (e) { console.error('FATAL i18n.js:', e.message); process.exit(1); }
 
 const TTX_DATA = D.TTX_DATA;
-const TTX_I18N = I.TTX_I18N;
-const t = I.t;
 
 /* ---------- Data structure ---------- */
 check('TTX_DATA exists', !!TTX_DATA);
@@ -95,39 +93,21 @@ check('references: required sources present',
   ['ICAO', 'FAA', 'EASA'].every(src => RF.some(r => r.src === src)));
 check('references: all fields present', RF.every(r => r.src && r.doc && r.scope && Array.isArray(r.key) && r.key.length > 0));
 
-/* ---------- i18n parity ---------- */
-check('TTX_I18N has en + dv', !!TTX_I18N && !!TTX_I18N.en && !!TTX_I18N.dv);
-if (TTX_I18N) {
-  const enKeys = Object.keys(TTX_I18N.en).sort();
-  const dvKeys = Object.keys(TTX_I18N.dv).sort();
-  check('en/dv key sets identical', enKeys.length === dvKeys.length && enKeys.every((k, i) => k === dvKeys[i]),
-    'en=' + enKeys.length + ' dv=' + dvKeys.length + ' diff=' +
-    enKeys.filter(k => !TTX_I18N.dv.hasOwnProperty(k)).concat(dvKeys.filter(k => !TTX_I18N.en.hasOwnProperty(k))).join(','));
-  check('no empty translations', enKeys.every(k => String(TTX_I18N.en[k]).length > 0 && String(TTX_I18N.dv[k]).length > 0));
-  check('t() returns English for known key', t('tab.phases') === TTX_I18N.en['tab.phases']);
-  check('t() falls back for unknown key', t('no.such.key') === 'no.such.key');
-  check('app title keys exist', 'app.title' in TTX_I18N.en && 'app.subtitle' in TTX_I18N.en);
-}
-
-/* ---------- index.html data-i18n coverage ---------- */
+/* ---------- i18n fully removed (English only) ---------- */
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-if (TTX_I18N) {
-  const used = [...html.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)].map(m => m[1]);
-  const missing = used.filter(k => !(k in TTX_I18N.en));
-  check('every data-i18n key exists in en dict', missing.length === 0, 'missing: ' + missing.join(','));
-  const missingDv = used.filter(k => !(k in TTX_I18N.dv));
-  check('every data-i18n key exists in dv dict', missingDv.length === 0, 'missing: ' + missingDv.join(','));
-}
-
-/* ---------- app.js dynamic i18n keys ---------- */
 const appjs = fs.readFileSync(path.join(ROOT, 'js/app.js'), 'utf8');
-if (TTX_I18N) {
-  const used = [...appjs.matchAll(/\bt\('([^']+)'\)/g)].map(m => m[1]);
-  const missing = [...new Set(used)].filter(k => !(k in TTX_I18N.en));
-  check("every t('...') key exists in en dict", missing.length === 0, 'missing: ' + missing.join(','));
-  const missingDv = [...new Set(used)].filter(k => !(k in TTX_I18N.dv));
-  check("every t('...') key exists in dv dict", missingDv.length === 0, 'missing: ' + missingDv.join(','));
-}
+const css = fs.readFileSync(path.join(ROOT, 'css/styles.css'), 'utf8');
+check('js/i18n.js deleted', !fs.existsSync(path.join(ROOT, 'js/i18n.js')));
+check('index.html has no data-i18n attributes', !html.includes('data-i18n'));
+check('index.html has no language toggle', !html.includes('langToggle'));
+check('index.html has no ttx-lang reference', !html.includes('ttx-lang'));
+check('index.html does not set dir=rtl', !/dir\s*=\s*["']rtl["']/.test(html));
+check('app.js has no t() translation calls', !/\bt\('[^']+'\)/.test(appjs));
+check('app.js has no ttx-lang reference', !appjs.includes('ttx-lang'));
+check('app.js has no ttx:langchange listeners', !appjs.includes('ttx:langchange'));
+check('app.js has no data-i18n writes', !appjs.includes('data-i18n'));
+check('styles.css has no .lang-dv rules', !css.includes('lang-dv'));
+check('styles.css has no Thaana/Dhivehi fonts', !/Thaana|Dhivehi/i.test(css));
 
 /* ---------- localStorage key contract ---------- */
 const keysFound = [...appjs.matchAll(/'(ttx-[a-z-]+)'/g)].map(m => m[1]);
@@ -137,12 +117,13 @@ const keysFound = [...appjs.matchAll(/'(ttx-[a-z-]+)'/g)].map(m => m[1]);
   check('app.js uses storage key ' + k, keysFound.includes(k));
 });
 const backupBlock = appjs.slice(appjs.indexOf('BACKUP_KEYS'), appjs.indexOf('BACKUP_KEYS') + 600);
-['ttx-theme', 'ttx-lang', 'ttx-font-scale', 'ttx-checklist-state', 'ttx-timeline-events'].forEach(k => {
+['ttx-theme', 'ttx-font-scale', 'ttx-checklist-state', 'ttx-timeline-events'].forEach(k => {
   check('BACKUP_KEYS includes ' + k, backupBlock.includes("'" + k + "'"));
 });
+check('BACKUP_KEYS excludes ttx-lang', !backupBlock.includes("'ttx-lang'"));
 
 /* ---------- Static syntax gates ---------- */
-['js/app.js', 'js/data.js', 'js/i18n.js', 'sw.js'].forEach(f => {
+['js/app.js', 'js/data.js', 'sw.js'].forEach(f => {
   const code = fs.readFileSync(path.join(ROOT, f), 'utf8');
   try { new vm.Script(code, { filename: f }); check('parses: ' + f, true); }
   catch (e) { check('parses: ' + f, false, e.message); }

@@ -43,20 +43,6 @@
       });
     }
 
-    /* ================= LANGUAGE TOGGLE (EN / ދިވެހި) ================= */
-    var langToggle = document.getElementById('langToggle');
-    var syncLangToggle = function () {
-      if (langToggle) langToggle.textContent = TTX_LANG === 'dv' ? 'EN' : 'ދިވެހި';
-    };
-    if (langToggle) {
-      langToggle.addEventListener('click', function () {
-        toggleLang();
-        syncLangToggle();
-      });
-    }
-    if (typeof applyLang === 'function') applyLang();
-    syncLangToggle();
-
     /* ================= FONT SIZE CONTROLS ================= */
     var FONT_KEY = 'ttx-font-scale';
     var fontScale = 1;
@@ -294,7 +280,7 @@
        Serialises every ttx-* key (except the transient weather
        cache) into one portable JSON file, and restores it back. */
     var BACKUP_KEYS = [
-      'ttx-theme', 'ttx-lang', 'ttx-font-scale',
+      'ttx-theme', 'ttx-font-scale',
       'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
       'ttx-custom-scenarios', 'ttx-ics-names',
       'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events'
@@ -424,10 +410,10 @@
               var f = weatherEl.querySelector('.wx-fresh');
               if (f) { f.textContent = '● offline'; f.classList.add('wx-cached'); }
             } else {
-              weatherEl.innerHTML = '<span class="wx-cond">' + t('wx.unavailable') + '</span>';
+              weatherEl.innerHTML = '<span class="wx-cond">' + "Weather unavailable" + '</span>';
             }
           } catch (e) {
-            weatherEl.innerHTML = '<span class="wx-cond">' + t('wx.unavailable') + '</span>';
+            weatherEl.innerHTML = '<span class="wx-cond">' + "Weather unavailable" + '</span>';
           }
         });
     };
@@ -562,9 +548,6 @@
       window.addEventListener('resize', updTabEdges);
       Array.prototype.forEach.call(document.querySelectorAll('.tab-radio'), function (radio) {
         radio.addEventListener('change', function () { centreActiveTab(true); });
-      });
-      document.addEventListener('ttx:langchange', function () {
-        setTimeout(function () { centreActiveTab(false); }, 60);
       });
       centreActiveTab(false);
     }
@@ -1044,7 +1027,7 @@
 
     var populateScenarioSelect = function (selectedId) {
       if (!scenarioSelect) return;
-      scenarioSelect.innerHTML = '<option value="">' + t('opt.selectScenario') + '</option>';
+      scenarioSelect.innerHTML = '<option value="">' + "— Select a scenario —" + '</option>';
       getAllScenarios().forEach(function (sc) {
         var opt = document.createElement('option');
         opt.value = sc.id;
@@ -1192,16 +1175,14 @@
       var newBtn = document.createElement('button');
       newBtn.type = 'button';
       newBtn.className = 'reset-btn';
-      newBtn.setAttribute('data-i18n', 'btn.new');
-      newBtn.textContent = t('btn.new');
+      newBtn.textContent = "+ New";
       newBtn.title = 'Create a new scenario';
       newBtn.addEventListener('click', function () { openScenarioEditor('new'); });
 
       var editBtn = document.createElement('button');
       editBtn.type = 'button';
       editBtn.className = 'reset-btn';
-      editBtn.setAttribute('data-i18n', 'btn.edit');
-      editBtn.textContent = t('btn.edit');
+      editBtn.textContent = "✎ Edit";
       editBtn.title = 'Edit the selected scenario';
       editBtn.disabled = true;
       editBtn.addEventListener('click', function () { openScenarioEditor('edit'); });
@@ -1209,16 +1190,14 @@
       var cmpBtn = document.createElement('button');
       cmpBtn.type = 'button';
       cmpBtn.className = 'reset-btn';
-      cmpBtn.setAttribute('data-i18n', 'btn.compare');
-      cmpBtn.textContent = t('btn.compare');
+      cmpBtn.textContent = "⇄ Compare";
       cmpBtn.title = 'Compare two scenarios side by side';
       cmpBtn.addEventListener('click', openCompare);
 
       var icsBtn = document.createElement('button');
       icsBtn.type = 'button';
       icsBtn.className = 'reset-btn';
-      icsBtn.setAttribute('data-i18n', 'btn.ics');
-      icsBtn.textContent = t('btn.ics');
+      icsBtn.textContent = "📄 ICS Forms";
       icsBtn.title = 'Generate ICS 201 / 202 / 203 forms from exercise data';
       icsBtn.addEventListener('click', openIcsForms);
 
@@ -1556,7 +1535,7 @@
       }
 
       if (!scenario) {
-        panel.innerHTML = '<p style="color:var(--muted);margin:0;">' + t('panel.empty') + '</p>';
+        panel.innerHTML = '<p style="color:var(--muted);margin:0;">' + "Select a scenario above to see casualty estimates, resource requirements, and exercise injects." + '</p>';
         return;
       }
 
@@ -1579,42 +1558,42 @@
       var html = '<h3 style="margin:0 0 16px;font-size:16px;">' + scenario.name + '</h3>';
 
       html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px;">';
-      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:#fff;">' + scenario.soulsOnBoard + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">' + t('panel.souls') + '</span></div>';
-      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:#fff;">' + scenario.fuelLoad + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">' + t('panel.fuel') + '</span></div>';
-      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:' + (scenario.fireInvolved ? '#ef4444' : '#22c55e') + ';">' + (scenario.fireInvolved ? 'Yes' : 'No') + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">' + t('panel.fire') + '</span></div>';
+      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:#fff;">' + scenario.soulsOnBoard + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">' + "Souls on Board" + '</span></div>';
+      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:#fff;">' + scenario.fuelLoad + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">' + "Fuel Load" + '</span></div>';
+      html += '<div class="stat" style="background:#0a1220;border:1px solid var(--line-soft);border-radius:9px;padding:12px;text-align:center;"><span class="num" style="font-size:20px;font-weight:700;color:' + (scenario.fireInvolved ? '#ef4444' : '#22c55e') + ';">' + (scenario.fireInvolved ? 'Yes' : 'No') + '</span><span class="lbl" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:4px;">' + "Fire Involved" + '</span></div>';
       html += '</div>';
 
-      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + t('panel.casualties') + '</h4>';
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + "Estimated Casualties" + '</h4>';
       html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px;">';
-      html += '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#fca5a5;">' + scenario.casualties.red + '</span><span style="font-size:10px;color:#fca5a5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.red') + '</span></div>';
-      html += '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#fcd34d;">' + scenario.casualties.yellow + '</span><span style="font-size:10px;color:#fcd34d;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.yellow') + '</span></div>';
-      html += '<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#86efac;">' + scenario.casualties.green + '</span><span style="font-size:10px;color:#86efac;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.green') + '</span></div>';
-      html += '<div style="background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#94a3b8;">' + scenario.casualties.deceased + '</span><span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.deceased') + '</span></div>';
+      html += '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#fca5a5;">' + scenario.casualties.red + '</span><span style="font-size:10px;color:#fca5a5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Red (Immediate)" + '</span></div>';
+      html += '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#fcd34d;">' + scenario.casualties.yellow + '</span><span style="font-size:10px;color:#fcd34d;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Yellow (Delayed)" + '</span></div>';
+      html += '<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#86efac;">' + scenario.casualties.green + '</span><span style="font-size:10px;color:#86efac;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Green (Minor)" + '</span></div>';
+      html += '<div style="background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.3);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:18px;font-weight:700;color:#94a3b8;">' + scenario.casualties.deceased + '</span><span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Deceased" + '</span></div>';
       html += '</div>';
 
-      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + t('panel.resources') + '</h4>';
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + "Resource Requirements" + '</h4>';
       html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;">';
-      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.arff + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.arff') + '</span></div>';
-      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.ambulances + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.ambulances') + '</span></div>';
-      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.fireTrucks + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.fireTrucks') + '</span></div>';
-      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.buses + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + t('panel.buses') + '</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.arff + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "ARFF Vehicles" + '</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.ambulances + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Ambulances" + '</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.fireTrucks + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Fire Trucks" + '</span></div>';
+      html += '<div style="background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;"><span style="font-size:16px;font-weight:700;color:#fff;">' + scenario.resources.buses + '</span><span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;display:block;margin-top:2px;">' + "Buses" + '</span></div>';
       html += '</div>';
 
       /* ---- Resource tracker: deployed vs available (persisted per scenario) ---- */
-      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + t('rt.title') + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;">' + t('rt.subtitle') + '</span></h4>';
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + "Resource Tracker" + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;">' + "— mark units as they arrive on scene" + '</span></h4>';
       html += '<div id="resourceTracker" class="rt-grid" data-scenario="' + scenario.id + '"></div>';
 
       /* ---- Casualty tracker: individual cards with triage + transport ---- */
-      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + t('ct.title') + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;">' + t('ct.subtitle') + '</span></h4>';
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + "Casualty Tracker" + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;">' + "— per-patient triage & transport status" + '</span></h4>';
       html += '<div class="ct-toolbar">';
-      html += '<button class="reset-btn" type="button" id="ctAdd" title="Add a casualty card" data-i18n="ct.add">' + t('ct.add') + '</button>';
-      html += '<button class="reset-btn" type="button" id="ctSeed" title="Create one card per estimated casualty in the scenario" data-i18n="ct.seed">' + t('ct.seed') + '</button>';
-      html += '<button class="reset-btn" type="button" id="ctClear" title="Remove all casualty cards" data-i18n="ct.clear">' + t('ct.clear') + '</button>';
+      html += '<button class="reset-btn" type="button" id="ctAdd" title="Add a casualty card">' + "+ Add Casualty" + '</button>';
+      html += '<button class="reset-btn" type="button" id="ctSeed" title="Create one card per estimated casualty in the scenario">' + "Generate from Estimates" + '</button>';
+      html += '<button class="reset-btn" type="button" id="ctClear" title="Remove all casualty cards">' + "Clear" + '</button>';
       html += '<span class="ct-tally" id="ctTally"></span>';
       html += '</div>';
       html += '<div id="casualtyTracker" class="ct-grid" data-scenario="' + scenario.id + '"></div>';
 
-      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + t('panel.injects') + '</h4>';
+      html += '<h4 style="margin:0 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">' + "Exercise Injects" + '</h4>';
       html += '<ul class="clean" style="margin:0;">';
       scenario.injects.forEach(function (inject) {
         html += '<li style="padding-left:20px;margin-bottom:8px;font-size:13px;color:#c4d3e8;position:relative;"><span style="position:absolute;left:4px;top:8px;width:6px;height:6px;border-radius:2px;background:var(--blue);transform:rotate(45deg);"></span>' + inject + '</li>';
@@ -1703,7 +1682,7 @@
       /* Tally line */
       if (tally) {
         if (!casualties.length) {
-          tally.textContent = t('ct.noCards');
+          tally.textContent = "No casualty cards yet";
         } else {
           var counts = {};
           casualties.forEach(function (c) { counts[c.triage] = (counts[c.triage] || 0) + 1; });
@@ -1718,7 +1697,7 @@
       }
 
       if (!casualties.length) {
-        wrap.innerHTML = '<div class="ct-empty">' + t('ct.empty') + '</div>';
+        wrap.innerHTML = '<div class="ct-empty">' + "No casualty cards. Use <b>+ Add Casualty</b> or <b>Generate from Estimates</b> to start tracking patients." + '</div>';
         return;
       }
 
@@ -1732,13 +1711,13 @@
         h += '<div class="ct-card ' + triageCls + '" data-ct="' + c.id + '">';
         h += '<div class="ct-head"><span class="ct-ref">C-' + (idx + 1) + '</span>';
         h += '<button class="ct-del" type="button" title="Remove this casualty" aria-label="Remove casualty C-' + (idx + 1) + '">×</button></div>';
-        h += '<label class="ct-lbl">' + t('ct.triage') + '</label>';
+        h += '<label class="ct-lbl">' + "Triage" + '</label>';
         h += '<select class="ct-sel ct-triage" aria-label="Triage status for C-' + (idx + 1) + '">';
         CT_TRIAGE.forEach(function (t) {
           h += '<option' + (t === c.triage ? ' selected' : '') + '>' + t + '</option>';
         });
         h += '</select>';
-        h += '<label class="ct-lbl">' + t('ct.transport') + '</label>';
+        h += '<label class="ct-lbl">' + "Transport" + '</label>';
         h += '<select class="ct-sel ct-transport" aria-label="Transport status for C-' + (idx + 1) + '">';
         CT_TRANSPORT.forEach(function (t) {
           h += '<option' + (t === c.transport ? ' selected' : '') + '>' + t + '</option>';
@@ -1836,7 +1815,7 @@
         h += '<button class="rt-btn" type="button" data-rt="' + rt.key + '" data-dir="1" aria-label="One more ' + lbl + '"' + (have >= need ? ' disabled' : '') + '>+</button>';
         h += '</div>';
         h += '<div class="rt-bar"><div class="rt-fill ' + statusCls + '" style="width:' + pct + '%"></div></div>';
-        h += '<div class="rt-status">' + (need === 0 ? t('rt.notRequired') : (have >= need ? t('rt.allDeployed') : (need - have) + ' ' + t('rt.available'))) + '</div>';
+        h += '<div class="rt-status">' + (need === 0 ? "Not required" : (have >= need ? "✓ All deployed" : (need - have) + ' ' + "still available")) + '</div>';
         h += '</div>';
       });
 
@@ -1847,8 +1826,8 @@
         totalHave += Math.min(Number(deployed[rt.key]) || 0, Number(required[rt.key]) || 0);
       });
       h += '<div class="rt-summary' + (totalNeed > 0 && totalHave >= totalNeed ? ' rt-ok' : '') + '">' +
-        totalHave + ' ' + t('rt.of') + ' ' + totalNeed + ' ' + t('rt.summary') +
-        (totalNeed > 0 && totalHave >= totalNeed ? ' ' + t('rt.summaryDone') : '') + '</div>';
+        totalHave + ' ' + "of" + ' ' + totalNeed + ' ' + "units deployed" +
+        (totalNeed > 0 && totalHave >= totalNeed ? ' ' + "— resources complete ✓" : '') + '</div>';
 
       wrap.innerHTML = h;
 
@@ -1962,7 +1941,7 @@
       if (!container) return;
 
       if (timelineEvents.length === 0) {
-        container.innerHTML = '<p style="color:var(--muted);margin:0;font-size:13px;">' + t('tl.empty') + '</p>';
+        container.innerHTML = '<p style="color:var(--muted);margin:0;font-size:13px;">' + "No events logged yet. Use the form above to add injects, decisions, or milestones." + '</p>';
         return;
       }
 
@@ -1992,22 +1971,22 @@
     timelineSection.id = 'timelineSection';
     timelineSection.style.cssText = 'background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px;margin-top:20px;';
 
-    var timelineHTML = '<h3 style="margin:0 0 16px;font-size:16px;" data-i18n="tl.title">' + t('tl.title') + '</h3>';
+    var timelineHTML = '<h3 style="margin:0 0 16px;font-size:16px;">' + "Exercise Timeline" + '</h3>';
 
     timelineHTML += '<div class="tl-form" style="display:grid;grid-template-columns:100px 1fr 120px auto;gap:8px;margin-bottom:16px;align-items:end;">';
-    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="tl.time">' + t('tl.time') + '</label><input id="timelineTime" type="text" placeholder="09:30" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
-    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="tl.text">' + t('tl.text') + '</label><input id="timelineText" type="text" placeholder="Describe the event..." style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
-    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="tl.category">' + t('tl.category') + '</label><select id="timelineCategory" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"><option value="info" data-i18n="tl.cat.info">' + t('tl.cat.info') + '</option><option value="inject" data-i18n="tl.cat.inject">' + t('tl.cat.inject') + '</option><option value="decision" data-i18n="tl.cat.decision">' + t('tl.cat.decision') + '</option><option value="milestone" data-i18n="tl.cat.milestone">' + t('tl.cat.milestone') + '</option><option value="casualty" data-i18n="tl.cat.casualty">' + t('tl.cat.casualty') + '</option></select></div>';
-    timelineHTML += '<button id="timelineAddBtn" class="reset-btn" style="padding:6px 16px;" data-i18n="tl.add">' + t('tl.add') + '</button>';
+    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">' + "Time" + '</label><input id="timelineTime" type="text" placeholder="09:30" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
+    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">' + "Event / Inject" + '</label><input id="timelineText" type="text" placeholder="Describe the event..." style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"></div>';
+    timelineHTML += '<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">' + "Category" + '</label><select id="timelineCategory" style="width:100%;background:#0a1220;border:1px solid var(--line-soft);border-radius:6px;padding:6px 10px;color:var(--text);font:inherit;font-size:13px;"><option value="info">' + "Info" + '</option><option value="inject">' + "Inject" + '</option><option value="decision">' + "Decision" + '</option><option value="milestone">' + "Milestone" + '</option><option value="casualty">' + "Casualty" + '</option></select></div>';
+    timelineHTML += '<button id="timelineAddBtn" class="reset-btn" style="padding:6px 16px;">' + "Add" + '</button>';
     timelineHTML += '</div>';
 
     timelineHTML += '<div id="timelineContainer" style="max-height:400px;overflow-y:auto;"></div>';
 
     timelineHTML += '<div class="tl-actions" style="margin-top:12px;display:flex;gap:8px;">';
-    timelineHTML += '<button id="timelineUndoBtn" class="reset-btn" type="button" title="Undo last change (Ctrl+Z)" data-i18n="tl.undo" disabled>' + t('tl.undo') + '</button>';
-    timelineHTML += '<button id="timelineRedoBtn" class="reset-btn" type="button" title="Redo (Ctrl+Y)" data-i18n="tl.redo" disabled>' + t('tl.redo') + '</button>';
-    timelineHTML += '<button id="timelineClearBtn" class="reset-btn" type="button" data-i18n="tl.clear">' + t('tl.clear') + '</button>';
-    timelineHTML += '<button id="timelineExportBtn" class="reset-btn" type="button" data-i18n="tl.export">' + t('tl.export') + '</button>';
+    timelineHTML += '<button id="timelineUndoBtn" class="reset-btn" type="button" title="Undo last change (Ctrl+Z)" disabled>' + "↶ Undo" + '</button>';
+    timelineHTML += '<button id="timelineRedoBtn" class="reset-btn" type="button" title="Redo (Ctrl+Y)" disabled>' + "↷ Redo" + '</button>';
+    timelineHTML += '<button id="timelineClearBtn" class="reset-btn" type="button">' + "Clear All Events" + '</button>';
+    timelineHTML += '<button id="timelineExportBtn" class="reset-btn" type="button">' + "Export for AAR" + '</button>';
     timelineHTML += '</div>';
 
     timelineSection.innerHTML = timelineHTML;
@@ -2148,29 +2127,6 @@
       URL.revokeObjectURL(url);
     });
     timelineSection.appendChild(aarBtn);
-
-    /* ================= LANGUAGE CHANGE → re-render dynamic UI ================= */
-    document.addEventListener('ttx:langchange', function () {
-      try {
-        /* Static tagged elements were already re-translated by toggleLang() */
-        if (typeof applyLang === 'function') applyLang();
-
-        /* Scenario select placeholder + options are rebuilt in populateScenarioSelect */
-        if (typeof scenarioSelect !== 'undefined' && scenarioSelect && typeof populateScenarioSelect === 'function') {
-          var keep = scenarioSelect.value;
-          populateScenarioSelect(keep);
-        }
-
-        /* Rebuild anything generated from JS strings */
-        if (typeof updateScenarioPanel === 'function' && typeof findScenario === 'function' &&
-            typeof scenarioSelect !== 'undefined' && scenarioSelect) {
-          updateScenarioPanel(findScenario(scenarioSelect.value));
-        }
-        if (typeof renderTimeline === 'function') renderTimeline();
-      } catch (e) {
-        if (window.console) console.warn('langchange refresh skipped:', e);
-      }
-    });
 
   } catch (err) {
     if (window.console) console.warn('Enhancement script skipped:', err);

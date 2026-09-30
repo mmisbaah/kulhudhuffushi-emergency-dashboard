@@ -17,7 +17,6 @@ var CORE = [
   './',
   'index.html',
   'css/styles.css',
-  'js/i18n.js',
   'js/data.js',
   'js/app.js',
   'manifest.json',

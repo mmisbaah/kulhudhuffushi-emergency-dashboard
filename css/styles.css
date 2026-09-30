@@ -991,28 +991,6 @@ label.tab.kb-focus{
   html{ zoom:1 !important; }
 }
 
-/* ---------- Language: Dhivehi (ދިވެހި) ---------- */
-body.lang-dv{
-  font-family:'Noto Sans Thaana','MV Faruma','Faruma','Dhivehi Write','Segoe UI',sans-serif;
-}
-.lang-dv .brand p,
-.lang-dv .section-sub,
-.lang-dv .notice{ line-height:1.9; }
-.lang-dv .tab{ letter-spacing:0; }
-.lang-dv .section-head{ letter-spacing:0; }
-.lang-dv h1{ letter-spacing:0; }
-/* In RTL mode numbers/latin abbreviations (VRBK, ICS, PDF) stay LTR */
-.lang-dv .brand-mark,
-.lang-dv .wx-meta,
-.lang-dv .wx-temp{ direction:ltr; unicode-bidi:isolate; }
-/* RTL: flip mirrored affordances that use physical left/right */
-.lang-dv .ct-card{ border-left:none; border-right:4px solid var(--red); }
-.lang-dv .ct-card.ct-yellow{ border-right-color:var(--amber); }
-.lang-dv .ct-card.ct-green{ border-right-color:var(--green); }
-.lang-dv .ct-card.ct-dead{ border-right-color:#64748b; }
-.lang-dv .notice .ni{ order:2; }
-.lang-dv .ics-input{ text-align:right; }
-
 /* ---------- Resource tracker (deployed vs available) ---------- */
 .rt-grid{
   display:grid;

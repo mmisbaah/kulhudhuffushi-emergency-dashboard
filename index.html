@@ -10,17 +10,16 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Kulhudhuffushi Airport — Emergency Exercise Dashboard</title>
   <script>
-    /* Apply saved theme/language/text-size before first paint to avoid a flash */
+    /* Apply saved theme/text-size before first paint to avoid a flash */
     try {
       var th = localStorage.getItem('ttx-theme');
       if (th === 'light') document.documentElement.setAttribute('data-theme','light');
       else if (th === 'hc') document.documentElement.setAttribute('data-theme','hc');
-      if (localStorage.getItem('ttx-lang') === 'dv') { document.documentElement.setAttribute('lang','dv'); document.documentElement.setAttribute('dir','rtl'); }
       var fs = parseFloat(localStorage.getItem('ttx-font-scale'));
       if (fs >= 0.8 && fs <= 1.6) document.documentElement.style.zoom = fs;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=20260930p">
+  <link rel="stylesheet" href="css/styles.css?v=20260930q">
 </head>
 <body>
 
@@ -40,8 +39,8 @@
     <div class="brand">
       <div class="brand-mark">✈</div>
       <div>
-        <h1 data-i18n="app.title">Kulhudhuffushi Airport — Emergency Exercise</h1>
-        <p data-i18n="app.subtitle">Incident Commander Dashboard · VRBK / HDK</p>
+        <h1>Kulhudhuffushi Airport — Emergency Exercise</h1>
+        <p>Incident Commander Dashboard · VRBK / HDK</p>
       </div>
     </div>
     <div class="header-controls">
@@ -50,22 +49,21 @@
         <button id="fontReset" class="reset-btn font-btn font-scale" type="button" title="Reset text size to 100%">100%</button>
         <button id="fontInc" class="reset-btn font-btn" type="button" title="Increase text size" aria-label="Increase text size">A+</button>
       </div>
-      <button id="exportPdfBtn" class="reset-btn" type="button" title="Export the full exercise package as PDF (opens the print dialog — choose Save as PDF)"><span data-i18n="btn.exportPdf">⬇ Export PDF</span></button>
+      <button id="exportPdfBtn" class="reset-btn" type="button" title="Export the full exercise package as PDF (opens the print dialog — choose Save as PDF)"><span>⬇ Export PDF</span></button>
       <button id="backupBtn" class="reset-btn" type="button" title="Download all dashboard data (scenarios, timeline, checklist, casualties) as a JSON backup file">💾 Backup</button>
       <button id="restoreBtn" class="reset-btn" type="button" title="Restore dashboard data from a JSON backup file">📂 Restore</button>
       <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
-      <button id="langToggle" class="reset-btn" type="button" title="Switch language / ބަސަކު ބަދަލުކުރަން">EN</button>
       <button id="themeToggle" class="reset-btn" type="button" title="Cycle theme: dark → light → high contrast — shortcut: Ctrl/Alt + T">☀️</button>
       <div class="status-chip">
         <span class="dot-live"></span>
-        <span data-i18n="header.status">Exercise Planning Mode</span>
+        <span>Exercise Planning Mode</span>
       </div>
     </div>
   </div>
   <div class="wrap scenario-row">
-    <label for="scenarioSelect" class="scenario-label" data-i18n="header.scenario">Scenario:</label>
+    <label for="scenarioSelect" class="scenario-label">Scenario:</label>
     <select id="scenarioSelect">
-      <option value="" data-i18n="opt.selectScenario">— Select a scenario —</option>
+      <option value="">— Select a scenario —</option>
     </select>
     <div class="weather" id="weatherWidget" title="Current conditions at VRBK (Open-Meteo)" aria-live="polite"></div>
   </div>
@@ -73,13 +71,13 @@
 
 <nav class="tabs" aria-label="Dashboard sections">
   <div class="wrap">
-    <label class="tab" for="ttx-tab-phases" title="Shortcut: Ctrl/Alt + 1"><span data-i18n="tab.phases">IC Role</span></label>
-    <label class="tab" for="ttx-tab-teams" title="Shortcut: Ctrl/Alt + 2"><span data-i18n="tab.teams">Team Labels</span></label>
-    <label class="tab" for="ttx-tab-locations" title="Shortcut: Ctrl/Alt + 3"><span data-i18n="tab.locations">Key Locations</span></label>
-    <label class="tab" for="ttx-tab-zones" title="Shortcut: Ctrl/Alt + 4"><span data-i18n="tab.zones">Incident Zones</span></label>
-    <label class="tab" for="ttx-tab-emergencies" title="Shortcut: Ctrl/Alt + 5"><span data-i18n="tab.emergencies">Emergency Types</span></label>
-    <label class="tab" for="ttx-tab-aircraft" title="Shortcut: Ctrl/Alt + 6"><span data-i18n="tab.aircraft">Aircraft Specs</span></label>
-    <label class="tab" for="ttx-tab-checklist" title="Shortcut: Ctrl/Alt + 7"><span data-i18n="tab.checklist">TTX Flow &amp; Checklist</span></label>
+    <label class="tab" for="ttx-tab-phases" title="Shortcut: Ctrl/Alt + 1"><span>IC Role</span></label>
+    <label class="tab" for="ttx-tab-teams" title="Shortcut: Ctrl/Alt + 2"><span>Team Labels</span></label>
+    <label class="tab" for="ttx-tab-locations" title="Shortcut: Ctrl/Alt + 3"><span>Key Locations</span></label>
+    <label class="tab" for="ttx-tab-zones" title="Shortcut: Ctrl/Alt + 4"><span>Incident Zones</span></label>
+    <label class="tab" for="ttx-tab-emergencies" title="Shortcut: Ctrl/Alt + 5"><span>Emergency Types</span></label>
+    <label class="tab" for="ttx-tab-aircraft" title="Shortcut: Ctrl/Alt + 6"><span>Aircraft Specs</span></label>
+    <label class="tab" for="ttx-tab-checklist" title="Shortcut: Ctrl/Alt + 7"><span>TTX Flow &amp; Checklist</span></label>
   </div>
 </nav>
 
@@ -87,8 +85,8 @@
 
   <!-- ============ IC ROLE ============ -->
   <section id="phases" class="view">
-    <h2 class="section-head" data-i18n="head.phases">Incident Commander Role by Phase</h2>
-    <p class="section-sub" data-i18n-html="sub.phases">Your responsibilities move through three distinct phases. Preparation builds the foundation, execution tests your command decisions, and evaluation turns the exercise into real improvement.</p>
+    <h2 class="section-head">Incident Commander Role by Phase</h2>
+    <p class="section-sub">Your responsibilities move through three distinct phases. Preparation builds the foundation, execution tests your command decisions, and evaluation turns the exercise into real improvement.</p>
 
     <div class="phase-grid">
       <div class="card phase" data-c="1">
@@ -138,8 +136,8 @@
 
   <!-- ============ TEAMS ============ -->
   <section id="teams" class="view">
-    <h2 class="section-head" data-i18n="head.teams">Tabletop Exercise Team Labels</h2>
-    <p class="section-sub" data-i18n-html="sub.teams">Two distinct sets of labels matter: the staff who <em>run</em> the drill, and the simulated response teams that <em>play</em> in it.</p>
+    <h2 class="section-head">Tabletop Exercise Team Labels</h2>
+    <p class="section-sub">Two distinct sets of labels matter: the staff who <em>run</em> the drill, and the simulated response teams that <em>play</em> in it.</p>
 
     <h3 class="sub">Exercise Staff — Who Runs the Drill</h3>
     <div class="team-grid">
@@ -213,7 +211,7 @@
 
   <!-- ============ LOCATIONS ============ -->
   <section id="locations" class="view">
-    <h2 class="section-head" data-i18n="head.locations">Key Locations — Kulhudhuffushi Airport</h2>
+    <h2 class="section-head">Key Locations — Kulhudhuffushi Airport</h2>
     <p class="section-sub">Schematic matched to the real airport layout: <strong>Runway 12/30 runs north–south</strong>, parallel taxiway and apron on the <strong>west</strong> side, passenger terminal beyond the apron, <strong>Marine Drive</strong> curving along the east coast, <strong>Mashi Kulhi</strong> lake to the southwest, and the island's town grid to the south. Hover any numbered marker to highlight it.</p>
 
     <div class="map-layout">
@@ -402,8 +400,8 @@
 
   <!-- ============ ZONES ============ -->
   <section id="zones" class="view">
-    <h2 class="section-head" data-i18n="head.zones">Aircraft Incident Zones</h2>
-    <p class="section-sub" data-i18n-html="sub.zones">The scene is organized into three concentric safety zones, adapted from hazardous materials response. Aircraft accidents involve high fuel loads and composite materials, so the boundaries matter.</p>
+    <h2 class="section-head">Aircraft Incident Zones</h2>
+    <p class="section-sub">The scene is organized into three concentric safety zones, adapted from hazardous materials response. Aircraft accidents involve high fuel loads and composite materials, so the boundaries matter.</p>
 
     <div class="zones-layout">
       <div class="map-shell">
@@ -504,8 +502,8 @@
 
   <!-- ============ EMERGENCIES ============ -->
   <section id="emergencies" class="view">
-    <h2 class="section-head" data-i18n="head.emergencies">Types of Airport Emergencies</h2>
-    <p class="section-sub" data-i18n-html="sub.emergencies">Categorizing potential emergencies helps you test specific response plans and resource coordination. Frameworks from ICAO, EASA and the FAA group them broadly like this.</p>
+    <h2 class="section-head">Types of Airport Emergencies</h2>
+    <p class="section-sub">Categorizing potential emergencies helps you test specific response plans and resource coordination. Frameworks from ICAO, EASA and the FAA group them broadly like this.</p>
 
     <div class="emg-grid">
       <div class="emg-card">
@@ -578,7 +576,7 @@
 
   <!-- ============ AIRCRAFT SPECIFICATIONS ============ -->
   <section id="aircraft" class="view">
-    <h2 class="section-head" data-i18n="head.aircraft">Aircraft Types — Domestic Turboprops &amp; Jets</h2>
+    <h2 class="section-head">Aircraft Types — Domestic Turboprops &amp; Jets</h2>
     <p class="section-sub">Reference specifications for the turboprop types operating into Kulhudhuffushi Airport (VRBK). Figures are typical published values — always confirm against the operator's current type manual before an exercise.</p>
 
     <nav class="sub-nav" id="aircraftSubNav">
@@ -859,8 +857,8 @@
 
   <!-- ============ CHECKLIST ============ -->
   <section id="checklist" class="view">
-    <h2 class="section-head" data-i18n="head.checklist">TTX Flow &amp; IC Checklist</h2>
-    <p class="section-sub" data-i18n-html="sub.checklist">A recommended build order for your tabletop exercise, followed by a working checklist for the day itself. Tap any item to tick it off — the progress bar updates live.</p>
+    <h2 class="section-head">TTX Flow &amp; IC Checklist</h2>
+    <p class="section-sub">A recommended build order for your tabletop exercise, followed by a working checklist for the day itself. Tap any item to tick it off — the progress bar updates live.</p>
 
     <h3 class="sub">Recommended Exercise Flow</h3>
     <div class="steps">
@@ -879,7 +877,7 @@
       <div class="step-chip"><b>7</b>Debrief &amp; update AEP</div>
     </div>
 
-    <h3 class="sub" data-i18n="ck.title">Incident Commander Checklist</h3>
+    <h3 class="sub">Incident Commander Checklist</h3>
 
     <div class="progress-shell">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -921,9 +919,8 @@
 
 <button id="backToTop" class="back-to-top" type="button" title="Back to top">↑</button>
 
-<script src="js/i18n.js?v=20260930p"></script>
-<script src="js/data.js?v=20260930p"></script>
-<script src="js/app.js?v=20260930p"></script>
+<script src="js/data.js?v=20260930q"></script>
+<script src="js/app.js?v=20260930q"></script>
 <script>
   /* Register the service worker (PWA/offline). Falls back silently
      on unsupported browsers or file:// (opening from disk). */
