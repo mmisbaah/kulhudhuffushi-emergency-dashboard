@@ -113,14 +113,24 @@ check('styles.css has no Thaana/Dhivehi fonts', !/Thaana|Dhivehi/i.test(css));
 const keysFound = [...appjs.matchAll(/'(ttx-[a-z-]+)'/g)].map(m => m[1]);
 ['ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
  'ttx-custom-scenarios', 'ttx-ics-names', 'ttx-casualties',
- 'ttx-resource-deployed', 'ttx-timeline-events'].forEach(k => {
+ 'ttx-resource-deployed', 'ttx-timeline-events', 'ttx-map-config'].forEach(k => {
   check('app.js uses storage key ' + k, keysFound.includes(k));
 });
-const backupBlock = appjs.slice(appjs.indexOf('BACKUP_KEYS'), appjs.indexOf('BACKUP_KEYS') + 600);
-['ttx-theme', 'ttx-font-scale', 'ttx-checklist-state', 'ttx-timeline-events'].forEach(k => {
+const backupBlock = appjs.slice(appjs.indexOf('BACKUP_KEYS'), appjs.indexOf('BACKUP_KEYS') + 700);
+['ttx-theme', 'ttx-font-scale', 'ttx-checklist-state', 'ttx-timeline-events',
+ 'ttx-clock', 'ttx-aar-notes', 'ttx-map-config'].forEach(k => {
   check('BACKUP_KEYS includes ' + k, backupBlock.includes("'" + k + "'"));
 });
 check('BACKUP_KEYS excludes ttx-lang', !backupBlock.includes("'ttx-lang'"));
+
+/* ---------- Map customization editor ---------- */
+check('index.html exposes zone ring ids for the map editor',
+  html.includes('id="hotZone"') && html.includes('id="diagHotZone"') &&
+  html.includes('id="diagWarmZone"') && html.includes('id="diagColdZone"'));
+check('app.js has the map customization editor',
+  appjs.includes('openMapEditor') && appjs.includes('MAP_CFG_KEY'));
+check('app.js builds map UI via buildMapUI()', appjs.includes('var buildMapUI = function'));
+check('styles.css styles the map editor', css.includes('.maploc-row') && css.includes('.maped-field'));
 
 /* ---------- Static syntax gates ---------- */
 ['js/app.js', 'js/data.js', 'sw.js'].forEach(f => {

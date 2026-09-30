@@ -367,6 +367,7 @@
       'ttx-custom-scenarios':   'Scenario library updated',
       'ttx-pin-positions':      'Map pins moved',
       'ttx-crash-zone-positions': 'Crash zone moved',
+      'ttx-map-config':         'Map layout saved',
       'ttx-ics-names':          'ICS names saved'
     };
     var AUDIT_KEYS = {
@@ -595,7 +596,8 @@
       'ttx-checklist-state', 'ttx-pin-positions', 'ttx-crash-zone-positions',
       'ttx-custom-scenarios', 'ttx-ics-names',
       'ttx-casualties', 'ttx-resource-deployed', 'ttx-timeline-events',
-      'ttx-restore-points', 'ttx-version-history', 'ttx-clock', 'ttx-aar-notes'
+      'ttx-restore-points', 'ttx-version-history', 'ttx-clock', 'ttx-aar-notes',
+      'ttx-map-config'
     ];
 
     var backupBtn = document.getElementById('backupBtn');
@@ -650,6 +652,186 @@
           }
         };
         reader.readAsText(file);
+      });
+    }
+
+    /* ================= DATA SUMMARY & SCENARIO PORTABILITY ================= */
+    var dataBtn = document.getElementById('dataBtn');
+    if (dataBtn) {
+      dataBtn.addEventListener('click', function () {
+        var existing = document.getElementById('dataOverlay');
+        if (existing) { existing.remove(); return; }
+
+        /* --- summary numbers --- */
+        var countKeys = function (key) {
+          try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+        };
+        var builtIn = (TTX_DATA.scenarios || []).length;
+        var custom = loadCustomScenarios();
+        var biIds = {};
+        (TTX_DATA.scenarios || []).forEach(function (s) { biIds[s.id] = 1; });
+        var customCount = custom.filter(function (c) { return c && c.id && !biIds[c.id]; }).length;
+
+        var st = countKeys('ttx-checklist-state');
+        var done = Array.isArray(st) ? st.filter(function (x) { return !!x; }).length : 0;
+        var total = (TTX_DATA.checklistItems || []).length;
+
+        var tl = countKeys('ttx-timeline-events');
+        var tlCount = Array.isArray(tl) ? tl.length : 0;
+
+        var casAll = countKeys('ttx-casualties') || {};
+        var casCount = 0;
+        if (casAll && typeof casAll === 'object') {
+          Object.keys(casAll).forEach(function (k) { if (Array.isArray(casAll[k])) casCount += casAll[k].length; });
+        }
+
+        var resAll = countKeys('ttx-resource-deployed') || {};
+        var resCount = 0;
+        if (resAll && typeof resAll === 'object') {
+          Object.keys(resAll).forEach(function (k) {
+            var o = resAll[k];
+            if (o && typeof o === 'object') Object.keys(o).forEach(function (t2) { resCount += Number(o[t2]) || 0; });
+          });
+        }
+
+        var points = countKeys('ttx-restore-points');
+        var pointCount = Array.isArray(points) ? points.length : 0;
+
+        var hist = countKeys('ttx-version-history') || {};
+        var histCount = 0;
+        if (hist && typeof hist === 'object') {
+          Object.keys(hist).forEach(function (k) { if (Array.isArray(hist[k])) histCount += hist[k].length; });
+        }
+
+        var bytes = 0;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k2 = localStorage.key(i);
+            if (k2 && k2.indexOf('ttx-') === 0) {
+              var v = localStorage.getItem(k2);
+              bytes += (v ? v.length : 0) + k2.length;
+            }
+          }
+        } catch (e) {}
+        var kb = Math.max(1, Math.round(bytes / 1024));
+
+        var statTile = function (val, label) {
+          return '<div style="padding:10px 12px;background:var(--panel2);border:1px solid var(--line-soft);border-radius:8px;">' +
+            '<div style="font-size:20px;font-weight:700;color:var(--text);">' + val + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + label + '</div></div>';
+        };
+
+        var ov = document.createElement('div');
+        ov.id = 'dataOverlay';
+        ov.className = 'se-overlay';
+        var html = '<div class="se-modal" style="max-width:640px;max-height:86vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">';
+        html += '<h3 style="margin:0;font-size:16px;">📊 Data &amp; Statistics</h3>';
+        html += '<button class="reset-btn" type="button" id="dataClose" style="padding:5px 12px;">✕ Close</button></div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">';
+        html += statTile(builtIn + ' + ' + customCount, 'Scenarios (built-in + custom)');
+        html += statTile(done + ' / ' + total, 'Checklist completed');
+        html += statTile(tlCount, 'Timeline events');
+        html += statTile(casCount, 'Casualty cards');
+        html += statTile(resCount, 'Resources deployed');
+        html += statTile(pointCount + ' / 15', 'Restore points kept');
+        html += statTile(histCount + ' / 50', 'History entries per scenario');
+        html += statTile(kb + ' KB', 'Storage used by this dashboard');
+        html += '</div>';
+        html += '<div class="aar-toolbar" style="margin-top:16px;">';
+        html += '<button class="reset-btn" type="button" id="dataExportAll">⬇ Export All Data (backup)</button>';
+        html += '<button class="reset-btn" type="button" id="dataExportScen">⬇ Export Scenarios Only</button>';
+        html += '<button class="reset-btn" type="button" id="dataImportBtn">📂 Import File…</button>';
+        html += '<input type="file" id="dataImportFile" accept="application/json,.json" style="display:none">';
+        html += '</div>';
+        html += '<p style="font-size:12.5px;color:var(--muted);margin:12px 0 0;line-height:1.55;">' +
+          '<b>Export All Data</b> saves everything (settings, checklist, timeline, trackers, history) as one backup file — restore it with the header <b>📂 Restore</b> button. ' +
+          '<b>Export Scenarios Only</b> saves just your custom scenarios so they can be shared with another device or colleague; importing merges them into this device’s scenario library.</p>';
+        html += '</div>';
+        ov.innerHTML = html;
+        document.body.appendChild(ov);
+
+        document.getElementById('dataClose').addEventListener('click', function () { ov.remove(); });
+        ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+
+        /* Export All → reuse the header backup handler */
+        document.getElementById('dataExportAll').addEventListener('click', function () {
+          var b = document.getElementById('backupBtn');
+          if (b) b.click();
+        });
+
+        /* Export custom scenarios only */
+        document.getElementById('dataExportScen').addEventListener('click', function () {
+          var customs = getAllScenarios().filter(function (s) { return isCustomScenario(s.id); });
+          if (!customs.length) {
+            alert('No custom scenarios yet. Create one with "+ New" next to the Scenario dropdown first.');
+            return;
+          }
+          var payload = {
+            app: 'kulhudhuffushi-emergency-dashboard',
+            type: 'scenarios',
+            version: 1,
+            exportDate: new Date().toISOString(),
+            scenarios: customs
+          };
+          var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'hdk-scenarios-' + new Date().toISOString().slice(0, 10) + '.json';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+
+        /* Import: accepts a scenarios-only file (full backups go via 📂 Restore) */
+        var impFile = document.getElementById('dataImportFile');
+        document.getElementById('dataImportBtn').addEventListener('click', function () { impFile.click(); });
+        impFile.addEventListener('change', function () {
+          var file = impFile.files && impFile.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            try {
+              var payload = JSON.parse(reader.result);
+              if (payload && payload.app === 'kulhudhuffushi-emergency-dashboard' && payload.type === 'scenarios' && Array.isArray(payload.scenarios)) {
+                pushSnapshot('Before scenario import');
+                var existing = loadCustomScenarios();
+                var added = 0, updated = 0;
+                payload.scenarios.forEach(function (sc) {
+                  if (!sc || !sc.id || !sc.name) return;
+                  sc.custom = true;
+                  var idx = -1;
+                  existing.forEach(function (e, i) { if (e.id === sc.id) idx = i; });
+                  if (idx >= 0) { existing[idx] = sc; updated++; }
+                  else { existing.push(sc); added++; }
+                });
+                if (!added && !updated) {
+                  alert('No valid scenarios found in that file.');
+                  impFile.value = '';
+                  return;
+                }
+                suppressHook = true;
+                saveCustomScenarios(existing);
+                suppressHook = false;
+                addHistoryEntry(currentScenarioId(), 'updated',
+                  'Scenario import — ' + added + ' new, ' + updated + ' updated');
+                flashSaved('saved');
+                updateDockCount();
+                populateScenarioSelect(scenarioSelect ? scenarioSelect.value : '');
+                alert('Imported ' + (added + updated) + ' scenario(s): ' + added + ' new, ' + updated + ' updated.');
+                ov.remove();
+              } else if (payload && payload.app === 'kulhudhuffushi-emergency-dashboard' && payload.data) {
+                alert('That file is a full backup — use the header 📂 Restore button to load it.');
+              } else {
+                alert('That file is not a valid scenario export.');
+              }
+            } catch (e) {
+              alert('Could not read that file: ' + e.message);
+            }
+            impFile.value = '';
+          };
+          reader.readAsText(file);
+        });
       });
     }
 
@@ -887,7 +1069,9 @@
                  document.getElementById('changelogOverlay') ||
                  document.getElementById('historyOverlay') ||
                  document.getElementById('weatherOverlay') ||
-                 document.getElementById('aarOverlay');
+                 document.getElementById('aarOverlay') ||
+                 document.getElementById('dataOverlay') ||
+                 document.getElementById('mapOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
@@ -1108,8 +1292,73 @@
 
     /* ================= MAP PINS & LEGEND ================= */
     var CATS = TTX_DATA.pinCategories;
-    var LOCATIONS = TTX_DATA.locations;
     var PIN_STORAGE_KEY = 'ttx-pin-positions';
+    var MAP_CFG_KEY = 'ttx-map-config';
+
+    /* Editable map config: location overrides + zone ring radii.
+       Falls back to the built-in data when unset (factory state). */
+    var mapConfig = (function () {
+      try {
+        var raw = localStorage.getItem(MAP_CFG_KEY);
+        var obj = raw ? JSON.parse(raw) : null;
+        if (obj && typeof obj === 'object') {
+          return {
+            locations: Array.isArray(obj.locations) ? obj.locations : null,
+            zones: (obj.zones && typeof obj.zones === 'object') ? obj.zones : null
+          };
+        }
+      } catch (e) {}
+      return { locations: null, zones: null };
+    }());
+
+    var saveMapConfig = function () {
+      try { localStorage.setItem(MAP_CFG_KEY, JSON.stringify(mapConfig)); } catch (e) {}
+    };
+
+    var ZONE_DEFAULTS = {
+      map:     { hot: 38,  warm: 110, cold: 185 },  /* main map SVG */
+      diagram: { hot: 92,  warm: 185, cold: 280 }   /* Incident Zones diagram */
+    };
+    var zoneVal = function (side, which) {
+      var z = mapConfig.zones && mapConfig.zones[side];
+      var v = z ? Number(z[which]) : NaN;
+      return isFinite(v) && v > 0 ? v : ZONE_DEFAULTS[side][which];
+    };
+
+    var LOCATIONS = Array.isArray(mapConfig.locations) ? mapConfig.locations : TTX_DATA.locations;
+
+    /* Apply zone ring radii (and label positions) to both SVGs */
+    var applyMapConfig = function () {
+      var setR = function (id, r) {
+        var el = document.getElementById(id);
+        if (el) el.setAttribute('r', r);
+      };
+      var setY = function (id, y) {
+        var el = document.getElementById(id);
+        if (el) el.setAttribute('y', y);
+      };
+
+      /* Main map rings — crash group is centred on 507,270 */
+      var hotR = zoneVal('map', 'hot'), warmR = zoneVal('map', 'warm'), coldR = zoneVal('map', 'cold');
+      setR('hotZone', hotR);
+      setR('warmZone', warmR);
+      setR('coldZone', coldR);
+      setY('crashSiteLabel', 270 - hotR - 10);
+      setY('warmZoneLabel', 270 - warmR - 8);
+      setY('coldZoneLabel', 270 - coldR - 10);
+
+      /* Incident Zones diagram — centred on 380,350 */
+      var dHot = zoneVal('diagram', 'hot'), dWarm = zoneVal('diagram', 'warm'), dCold = zoneVal('diagram', 'cold');
+      setR('diagHotZone', dHot);
+      setR('diagWarmZone', dWarm);
+      setR('diagColdZone', dCold);
+      setY('diagColdLabel', 350 - dCold + 50);
+      setY('diagColdSub', 350 - dCold + 70);
+      setY('diagWarmLabel', 350 - dWarm + 43);
+      setY('diagWarmSub', 350 - dWarm + 62);
+      setY('diagHotLabel', 350 + Math.round(dHot * 0.39));
+      setY('diagHotSub', 350 + Math.round(dHot * 0.39) + 19);
+    };
 
     var pinLayer = document.getElementById('pinLayer');
     var legend   = document.getElementById('legend');
@@ -1228,7 +1477,7 @@
       }
       g.setAttribute('transform', 'translate(' + x + ',' + y + ')');
 
-      var catColor = CATS[loc.cat].color;
+      var catColor = (CATS[loc.cat] || CATS[Object.keys(CATS)[0]]).color;
 
       var title = document.createElementNS(NS, 'title');
       title.textContent = loc.id + '. ' + loc.name + ' (drag to move)';
@@ -1263,7 +1512,20 @@
 
     var itemEls = {};
 
-    if (pinLayer && legend) {
+    /* (Re)builds pins + legend from the effective location list.
+       Called at init and again after the map editor saves. */
+    var buildMapUI = function () {
+      LOCATIONS = Array.isArray(mapConfig.locations) ? mapConfig.locations : TTX_DATA.locations;
+      itemEls = {};
+      if (!pinLayer || !legend) return;
+
+      var esc = function (s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      };
+
+      while (pinLayer.firstChild) pinLayer.removeChild(pinLayer.firstChild);
+      while (legend.firstChild) legend.removeChild(legend.firstChild);
+
       LOCATIONS.forEach(function (loc) {
         var pin = makePin(loc);
         pinLayer.appendChild(pin);
@@ -1271,9 +1533,6 @@
         pin.addEventListener('mouseleave', function () { highlight(loc.id, false); });
         pin.addEventListener('mousedown', onPinMouseDown);
       });
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
 
       Object.keys(CATS).forEach(function (catKey) {
         var cat = CATS[catKey];
@@ -1289,8 +1548,8 @@
             item.className = 'legend-item';
             item.setAttribute('data-id', loc.id);
             item.innerHTML =
-              '<div class="legend-num" style="background:' + cat.color + '">' + loc.id + '</div>' +
-              '<div class="legend-txt"><b>' + loc.name + '</b><span>' + loc.desc + '</span></div>';
+              '<div class="legend-num" style="background:' + cat.color + '">' + esc(loc.id) + '</div>' +
+              '<div class="legend-txt"><b>' + esc(loc.name) + '</b><span>' + esc(loc.desc) + '</span></div>';
             item.addEventListener('mouseenter', function () { highlight(loc.id, true); });
             item.addEventListener('mouseleave', function () { highlight(loc.id, false); });
             legend.appendChild(item);
@@ -1298,7 +1557,7 @@
           });
       });
 
-      /* Add reset button for pin positions */
+      /* Reset button for pin positions */
       var resetPinsBtn = document.createElement('button');
       resetPinsBtn.className = 'reset-btn';
       resetPinsBtn.type = 'button';
@@ -1308,7 +1567,34 @@
         resetPinPositions();
       });
       legend.appendChild(resetPinsBtn);
-    }
+
+      /* Reset button for crash site / zone group position */
+      var resetCrashZoneBtn = document.createElement('button');
+      resetCrashZoneBtn.className = 'reset-btn';
+      resetCrashZoneBtn.type = 'button';
+      resetCrashZoneBtn.textContent = 'Reset Crash Site & Zones';
+      resetCrashZoneBtn.style.marginTop = '8px';
+      resetCrashZoneBtn.addEventListener('click', function () {
+        resetCrashZonePositions();
+      });
+      legend.appendChild(resetCrashZoneBtn);
+
+      /* Map customization entry point */
+      var editMapBtn = document.createElement('button');
+      editMapBtn.className = 'reset-btn';
+      editMapBtn.type = 'button';
+      editMapBtn.textContent = '✏️ Customize Map';
+      editMapBtn.title = 'Edit zone ring radii, locations and categories';
+      editMapBtn.style.marginTop = '8px';
+      editMapBtn.addEventListener('click', function () { openMapEditor(); });
+      legend.appendChild(editMapBtn);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    applyMapConfig();
+    buildMapUI();
 
     function highlight(id, on) {
       var pin  = pinLayer.querySelector('.pin[data-id="' + id + '"]');
@@ -1411,17 +1697,318 @@
       document.addEventListener('mousemove', onCrashZoneMouseMove);
       document.addEventListener('mouseup', onCrashZoneMouseUp);
 
-      /* Add reset button for crash site and zone positions */
-      var resetCrashZoneBtn = document.createElement('button');
-      resetCrashZoneBtn.className = 'reset-btn';
-      resetCrashZoneBtn.type = 'button';
-      resetCrashZoneBtn.textContent = 'Reset Crash Site & Zones';
-      resetCrashZoneBtn.style.marginTop = '8px';
-      resetCrashZoneBtn.addEventListener('click', function () {
-        resetCrashZonePositions();
-      });
-      legend.appendChild(resetCrashZoneBtn);
+      /* Reset buttons for pins / crash site / map editor live in buildMapUI() */
     }
+
+    /* ================= MAP CUSTOMIZATION EDITOR ================= */
+    var openMapEditor = function () {
+      var existing = document.getElementById('mapOverlay');
+      if (existing) { existing.remove(); return; }
+
+      var escAttr = function (s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      };
+      var catKeys = function () { return Object.keys(CATS); };
+      var catOptions = function (selected) {
+        return catKeys().map(function (k) {
+          return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>' +
+            escAttr(CATS[k].label) + '</option>';
+        }).join('');
+      };
+      var effectiveLocations = function () {
+        return Array.isArray(mapConfig.locations) ? mapConfig.locations : TTX_DATA.locations;
+      };
+
+      /* ---------- location rows ---------- */
+      var locRowHtml = function (idAttr, id, cat, name, desc) {
+        var safeCat = CATS[cat] ? cat : catKeys()[0];
+        var badge = (id == null) ? '+' : id;
+        var badgeColor = (id == null) ? '#475569' : CATS[safeCat].color;
+        return '<div class="maploc-row" data-id="' + escAttr(idAttr) + '">' +
+          '<span class="maploc-num" style="background:' + badgeColor + '">' + badge + '</span>' +
+          '<select class="maploc-cat" aria-label="Location category">' + catOptions(safeCat) + '</select>' +
+          '<input class="maploc-name" type="text" aria-label="Location name" placeholder="Name" value="' + escAttr(name) + '">' +
+          '<input class="maploc-desc" type="text" aria-label="Location description" placeholder="Description" value="' + escAttr(desc) + '">' +
+          '<button type="button" class="maploc-del" aria-label="Delete this location">✕</button>' +
+          '</div>';
+      };
+
+      var renderLocEditor = function () {
+        var locs = effectiveLocations();
+        var html = '<h3 class="maped-h">Locations <span class="maped-count">' + locs.length + '</span></h3>' +
+          '<div class="maploc-rows">';
+        locs.forEach(function (loc) {
+          html += locRowHtml(String(loc.id), loc.id, loc.cat, loc.name, loc.desc);
+        });
+        if (!locs.length) {
+          html += '<p class="maped-note" style="padding:10px 2px;">No locations — use “＋ Add location” to place some.</p>';
+        }
+        html += '</div>';
+        html += '<button type="button" id="mapLocAdd" class="reset-btn">＋ Add location</button>';
+        document.getElementById('mapLocEditor').innerHTML = html;
+      };
+
+      /* ---------- zone radii fields ---------- */
+      var renderZoneEditor = function () {
+        var sides = [
+          { side: 'map', max: 400, title: 'Map rings — main map',
+            sub: 'Crash hot ring plus warm & cold perimeters (SVG units from the crash centre).' },
+          { side: 'diagram', max: 310, title: 'Zone diagram — Incident Zones',
+            sub: 'Concentric hot / warm / cold cordon on the Incident Zones tab (max 310 keeps it inside the outer cordon).' }
+        ];
+        var html = '<h3 class="maped-h">Zone radii</h3><div class="maped-grid">';
+        sides.forEach(function (g) {
+          html += '<fieldset class="maped-field"><legend>' + g.title + '</legend>';
+          ['hot', 'warm', 'cold'].forEach(function (which) {
+            html += '<label class="maped-num"><span>' + which.charAt(0).toUpperCase() + which.slice(1) + '</span>' +
+              '<input type="number" id="mz-' + g.side + '-' + which + '" min="8" max="' + g.max + '" step="1" value="' +
+              zoneVal(g.side, which) + '"><em>u</em></label>';
+          });
+          html += '<p class="maped-note">' + g.sub + '</p></fieldset>';
+        });
+        html += '</div>';
+        document.getElementById('mapZoneEditor').innerHTML = html;
+      };
+
+      /* ---------- collect from DOM ---------- */
+      var collectLocations = function () {
+        var rows = document.querySelectorAll('#mapLocEditor .maploc-row');
+        var existing = {};
+        effectiveLocations().forEach(function (l) { existing[l.id] = l; });
+
+        var base = 0;
+        Array.prototype.forEach.call(rows, function (row) {
+          var i = parseInt(row.getAttribute('data-id'), 10);
+          if (!isNaN(i) && i > base) base = i;
+        });
+
+        var out = [];
+        Array.prototype.forEach.call(rows, function (row) {
+          var id = parseInt(row.getAttribute('data-id'), 10);
+          if (isNaN(id)) id = ++base;
+          var sel = row.querySelector('.maploc-cat');
+          var cat = sel && CATS[sel.value] ? sel.value : catKeys()[0];
+          var nameEl = row.querySelector('.maploc-name');
+          var descEl = row.querySelector('.maploc-desc');
+          var name = ((nameEl && nameEl.value) || '').trim() || ('Location ' + id);
+          var desc = ((descEl && descEl.value) || '').trim();
+          var prev = existing[id];
+          out.push({
+            id: id, cat: cat, name: name, desc: desc,
+            x: prev ? prev.x : 500, y: prev ? prev.y : 360
+          });
+        });
+        return out;
+      };
+
+      var collectZones = function () {
+        var grab = function (side, max) {
+          var vals = ['hot', 'warm', 'cold'].map(function (w) {
+            var el = document.getElementById('mz-' + side + '-' + w);
+            var n = parseInt(el ? el.value : '', 10);
+            if (isNaN(n)) n = ZONE_DEFAULTS[side][w];
+            return Math.max(8, Math.min(max, n));
+          }).sort(function (a, b) { return a - b; });
+          /* keep rings nested: warm >= hot+10, cold >= warm+10 */
+          vals[1] = Math.min(max, Math.max(vals[1], vals[0] + 10));
+          vals[2] = Math.min(max, Math.max(vals[2], vals[1] + 10));
+          return { hot: vals[0], warm: vals[1], cold: vals[2] };
+        };
+        return { map: grab('map', 400), diagram: grab('diagram', 310) };
+      };
+
+      /* ---------- modal shell ---------- */
+      var ov = document.createElement('div');
+      ov.id = 'mapOverlay';
+      ov.className = 'se-overlay';
+      var html = '<div class="se-modal" style="max-width:760px;max-height:88vh;overflow-y:auto;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+      html += '<h3 style="margin:0;font-size:16px;">🗺 Customize Map</h3>';
+      html += '<button class="reset-btn" type="button" id="mapClose" style="padding:5px 12px;">✕ Close</button></div>';
+      html += '<div id="mapZoneEditor"></div>';
+      html += '<div id="mapLocEditor"></div>';
+      html += '<p class="maped-note" style="margin-top:10px;">Positions are edited by dragging pins directly on the map — ' +
+        'new locations start near the centre (500, 360) until you place them. Zone radii stay nested (hot &lt; warm &lt; cold).</p>';
+      html += '<div class="map-modal-actions">';
+      html += '<button class="reset-btn" type="button" id="mapSaveBtn">💾 Save changes</button>';
+      html += '<button class="reset-btn" type="button" id="mapCancelBtn">Cancel</button>';
+      html += '<span style="flex:1"></span>';
+      html += '<button class="reset-btn" type="button" id="mapResetBtn">↺ Reset to defaults</button>';
+      html += '<button class="reset-btn" type="button" id="mapExportBtn">⬇ Export JSON</button>';
+      html += '<button class="reset-btn" type="button" id="mapImportBtn">📂 Import JSON</button>';
+      html += '<input type="file" id="mapImportFile" accept="application/json,.json" style="display:none">';
+      html += '</div></div>';
+      ov.innerHTML = html;
+      document.body.appendChild(ov);
+
+      renderZoneEditor();
+      renderLocEditor();
+
+      /* ---------- wiring ---------- */
+      document.getElementById('mapClose').addEventListener('click', function () { ov.remove(); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+
+      document.getElementById('mapCancelBtn').addEventListener('click', function () { ov.remove(); });
+
+      document.getElementById('mapSaveBtn').addEventListener('click', function () {
+        var newLocs = collectLocations();
+        var newZones = collectZones();
+        pushSnapshot('Before map edit');
+        mapConfig.locations = newLocs;
+        mapConfig.zones = newZones;
+        saveMapConfig();   /* flashes the save chip via the setItem hook */
+        /* prune saved pin positions of deleted locations */
+        try {
+          var pp = JSON.parse(localStorage.getItem(PIN_STORAGE_KEY) || '{}');
+          var ids = {};
+          newLocs.forEach(function (l) { ids[l.id] = 1; });
+          var pruned = false;
+          Object.keys(pp).forEach(function (k) {
+            if (!ids[k]) { delete pp[k]; pruned = true; }
+          });
+          if (pruned) localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(pp));
+        } catch (e) {}
+        applyMapConfig();
+        buildMapUI();
+        addHistoryEntry(currentScenarioId(), 'updated',
+          'Map customized — ' + newLocs.length + ' location(s), map rings ' +
+          newZones.map.hot + '/' + newZones.map.warm + '/' + newZones.map.cold);
+        ov.remove();
+      });
+
+      document.getElementById('mapResetBtn').addEventListener('click', function () {
+        if (!window.confirm('Reset map layout and zone radii to factory defaults?')) return;
+        pushSnapshot('Before map reset');
+        try { localStorage.removeItem(MAP_CFG_KEY); } catch (e) {}
+        mapConfig = { locations: null, zones: null };
+        applyMapConfig();
+        buildMapUI();
+        renderZoneEditor();
+        renderLocEditor();
+        addHistoryEntry(currentScenarioId(), 'updated', 'Map layout reset to defaults');
+        flashSaved('map reset');
+      });
+
+      document.getElementById('mapExportBtn').addEventListener('click', function () {
+        var data = {
+          app: 'kulhudhuffushi-emergency-dashboard',
+          type: 'map', version: 1,
+          exportDate: new Date().toISOString(),
+          locations: effectiveLocations(),
+          zones: collectZones()
+        };
+        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'hdk-map-layout-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      var impFile = document.getElementById('mapImportFile');
+      document.getElementById('mapImportBtn').addEventListener('click', function () { impFile.click(); });
+      impFile.addEventListener('change', function () {
+        var f = impFile.files && impFile.files[0];
+        if (!f) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var data = JSON.parse(reader.result);
+            var incoming = null;
+            if (data && Array.isArray(data.locations)) {
+              var seen = {};
+              incoming = [];
+              data.locations.forEach(function (l, i) {
+                if (!l || typeof l !== 'object') return;
+                var id = Number(l.id);
+                if (!isFinite(id) || id < 1) id = i + 1;
+                id = Math.min(9999, Math.round(id));
+                if (seen[id]) return;
+                seen[id] = true;
+                incoming.push({
+                  id: id,
+                  cat: CATS[l.cat] ? l.cat : catKeys()[0],
+                  name: String(l.name || ('Location ' + id)).slice(0, 80),
+                  desc: String(l.desc || '').slice(0, 140),
+                  x: Math.max(0, Math.min(1000, Number(l.x) || 500)),
+                  y: Math.max(0, Math.min(720, Number(l.y) || 360))
+                });
+              });
+            }
+            var zones = null;
+            if (data && data.zones && typeof data.zones === 'object') {
+              zones = {};
+              ['map', 'diagram'].forEach(function (side) {
+                var src = data.zones[side];
+                var max = side === 'map' ? 400 : 310;
+                var out = {};
+                ['hot', 'warm', 'cold'].forEach(function (w) {
+                  var n = src ? Number(src[w]) : NaN;
+                  out[w] = (isFinite(n) && n >= 8) ? Math.min(max, Math.round(n)) : ZONE_DEFAULTS[side][w];
+                });
+                zones[side] = out;
+              });
+            }
+            if (!incoming && !zones) {
+              alert('That file is not valid map JSON.');
+              impFile.value = '';
+              return;
+            }
+            pushSnapshot('Before map import');
+            if (incoming) mapConfig.locations = incoming;
+            if (zones) mapConfig.zones = zones;
+            saveMapConfig();
+            applyMapConfig();
+            buildMapUI();
+            renderZoneEditor();
+            renderLocEditor();
+            addHistoryEntry(currentScenarioId(), 'updated',
+              'Map imported — ' + (incoming ? incoming.length + ' location(s)' : 'zone radii'));
+            flashSaved('map imported');
+          } catch (err) {
+            alert('Could not import: that file is not valid map JSON.');
+          }
+          impFile.value = '';
+        };
+        reader.readAsText(f);
+      });
+
+      /* ---------- location row actions (delegated) ---------- */
+      var locEditor = document.getElementById('mapLocEditor');
+      locEditor.addEventListener('click', function (e) {
+        var del = e.target.closest ? e.target.closest('.maploc-del') : null;
+        if (del) {
+          var row = del.closest('.maploc-row');
+          if (row && row.parentNode) row.parentNode.removeChild(row);
+          var countEl = locEditor.querySelector('.maped-count');
+          if (countEl) countEl.textContent = locEditor.querySelectorAll('.maploc-row').length;
+          return;
+        }
+        if (e.target.id === 'mapLocAdd') {
+          var rowsWrap = locEditor.querySelector('.maploc-rows');
+          if (!rowsWrap) return;
+          var empty = rowsWrap.querySelector('.maped-note');
+          if (empty) empty.parentNode.removeChild(empty);
+          rowsWrap.insertAdjacentHTML('beforeend', locRowHtml('', null, catKeys()[0], '', ''));
+          var added = rowsWrap.lastElementChild;
+          var countEl2 = locEditor.querySelector('.maped-count');
+          if (countEl2) countEl2.textContent = rowsWrap.querySelectorAll('.maploc-row').length;
+          var nameInput = added ? added.querySelector('.maploc-name') : null;
+          if (nameInput) nameInput.focus();
+        }
+      });
+
+      locEditor.addEventListener('change', function (e) {
+        if (e.target.classList && e.target.classList.contains('maploc-cat')) {
+          var row = e.target.closest('.maploc-row');
+          var badge = row ? row.querySelector('.maploc-num') : null;
+          if (badge && CATS[e.target.value]) badge.style.background = CATS[e.target.value].color;
+        }
+      });
+    };
 
     /* ================= SCENARIO SELECTOR + EDITOR ================= */
     var scenarioSelect = document.getElementById('scenarioSelect');
