@@ -94,6 +94,66 @@
 
     loadTheme();
 
+    /* ================= VERSION HISTORY (changelog) ================= */
+    var APP_VERSION = '2026.09.30';
+    var CHANGELOG = [
+      { v: '2026.09.30', items: [
+        'Dhivehi / English language toggle with RTL layout',
+        'PWA: installable, offline support via service worker',
+        'JSON backup / restore of all dashboard data',
+        'High-contrast theme (dark → light → high contrast cycle)',
+        'Text size controls with Ctrl +/−/0 shortcuts',
+        'Accessibility: skip link, visible focus rings, ARIA labels',
+        'Print-friendly export (PDF) and ICS 201/202/203 forms'
+      ]},
+      { v: '2026.09.29', items: [
+        'Exercise timeline with inject tracker and undo/redo',
+        'Scenario editor: create, edit, duplicate, compare scenarios',
+        'Resource tracker and casualty tracker with triage cards',
+        'Draggable map pins and crash zone with persistence',
+        'Live weather widget (Open-Meteo, VRBK)',
+        'Keyboard shortcuts (Ctrl/Alt + 1-7, T, Esc)',
+        'Light / dark theme with instant toggle'
+      ]},
+      { v: '2026.09.28', items: [
+        'Initial release: IC phases, team labels, key locations,',
+        'incident zones, emergency types, aircraft specs, checklist'
+      ]}
+    ];
+    var changelogBtn = document.getElementById('changelogBtn');
+    if (changelogBtn) {
+      changelogBtn.addEventListener('click', function () {
+        var existing = document.getElementById('changelogOverlay');
+        if (existing) { existing.remove(); return; }
+        var ov = document.createElement('div');
+        ov.id = 'changelogOverlay';
+        ov.className = 'se-overlay';
+        var html = '<div class="se-modal" style="max-width:560px;max-height:80vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">';
+        html += '<h3 style="margin:0;font-size:16px;">Version History</h3>';
+        html += '<button class="reset-btn" type="button" id="clClose" style="padding:5px 12px;">✕ Close</button></div>';
+        CHANGELOG.forEach(function (rel, i) {
+          html += '<div style="margin-bottom:' + (i === CHANGELOG.length - 1 ? '0' : '18px') + ';">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
+          html += '<span style="font-weight:700;font-size:14px;">v' + rel.v + '</span>';
+          if (i === 0) html += '<span style="font-size:10px;background:var(--green);color:#04210e;padding:2px 8px;border-radius:99px;font-weight:700;">CURRENT</span>';
+          html += '</div><ul style="margin:0;padding-left:18px;">';
+          rel.items.forEach(function (it) {
+            html += '<li style="font-size:13px;color:var(--muted);margin-bottom:4px;">' + it + '</li>';
+          });
+          html += '</ul></div>';
+        });
+        html += '</div>';
+        ov.innerHTML = html;
+        document.body.appendChild(ov);
+        var close = function () { ov.remove(); };
+        document.getElementById('clClose').addEventListener('click', close);
+        ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+      });
+    }
+    var footerVer = document.getElementById('footerVer');
+    if (footerVer) footerVer.textContent = 'v' + APP_VERSION;
+
     /* ================= BACKUP / RESTORE (JSON) =================
        Serialises every ttx-* key (except the transient weather
        cache) into one portable JSON file, and restores it back. */
@@ -271,7 +331,8 @@
       if (e.key === 'Escape') {
         var ov = document.getElementById('scenarioEditorOverlay') ||
                  document.getElementById('compareOverlay') ||
-                 document.getElementById('icsOverlay');
+                 document.getElementById('icsOverlay') ||
+                 document.getElementById('changelogOverlay');
         if (ov) { ov.remove(); e.preventDefault(); }
         return;
       }
